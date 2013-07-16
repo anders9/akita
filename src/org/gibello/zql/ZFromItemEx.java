@@ -2,8 +2,8 @@ package org.gibello.zql;
 
 public class ZFromItemEx {
 
-	ZQuery subQuery;
-	ZFromItem fromItem;
+	ZQuery subQuery = null;
+	ZFromItem fromItem = null;
 	
 	public boolean isSubQuery() {
 		return subQuery != null;
@@ -12,16 +12,26 @@ public class ZFromItemEx {
 	public ZQuery getSubQuery(){
 		return subQuery;
 	}
+	
 	public ZFromItem getFromItem(){
 		return fromItem;
 	}
 	
-	public ZFromItemEx(ZFromItem item, ZQuery subQuery){
-		this.subQuery = subQuery;
+	public ZFromItemEx(ZFromItem item){
 		this.fromItem = item;
 	}
 	
+	public ZFromItemEx(ZQuery query){
+		this.subQuery = query;
+	}
+	
 	public String toString(){
-		return isSubQuery() ? "(" + subQuery.toString() + ")" : fromItem.toString();
+		if(isSubQuery()){
+			String r = "(" + subQuery.toString() + ")";
+			if(subQuery.getAlias() != null)
+				r += (" AS " + subQuery.getAlias());
+			return r;
+		}
+		return fromItem.toString();
 	}
 }

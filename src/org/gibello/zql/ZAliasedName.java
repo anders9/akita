@@ -89,7 +89,7 @@ public class ZAliasedName implements java.io.Serializable {
 
   public String toString() {
     if(alias_ == null) return strform_;
-    else return strform_ + " " + alias_;
+    else return strform_ + " AS " + alias_;
   }
 
   /**

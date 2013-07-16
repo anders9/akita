@@ -29,7 +29,7 @@ public class ZExpression implements ZExp {
 
   String op_ = null;
   Vector operands_ = null;
-
+  String aggr_modifier_ = null;
   /**
    * Create an SQL Expression given the operator
    * @param op The operator
@@ -48,6 +48,17 @@ public class ZExpression implements ZExp {
     addOperand(o1);
   }
 
+  /**
+   * Create an SQL Expression given the operator and 1st operand
+   * @param op The operator
+   * @param o1 The 1st operand
+   */
+  public ZExpression(String op, ZExp o1, String aggr_modifier) {
+    this(op, o1);
+    this.aggr_modifier_ = aggr_modifier;
+  }
+  
+  
   /**
    * Create an SQL Expression given the operator, 1st and 2nd operands
    * @param op The operator

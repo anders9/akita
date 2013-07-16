@@ -25,6 +25,8 @@ import java.util.* ;
  */
 public class ZQuery implements ZStatement, ZExp {
 
+	String alias_;//used for sub-query.
+	
   Vector select_;
   boolean distinct_ = false;
   Vector from_;
@@ -39,6 +41,11 @@ public class ZQuery implements ZStatement, ZExp {
    */
   public ZQuery() {}
 
+  public void setAlias(String alias) { alias_ = alias; }
+  
+  public String getAlias() { return alias_; }
+  
+  
   /**
    * Insert the SELECT part of the statement
    * @param s A vector of ZSelectItem objects

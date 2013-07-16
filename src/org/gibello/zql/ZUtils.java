@@ -21,16 +21,21 @@ import java.util.Hashtable;
 
 public class ZUtils {
 
-  private static Hashtable fcts_ = null;
-
-  public static final int VARIABLE_PLIST = 10000;
+  private static Hashtable fcts_ = new Hashtable();
+  private static Hashtable aggrs_ = new Hashtable();
+  
+  //public static final int VARIABLE_PLIST = 10000;
 
   public static void addCustomFunction(String fct, int nparm) {
-    if(fcts_ == null) fcts_ = new Hashtable();
     if(nparm < 0) nparm = 1;
     fcts_.put(fct.toUpperCase(), new Integer(nparm));
   }
 
+  public static void addCustomAggregation(String aggr) {
+	 aggrs_.put(aggr.toUpperCase(), null);
+  }
+  
+  
   public static int isCustomFunction(String fct) {
     Integer nparm;
     if(fct == null || fct.length()<1 || fcts_ == null
@@ -45,6 +50,12 @@ public class ZUtils {
         || tmp.equals("MAX") || tmp.equals("MIN")
         || tmp.equals("COUNT") || (fcts_ != null && fcts_.get(tmp) != null);
   }
+  public static boolean isCustomAggregate(String op) {
+	  if(op == null)return false;
+	  return aggrs_.containsKey(op.toUpperCase().trim());
+  }
+  
+  
 //add by wyn 2013.06.28
   public static boolean isJudge(String op){
 	String tmp = op.trim();

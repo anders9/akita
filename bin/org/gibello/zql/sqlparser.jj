@@ -172,7 +172,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 TOKEN : /* Numeric Constants */
 {
 	< S_NUMBER: <FLOAT>
-	    | <FLOAT> ( ["e","E"] ([ "-","+"])? <FLOAT> )?
+	    | <FLOAT> ( ["e","E"] ([ "-","+"])? <INTEGER> )?
     	>
   | 	< #FLOAT: <INTEGER>
 	    | <INTEGER> ( "." <INTEGER> )?
@@ -572,7 +572,7 @@ String SelectAlias():
   StringBuffer b = null;
 }
 {
-  [ "AS" ] ( tk = <S_QUOTED_IDENTIFIER> { return tk.toString().trim(); }
+   "AS"  ( tk = <S_QUOTED_IDENTIFIER> { return tk.toString().trim(); }
     | (tk = <S_IDENTIFIER> {
         if(b == null) b = new StringBuffer(tk.toString().trim());
         else b.append(" " + tk.toString().trim()); })+
@@ -606,28 +606,43 @@ Vector FromClause():
     { return v; }
 }
 
-// FromItemEx ::= FromItem() | ( SelectStatement() )
+// FromItemEx ::= ( FromItem | "(" SelectStatement ")" ) [ "AS" alias ]
 ZFromItemEx FromItemEx():
 {
-	ZFromItem f = null;
+	ZFromItemEx f = null;
 	ZQuery subq = null;
+	ZFromItem tab_item = null;
+	String tab = null;
+	Token tk = null;
 }
 {
-	(f = FromItem() | "(" subq = SelectStatement() ")" )
-	{return new ZFromItemEx(f, subq); }
+	( (tab =  TableReference()) { tab_item = new ZFromItem(tab); f = new ZFromItemEx(tab_item); }
+	 | ("(" subq = SelectStatement() ")") { f = new ZFromItemEx(subq); }
+	)
+	 [ "AS" tk = <S_IDENTIFIER> {
+	 	 if(subq != null)
+	 	 	 subq.setAlias(tk.toString());
+	 	 else tab_item.setAlias(tk.toString());
+	  } ]  /* Alias Name */
+	
+	
+	{return f; }
 }
-// FromItem ::= TableReference [alias]
-ZFromItem FromItem():
-{
-  ZFromItem f;
-  String s;
-  Token tk;
-}
-{
-  s = TableReference() { f = new ZFromItem(s); }
-  [ tk = <S_IDENTIFIER> { f.setAlias(tk.toString()); } ]  /* Alias Name */
-  { return f; }
-}
+
+
+
+// FromItem ::= TableReference [as alias]
+//ZFromItem FromItem():
+//{
+//  ZFromItem f;
+//  String s;
+//  Token tk;
+//}
+//{
+//  s = TableReference() { f = new ZFromItem(s); }
+//  [ "AS" tk = <S_IDENTIFIER> { f.setAlias(tk.toString()); } ]  /* Alias Name */
+//  { return f; }
+//}
 
 
 ZExp WhereClause():
@@ -999,7 +1014,7 @@ ZExp SQLUnaryExpression():
 // fairest solution...)
 
 // SQLPrimaryExpression ::= NULL | OuterJoinExpression
-//   | AggregateFunc ( [ ALL | DISTINCT ] TableColumn ) | TableColumn
+//   | AggregateFunc ( [ ALL | DISTINCT ] SQLSimpleExpression ) | TableColumn
 //   | COUNT(*)
 //   | <NUMBER> | <STRING> | <BIND>
 ZExp SQLPrimaryExpression():
@@ -1007,6 +1022,7 @@ ZExp SQLPrimaryExpression():
   Token t;
   String s, s2, modifier="";
   ZExp e;
+  Vector parm = null;
 }
 {
   "NULL" { return new ZConstant("NULL", ZConstant.NULL); }
@@ -1018,11 +1034,44 @@ ZExp SQLPrimaryExpression():
      return new ZExpression("COUNT",
       new ZConstant("*", ZConstant.COLUMNNAME));
    }
-|  LOOKAHEAD(3) s = AggregateFunc() "("
-    ("ALL" { modifier="all "; } | "DISTINCT" { modifier="distinct "; })
-    s2 = TableColumn() ")"
-     { return new ZExpression(s, new ZConstant(modifier + s2, ZConstant.COLUMNNAME)); }
-|  LOOKAHEAD(2) e = FunctionCall() { return e; }
+|  
+     
+      LOOKAHEAD(<S_IDENTIFIER>, { ZUtils.isAggregate(getToken(1).toString()) }) ( 
+      
+          t = <S_IDENTIFIER>{ s = t.toString(); }
+      	"(" [ "ALL" { modifier="all "; } | "DISTINCT" { modifier="distinct "; }]
+   			 e = SQLSimpleExpression() ")"
+     		{ return new ZExpression(s, e, modifier); }
+      )
+      |
+      LOOKAHEAD(<S_IDENTIFIER>, { !ZUtils.isAggregate(getToken(1).toString()) }) (
+        t = <S_IDENTIFIER>{ s = t.toString(); }
+		 "(" [ parm = SQLExpressionList() ] ")" {
+		
+		    int nparm = ZUtils.isCustomFunction(s);
+		    //if(nparm < 0) nparm = (ZUtils.isAggregate(s) ? 1 : -1);
+		    if(nparm < 0)
+		      throw new ParseException("Undefined function: " + s);
+		    if(nparm > 0) {
+		      if(parm == null || parm.size() != nparm)
+		        throw new ParseException("Function " + s + " should have "
+		         + nparm + " parameter(s)");
+		    }
+		
+		    e = new ZExpression(s);
+		    ((ZExpression)e).setOperands(parm);
+		    return e;
+		  }      		
+      )
+ 
+   
+/*
+|  LOOKAHEAD(3, s = AggregateFunc(), {s != null}) s = AggregateFunc() "("
+    ["ALL" { modifier="all "; } | "DISTINCT" { modifier="distinct "; }]
+    e = SQLSimpleExpression() ")"
+     { return new ZExpression(s, e, modifier); }
+|  LOOKAHEAD(2) e = FunctionCall() { return e; } 
+*/
 /*
 |  LOOKAHEAD(<S_IDENTIFIER> "(") e = FunctionCall() { return e; }
 */
@@ -1042,6 +1091,7 @@ ZExp SQLPrimaryExpression():
 String AggregateFunc():
 {
   Token t;
+  String s;
 }
 {
   t = "SUM" { return t.toString(); }
@@ -1049,6 +1099,12 @@ String AggregateFunc():
 | t = "MAX" { return t.toString(); }
 | t = "MIN" { return t.toString(); }
 | t = "COUNT" { return t.toString(); }
+| t = <S_IDENTIFIER> {
+	 s = t.toString();
+	 if( ZUtils.isCustomAggregate(s) )
+	 	 return s;
+	 else return null; 
+  }
 }
 
 ZExpression FunctionCall():
@@ -1059,14 +1115,14 @@ ZExpression FunctionCall():
   Vector parm = null;
 }
 {
-  (t = <S_IDENTIFIER> { s = t.toString(); } | s = AggregateFunc()) "("
+  (t = <S_IDENTIFIER> { s = t.toString(); }) "("
   [ parm = SQLExpressionList() ] ")" {
 
     int nparm = ZUtils.isCustomFunction(s);
-    if(nparm < 0) nparm = (ZUtils.isAggregate(s) ? 1 : -1);
+    //if(nparm < 0) nparm = (ZUtils.isAggregate(s) ? 1 : -1);
     if(nparm < 0)
       throw new ParseException("Undefined function: " + s);
-    if(nparm != ZUtils.VARIABLE_PLIST && nparm > 0) {
+    if(nparm > 0) {
       if(parm == null || parm.size() != nparm)
         throw new ParseException("Function " + s + " should have "
          + nparm + " parameter(s)");
