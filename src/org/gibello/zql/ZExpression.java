@@ -27,9 +27,13 @@ import java.util.* ;
  */
 public class ZExpression implements ZExp {
 
+	public final static int AGGR_ALL = 1;
+	public final static int AGGR_DISTINCT = 2;
+	public final static int NOT_AGGR = 0;
+	
   String op_ = null;
   Vector operands_ = null;
-  String aggr_modifier_ = null;
+  int aggr_modifier_ = NOT_AGGR;
   /**
    * Create an SQL Expression given the operator
    * @param op The operator
@@ -49,11 +53,23 @@ public class ZExpression implements ZExp {
   }
 
   /**
-   * Create an SQL Expression given the operator and 1st operand
+   * Create an SQL Expression given the operator and operands array
+   * @param op The operator
+   * @param v  The operands array
+   */
+  public ZExpression(String op, Vector v) {
+    op_ = new String(op);
+    operands_ = v;
+  }
+  
+  
+  /**
+   * Create an SQL Expression given the operator and 1st operand and aggregation modifier
    * @param op The operator
    * @param o1 The 1st operand
+   * @param aggr_modifier
    */
-  public ZExpression(String op, ZExp o1, String aggr_modifier) {
+  public ZExpression(String op, ZExp o1, int aggr_modifier) {
     this(op, o1);
     this.aggr_modifier_ = aggr_modifier;
   }

@@ -617,7 +617,7 @@ ZFromItemEx FromItemEx():
 }
 {
 	( (tab =  TableReference()) { tab_item = new ZFromItem(tab); f = new ZFromItemEx(tab_item); }
-	 | ("(" subq = SelectStatement() ")") { f = new ZFromItemEx(subq); }
+	 | ("(" subq = SubQuery() ")") { f = new ZFromItemEx(subq); }
 	)
 	 [ "AS" tk = <S_IDENTIFIER> {
 	 	 if(subq != null)
@@ -1020,8 +1020,10 @@ ZExp SQLUnaryExpression():
 ZExp SQLPrimaryExpression():
 {
   Token t;
-  String s, s2, modifier="";
-  ZExp e;
+  String s, s2;
+  int modifier = -1;
+  ZExp e = null;
+  int nparm;
   Vector parm = null;
 }
 {
@@ -1035,35 +1037,40 @@ ZExp SQLPrimaryExpression():
       new ZConstant("*", ZConstant.COLUMNNAME));
    }
 |  
-     
-      LOOKAHEAD(<S_IDENTIFIER>, { ZUtils.isAggregate(getToken(1).toString()) }) ( 
-      
-          t = <S_IDENTIFIER>{ s = t.toString(); }
-      	"(" [ "ALL" { modifier="all "; } | "DISTINCT" { modifier="distinct "; }]
-   			 e = SQLSimpleExpression() ")"
-     		{ return new ZExpression(s, e, modifier); }
-      )
-      |
-      LOOKAHEAD(<S_IDENTIFIER>, { !ZUtils.isAggregate(getToken(1).toString()) }) (
-        t = <S_IDENTIFIER>{ s = t.toString(); }
-		 "(" [ parm = SQLExpressionList() ] ")" {
+   LOOKAHEAD(<S_IDENTIFIER> "(") //function/aggreation
+	     (t = <S_IDENTIFIER> { s = t.toString(); })
+	      "("
+	           (LOOKAHEAD(["ALL"|"DISTINCT"]) 
+	           (
+	           		("ALL" { modifier = ZExpression.AGGR_ALL; } | "DISTINCT" { modifier = ZExpression.AGGR_DISTINCT; }) 
+	           		 e = SQLSimpleExpression()
+	           )
+	           |
+	           [ parm = SQLExpressionList() ] {if(parm == null) parm = new Vector();}) 
+	      ")" 
+	 {
+	    if( ZUtils.isAggregate(s) || ZUtils.isCustomAggregate(s) ){
+	    	if(modifier == -1){
+	    		modifier = ZExpression.AGGR_ALL;
+	    		if(parm.size() != 1)
+	    			throw new ParseException("Aggregate " + s + " should have 1 parameter");
+	    		e = (ZExp)parm.get(0);
+	    		return new ZExpression(s, e, modifier); 
+	    	}
+	    }
 		
-		    int nparm = ZUtils.isCustomFunction(s);
-		    //if(nparm < 0) nparm = (ZUtils.isAggregate(s) ? 1 : -1);
-		    if(nparm < 0)
-		      throw new ParseException("Undefined function: " + s);
-		    if(nparm > 0) {
-		      if(parm == null || parm.size() != nparm)
-		        throw new ParseException("Function " + s + " should have "
-		         + nparm + " parameter(s)");
-		    }
-		
-		    e = new ZExpression(s);
-		    ((ZExpression)e).setOperands(parm);
-		    return e;
-		  }      		
-      )
- 
+	  else if( (nparm = ZUtils.isCustomFunction(s)) >= 0 ){
+	  	if(modifier != -1)
+	  		throw new ParseException("Function " + s + " should not have modifier ALL/DISTINCT");
+	    
+	    if(nparm != parm.size() ) {
+	      throw new ParseException("Function " + s + " should have "
+	         + nparm + " parameter(s)");
+	    }
+	    return new ZExpression(s, parm);
+	  }
+	  else throw new ParseException("Undefined function/aggreation: " + s);
+   }  
    
 /*
 |  LOOKAHEAD(3, s = AggregateFunc(), {s != null}) s = AggregateFunc() "("
@@ -1088,6 +1095,7 @@ ZExp SQLPrimaryExpression():
 
 // AggregateFunc ::= SUM | AVG | MAX | MIN | COUNT
 // 01/07/00 PY.Gibello - Added COUNT
+/*
 String AggregateFunc():
 {
   Token t;
@@ -1133,7 +1141,7 @@ ZExpression FunctionCall():
     return e;
   }
 }
-
+*/
 String OuterJoinExpression():
 {
   String s = null;
