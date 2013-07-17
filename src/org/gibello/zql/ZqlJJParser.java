@@ -51,83 +51,78 @@ public class ZqlJJParser implements ZqlJJParserConstants {
   }
 
   final public void BasicDataTypeDeclaration() throws ParseException {
-    trace_call("BasicDataTypeDeclaration");
-    try {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_CHAR:
+    case K_FLOAT:
+    case K_INTEGER:
+    case K_NATURAL:
+    case K_NUMBER:
+    case K_REAL:
+    case K_VARCHAR2:
+    case K_VARCHAR:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case K_CHAR:
-      case K_FLOAT:
-      case K_INTEGER:
-      case K_NATURAL:
-      case K_NUMBER:
-      case K_REAL:
-      case K_VARCHAR2:
+        jj_consume_token(K_CHAR);
+        break;
       case K_VARCHAR:
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_CHAR:
-          jj_consume_token(K_CHAR);
-          break;
-        case K_VARCHAR:
-          jj_consume_token(K_VARCHAR);
-          break;
-        case K_VARCHAR2:
-          jj_consume_token(K_VARCHAR2);
-          break;
-        case K_INTEGER:
-          jj_consume_token(K_INTEGER);
-          break;
-        case K_NUMBER:
-          jj_consume_token(K_NUMBER);
-          break;
-        case K_NATURAL:
-          jj_consume_token(K_NATURAL);
-          break;
-        case K_REAL:
-          jj_consume_token(K_REAL);
-          break;
-        case K_FLOAT:
-          jj_consume_token(K_FLOAT);
-          break;
-        default:
-          jj_la1[0] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 91:
-          jj_consume_token(91);
-          jj_consume_token(S_NUMBER);
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case 92:
-            jj_consume_token(92);
-            jj_consume_token(S_NUMBER);
-            break;
-          default:
-            jj_la1[1] = jj_gen;
-            ;
-          }
-          jj_consume_token(93);
-          break;
-        default:
-          jj_la1[2] = jj_gen;
-          ;
-        }
+        jj_consume_token(K_VARCHAR);
         break;
-      case K_DATE:
-        jj_consume_token(K_DATE);
+      case K_VARCHAR2:
+        jj_consume_token(K_VARCHAR2);
         break;
-      case K_BINARY_INTEGER:
-        jj_consume_token(K_BINARY_INTEGER);
+      case K_INTEGER:
+        jj_consume_token(K_INTEGER);
         break;
-      case K_BOOLEAN:
-        jj_consume_token(K_BOOLEAN);
+      case K_NUMBER:
+        jj_consume_token(K_NUMBER);
+        break;
+      case K_NATURAL:
+        jj_consume_token(K_NATURAL);
+        break;
+      case K_REAL:
+        jj_consume_token(K_REAL);
+        break;
+      case K_FLOAT:
+        jj_consume_token(K_FLOAT);
         break;
       default:
-        jj_la1[3] = jj_gen;
+        jj_la1[0] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-    } finally {
-      trace_return("BasicDataTypeDeclaration");
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 89:
+        jj_consume_token(89);
+        jj_consume_token(S_NUMBER);
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case 90:
+          jj_consume_token(90);
+          jj_consume_token(S_NUMBER);
+          break;
+        default:
+          jj_la1[1] = jj_gen;
+          ;
+        }
+        jj_consume_token(91);
+        break;
+      default:
+        jj_la1[2] = jj_gen;
+        ;
+      }
+      break;
+    case K_DATE:
+      jj_consume_token(K_DATE);
+      break;
+    case K_BINARY_INTEGER:
+      jj_consume_token(K_BINARY_INTEGER);
+      break;
+    case K_BOOLEAN:
+      jj_consume_token(K_BOOLEAN);
+      break;
+    default:
+      jj_la1[3] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
   }
 
@@ -135,439 +130,387 @@ public class ZqlJJParser implements ZqlJJParserConstants {
 
 /* ---------------- Code Section starts here ---------------------- */
   final public Vector SQLStatements() throws ParseException {
-    trace_call("SQLStatements");
-    try {
   Vector v = new Vector();
   ZStatement s;
-      label_1:
-      while (true) {
-        s = SQLStatement();
+    label_1:
+    while (true) {
+      s = SQLStatement();
                           if(s == null) {if (true) return v;} else v.addElement(s);
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_COMMIT:
-        case K_DELETE:
-        case K_EXIT:
-        case K_INSERT:
-        case K_LOCK:
-        case K_QUIT:
-        case K_ROLLBACK:
-        case K_SELECT:
-        case K_SET:
-        case K_UPDATE:
-          ;
-          break;
-        default:
-          jj_la1[4] = jj_gen;
-          break label_1;
-        }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_COMMIT:
+      case K_DELETE:
+      case K_EXIT:
+      case K_INSERT:
+      case K_LOCK:
+      case K_QUIT:
+      case K_ROLLBACK:
+      case K_SELECT:
+      case K_SET:
+      case K_UPDATE:
+        ;
+        break;
+      default:
+        jj_la1[4] = jj_gen;
+        break label_1;
       }
+    }
       {if (true) return v;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLStatements");
-    }
   }
 
   final public ZStatement SQLStatement() throws ParseException {
-    trace_call("SQLStatement");
-    try {
   ZStatement s = null;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_COMMIT:
-        s = CommitStatement();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_COMMIT:
+      s = CommitStatement();
                             {if (true) return s;}
-        break;
-      case K_DELETE:
-        s = DeleteStatement();
+      break;
+    case K_DELETE:
+      s = DeleteStatement();
                             {if (true) return s;}
-        break;
-      case K_INSERT:
-        s = InsertStatement();
+      break;
+    case K_INSERT:
+      s = InsertStatement();
                             {if (true) return s;}
-        break;
-      case K_LOCK:
-        s = LockTableStatement();
+      break;
+    case K_LOCK:
+      s = LockTableStatement();
                                {if (true) return s;}
-        break;
-      case K_ROLLBACK:
-        s = RollbackStatement();
+      break;
+    case K_ROLLBACK:
+      s = RollbackStatement();
                               {if (true) return s;}
-        break;
-      case K_SELECT:
-        s = QueryStatement();
+      break;
+    case K_SELECT:
+      s = QueryStatement();
                            {if (true) return s;}
-        break;
-      case K_SET:
-        s = SetTransactionStatement();
+      break;
+    case K_SET:
+      s = SetTransactionStatement();
                                     {if (true) return s;}
-        break;
-      case K_UPDATE:
-        s = UpdateStatement();
+      break;
+    case K_UPDATE:
+      s = UpdateStatement();
                             {if (true) return s;}
-        break;
+      break;
+    case K_EXIT:
+    case K_QUIT:
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case K_EXIT:
+        jj_consume_token(K_EXIT);
+        break;
       case K_QUIT:
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_EXIT:
-          jj_consume_token(K_EXIT);
-          break;
-        case K_QUIT:
-          jj_consume_token(K_QUIT);
-          break;
-        default:
-          jj_la1[5] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
-        jj_consume_token(94);
-                              {if (true) return null;}
+        jj_consume_token(K_QUIT);
         break;
       default:
-        jj_la1[6] = jj_gen;
+        jj_la1[5] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLStatement");
+      jj_consume_token(92);
+                              {if (true) return null;}
+      break;
+    default:
+      jj_la1[6] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
   }
 
 // CommitStatement ::= COMMIT [WORK] [COMMENT <comment>];
   final public ZTransactStmt CommitStatement() throws ParseException {
-    trace_call("CommitStatement");
-    try {
   Token tk;
   ZTransactStmt t = new ZTransactStmt("COMMIT");
-      jj_consume_token(K_COMMIT);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_WORK:
-        jj_consume_token(K_WORK);
-        break;
-      default:
-        jj_la1[7] = jj_gen;
-        ;
-      }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_COMMENT:
-        jj_consume_token(K_COMMENT);
-        tk = jj_consume_token(S_CHAR_LITERAL);
+    jj_consume_token(K_COMMIT);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_WORK:
+      jj_consume_token(K_WORK);
+      break;
+    default:
+      jj_la1[7] = jj_gen;
+      ;
+    }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_COMMENT:
+      jj_consume_token(K_COMMENT);
+      tk = jj_consume_token(S_CHAR_LITERAL);
                                      t.setComment(tk.toString());
-        break;
-      default:
-        jj_la1[8] = jj_gen;
-        ;
-      }
-      jj_consume_token(94);
+      break;
+    default:
+      jj_la1[8] = jj_gen;
+      ;
+    }
+    jj_consume_token(92);
     {if (true) return t;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("CommitStatement");
-    }
   }
 
 // LockTableStatement ::= LOCK TABLE TableReference (, TableReference)*
 //   IN LockMode MODE [NOWAIT];
   final public ZLockTable LockTableStatement() throws ParseException {
-    trace_call("LockTableStatement");
-    try {
   ZLockTable lck = new ZLockTable();
   Vector v = new Vector();
   String s;
-      jj_consume_token(K_LOCK);
-      jj_consume_token(K_TABLE);
-      s = TableReference();
+    jj_consume_token(K_LOCK);
+    jj_consume_token(K_TABLE);
+    s = TableReference();
                                         v.addElement(s);
-      label_2:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 92:
-          ;
-          break;
-        default:
-          jj_la1[9] = jj_gen;
-          break label_2;
-        }
-        jj_consume_token(92);
-        s = TableReference();
-                              v.addElement(s);
-      }
-      jj_consume_token(K_IN);
-      s = LockMode();
-                        lck.setLockMode(s);
-      jj_consume_token(K_MODE);
+    label_2:
+    while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_NOWAIT:
-        jj_consume_token(K_NOWAIT);
-              lck.nowait_ = true;
+      case 90:
+        ;
         break;
       default:
-        jj_la1[10] = jj_gen;
-        ;
+        jj_la1[9] = jj_gen;
+        break label_2;
       }
-      jj_consume_token(94);
+      jj_consume_token(90);
+      s = TableReference();
+                              v.addElement(s);
+    }
+    jj_consume_token(K_IN);
+    s = LockMode();
+                        lck.setLockMode(s);
+    jj_consume_token(K_MODE);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_NOWAIT:
+      jj_consume_token(K_NOWAIT);
+              lck.nowait_ = true;
+      break;
+    default:
+      jj_la1[10] = jj_gen;
+      ;
+    }
+    jj_consume_token(92);
     lck.addTables(v); {if (true) return lck;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("LockTableStatement");
-    }
   }
 
 // RollbackStatement ::= ROLLBACK [WORK] ["COMMENT" <comment>];
   final public ZTransactStmt RollbackStatement() throws ParseException {
-    trace_call("RollbackStatement");
-    try {
   Token tk;
   ZTransactStmt t = new ZTransactStmt("ROLLBACK");
-      jj_consume_token(K_ROLLBACK);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_WORK:
-        jj_consume_token(K_WORK);
-        break;
-      default:
-        jj_la1[11] = jj_gen;
-        ;
-      }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_COMMENT:
-        jj_consume_token(K_COMMENT);
-        tk = jj_consume_token(S_CHAR_LITERAL);
+    jj_consume_token(K_ROLLBACK);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_WORK:
+      jj_consume_token(K_WORK);
+      break;
+    default:
+      jj_la1[11] = jj_gen;
+      ;
+    }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_COMMENT:
+      jj_consume_token(K_COMMENT);
+      tk = jj_consume_token(S_CHAR_LITERAL);
                                      t.setComment(tk.toString());
-        break;
-      default:
-        jj_la1[12] = jj_gen;
-        ;
-      }
-      jj_consume_token(94);
+      break;
+    default:
+      jj_la1[12] = jj_gen;
+      ;
+    }
+    jj_consume_token(92);
     {if (true) return t;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("RollbackStatement");
-    }
   }
 
 // SetTransactionStatement ::= SET TRANSACTION READ (ONLY | WRITE)
   final public ZTransactStmt SetTransactionStatement() throws ParseException {
-    trace_call("SetTransactionStatement");
-    try {
   StringBuffer b;
   ZTransactStmt t = new ZTransactStmt("SET TRANSACTION");
   boolean rdonly = false;
-      jj_consume_token(K_SET);
-      jj_consume_token(K_TRANSACTION);
-      jj_consume_token(K_READ);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_ONLY:
-        jj_consume_token(K_ONLY);
+    jj_consume_token(K_SET);
+    jj_consume_token(K_TRANSACTION);
+    jj_consume_token(K_READ);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_ONLY:
+      jj_consume_token(K_ONLY);
                                         rdonly = true;
-        break;
-      case K_WRITE:
-        jj_consume_token(K_WRITE);
-        break;
-      default:
-        jj_la1[13] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
-      jj_consume_token(94);
+      break;
+    case K_WRITE:
+      jj_consume_token(K_WRITE);
+      break;
+    default:
+      jj_la1[13] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    jj_consume_token(92);
     t.readOnly_ = rdonly; {if (true) return t;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SetTransactionStatement");
-    }
   }
 
 // LockMode ::= ROW SHARE | ROW EXCLUSIVE
 //   | SHARE [UPDATE | ROW EXCLUSIVE]
 //   | EXCLUSIVE
   final public String LockMode() throws ParseException {
-    trace_call("LockMode");
-    try {
   StringBuffer b = new StringBuffer();
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_ROW:
-        jj_consume_token(K_ROW);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_ROW:
+      jj_consume_token(K_ROW);
             b.append("ROW ");
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_SHARE:
-          jj_consume_token(K_SHARE);
-               b.append("SHARE");
-          break;
-        case K_EXCLUSIVE:
-          jj_consume_token(K_EXCLUSIVE);
-                                                    b.append("EXCLUSIVE");
-          break;
-        default:
-          jj_la1[14] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
-     {if (true) return b.toString();}
-        break;
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case K_SHARE:
         jj_consume_token(K_SHARE);
-              b.append("SHARE");
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_ROW:
-        case K_UPDATE:
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case K_UPDATE:
-            jj_consume_token(K_UPDATE);
-                b.append(" UPDATE");
-            break;
-          case K_ROW:
-            jj_consume_token(K_ROW);
-            jj_consume_token(K_EXCLUSIVE);
-                             b.append(" ROW EXCLUSIVE");
-            break;
-          default:
-            jj_la1[15] = jj_gen;
-            jj_consume_token(-1);
-            throw new ParseException();
-          }
-          break;
-        default:
-          jj_la1[16] = jj_gen;
-          ;
-        }
-     {if (true) return b.toString();}
+               b.append("SHARE");
         break;
       case K_EXCLUSIVE:
         jj_consume_token(K_EXCLUSIVE);
-                   {if (true) return new String("EXCLUSIVE");}
+                                                    b.append("EXCLUSIVE");
         break;
       default:
-        jj_la1[17] = jj_gen;
+        jj_la1[14] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("LockMode");
+     {if (true) return b.toString();}
+      break;
+    case K_SHARE:
+      jj_consume_token(K_SHARE);
+              b.append("SHARE");
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_ROW:
+      case K_UPDATE:
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case K_UPDATE:
+          jj_consume_token(K_UPDATE);
+                b.append(" UPDATE");
+          break;
+        case K_ROW:
+          jj_consume_token(K_ROW);
+          jj_consume_token(K_EXCLUSIVE);
+                             b.append(" ROW EXCLUSIVE");
+          break;
+        default:
+          jj_la1[15] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+        break;
+      default:
+        jj_la1[16] = jj_gen;
+        ;
+      }
+     {if (true) return b.toString();}
+      break;
+    case K_EXCLUSIVE:
+      jj_consume_token(K_EXCLUSIVE);
+                   {if (true) return new String("EXCLUSIVE");}
+      break;
+    default:
+      jj_la1[17] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
   }
 
 // UpdateStatement ::=
 //   UPDATE TableReference SET ColumnValues [WHERE SQLExpression]
   final public ZUpdate UpdateStatement() throws ParseException {
-    trace_call("UpdateStatement");
-    try {
   ZUpdate u;
   ZExp e;
   Hashtable t;
   String s;
   Token tk;
-      jj_consume_token(K_UPDATE);
-      s = TableReference();
+    jj_consume_token(K_UPDATE);
+    s = TableReference();
                                   u = new ZUpdate(s);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case S_IDENTIFIER:
-        tk = jj_consume_token(S_IDENTIFIER);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case S_IDENTIFIER:
+      tk = jj_consume_token(S_IDENTIFIER);
                           u.setAlias(tk.toString());
-        break;
-      default:
-        jj_la1[18] = jj_gen;
-        ;
-      }
-      jj_consume_token(K_SET);
-      ColumnValues(u);
+      break;
+    default:
+      jj_la1[18] = jj_gen;
+      ;
+    }
+    jj_consume_token(K_SET);
+    ColumnValues(u);
 
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_WHERE:
-        jj_consume_token(K_WHERE);
-        e = SQLExpression();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_WHERE:
+      jj_consume_token(K_WHERE);
+      e = SQLExpression();
                                   u.addWhere(e);
-        break;
-      default:
-        jj_la1[19] = jj_gen;
-        ;
-      }
-      jj_consume_token(94);
+      break;
+    default:
+      jj_la1[19] = jj_gen;
+      ;
+    }
+    jj_consume_token(92);
     {if (true) return u;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("UpdateStatement");
-    }
   }
 
 // ColumnValues ::= TableColumn = UpdatedValue (, TableColumn = UpdatedValue)*
   final public void ColumnValues(ZUpdate u) throws ParseException {
-    trace_call("ColumnValues");
-    try {
   String key;
   ZExp val;
-      key = TableColumn();
-      jj_consume_token(95);
-      val = UpdatedValue();
+    key = TableColumn();
+    jj_consume_token(93);
+    val = UpdatedValue();
                                                  u.addColumnUpdate(key, val);
-      label_3:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 92:
-          ;
-          break;
-        default:
-          jj_la1[20] = jj_gen;
-          break label_3;
-        }
-        jj_consume_token(92);
-        key = TableColumn();
-        jj_consume_token(95);
-        val = UpdatedValue();
-      u.addColumnUpdate(key, val);
+    label_3:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 90:
+        ;
+        break;
+      default:
+        jj_la1[20] = jj_gen;
+        break label_3;
       }
-
-    } finally {
-      trace_return("ColumnValues");
+      jj_consume_token(90);
+      key = TableColumn();
+      jj_consume_token(93);
+      val = UpdatedValue();
+      u.addColumnUpdate(key, val);
     }
+
   }
 
 // UpdatedValue ::= ( SelectStatement ) | SQLExpression
   final public ZExp UpdatedValue() throws ParseException {
-    trace_call("UpdatedValue");
-    try {
   ZExp e;
-      if (jj_2_1(2147483647)) {
-        jj_consume_token(91);
-        e = SelectStatement();
-        jj_consume_token(93);
+    if (jj_2_1(2147483647)) {
+      jj_consume_token(89);
+      e = SelectStatement();
+      jj_consume_token(91);
                                   {if (true) return e;}
-      } else {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_AVG:
-        case K_COUNT:
-        case K_EXISTS:
-        case K_MAX:
-        case K_MIN:
-        case K_NOT:
-        case K_NULL:
-        case K_SUM:
-        case S_NUMBER:
-        case S_IDENTIFIER:
-        case S_BIND:
-        case S_CHAR_LITERAL:
-        case S_QUOTED_IDENTIFIER:
-        case 91:
-        case 103:
-        case 104:
-        case 113:
-          e = SQLExpression();
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_AVG:
+      case K_COUNT:
+      case K_EXISTS:
+      case K_MAX:
+      case K_MIN:
+      case K_NOT:
+      case K_NULL:
+      case K_SUM:
+      case S_NUMBER:
+      case S_IDENTIFIER:
+      case S_CHAR_LITERAL:
+      case 89:
+      case 101:
+      case 102:
+      case 111:
+        e = SQLExpression();
                         {if (true) return e;}
-          break;
-        case 109:
-          e = PreparedCol();
+        break;
+      case 107:
+        e = PreparedCol();
                       {if (true) return e;}
-          break;
-        default:
-          jj_la1[21] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
+        break;
+      default:
+        jj_la1[21] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("UpdatedValue");
     }
+    throw new Error("Missing return statement in function");
   }
 
 // InsertStatement ::= INSERT INTO TableReference
@@ -575,286 +518,234 @@ public class ZqlJJParser implements ZqlJJParserConstants {
 //   ValueSpec | SelectStatement
 // ValueSpec ::= VALUES ( SQLExpressionList )
   final public ZInsert InsertStatement() throws ParseException {
-    trace_call("InsertStatement");
-    try {
   ZInsert ins;
   String s;
   Vector v;
   ZQuery q;
-      jj_consume_token(K_INSERT);
-      jj_consume_token(K_INTO);
-      s = TableReference();
+    jj_consume_token(K_INSERT);
+    jj_consume_token(K_INTO);
+    s = TableReference();
                                          ins = new ZInsert(s);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 91:
-        jj_consume_token(91);
-        s = TableColumn();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 89:
+      jj_consume_token(89);
+      s = TableColumn();
                             v = new Vector(); v.addElement(s);
-        label_4:
-        while (true) {
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case 92:
-            ;
-            break;
-          default:
-            jj_la1[22] = jj_gen;
-            break label_4;
-          }
-          jj_consume_token(92);
-          s = TableColumn();
-                             v.addElement(s);
+      label_4:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case 90:
+          ;
+          break;
+        default:
+          jj_la1[22] = jj_gen;
+          break label_4;
         }
-        jj_consume_token(93);
-                                                         ins.addColumns(v);
-        break;
-      default:
-        jj_la1[23] = jj_gen;
-        ;
+        jj_consume_token(90);
+        s = TableColumn();
+                             v.addElement(s);
       }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_VALUES:
-        jj_consume_token(K_VALUES);
-        jj_consume_token(91);
-        v = SQLExpressionList();
-        jj_consume_token(93);
+      jj_consume_token(91);
+                                                         ins.addColumns(v);
+      break;
+    default:
+      jj_la1[23] = jj_gen;
+      ;
+    }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_VALUES:
+      jj_consume_token(K_VALUES);
+      jj_consume_token(89);
+      v = SQLExpressionList();
+      jj_consume_token(91);
        ZExpression e = new ZExpression(",");
        e.setOperands(v); ins.addValueSpec(e);
-        break;
-      case K_SELECT:
-        q = SelectStatement();
+      break;
+    case K_SELECT:
+      q = SelectStatement();
                              ins.addValueSpec(q);
-        break;
-      default:
-        jj_la1[24] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
-      jj_consume_token(94);
+      break;
+    default:
+      jj_la1[24] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    jj_consume_token(92);
          {if (true) return ins;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("InsertStatement");
-    }
   }
 
 // DeleteStatement ::= DELETE [FROM] TableReference [WHERE SQLExpression]
   final public ZDelete DeleteStatement() throws ParseException {
-    trace_call("DeleteStatement");
-    try {
   ZDelete d;
   ZExp e;
   String s;
-      jj_consume_token(K_DELETE);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_FROM:
-        jj_consume_token(K_FROM);
-        break;
-      default:
-        jj_la1[25] = jj_gen;
-        ;
-      }
-      s = TableReference();
+    jj_consume_token(K_DELETE);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_FROM:
+      jj_consume_token(K_FROM);
+      break;
+    default:
+      jj_la1[25] = jj_gen;
+      ;
+    }
+    s = TableReference();
                                              d = new ZDelete(s);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_WHERE:
-        jj_consume_token(K_WHERE);
-        e = SQLExpression();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_WHERE:
+      jj_consume_token(K_WHERE);
+      e = SQLExpression();
                                    d.addWhere(e);
-        break;
-      default:
-        jj_la1[26] = jj_gen;
-        ;
-      }
-      jj_consume_token(94);
+      break;
+    default:
+      jj_la1[26] = jj_gen;
+      ;
+    }
+    jj_consume_token(92);
       {if (true) return d;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("DeleteStatement");
-    }
   }
 
 // QueryStatement ::= SelectStatement
   final public ZQuery QueryStatement() throws ParseException {
-    trace_call("QueryStatement");
-    try {
   ZQuery q;
-      q = SelectStatement();
-      jj_consume_token(94);
+    q = SelectStatement();
+    jj_consume_token(92);
                                 {if (true) return q;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("QueryStatement");
-    }
   }
 
 /* ---------------- General Productions --------------------- */
   final public String TableColumn() throws ParseException {
-    trace_call("TableColumn");
-    try {
   StringBuffer buf = new StringBuffer();
   String s;
-      // user.table.column
-          s = OracleObjectName();
+    // user.table.column
+        s = OracleObjectName();
                              buf.append(s);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 94:
+      jj_consume_token(94);
+      s = OracleObjectName();
+                                   buf.append("." + s);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 96:
-        jj_consume_token(96);
+      case 94:
+        jj_consume_token(94);
         s = OracleObjectName();
                                    buf.append("." + s);
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 96:
-          jj_consume_token(96);
-          s = OracleObjectName();
-                                   buf.append("." + s);
-          break;
-        default:
-          jj_la1[27] = jj_gen;
-          ;
-        }
         break;
       default:
-        jj_la1[28] = jj_gen;
+        jj_la1[27] = jj_gen;
         ;
       }
+      break;
+    default:
+      jj_la1[28] = jj_gen;
+      ;
+    }
       {if (true) return buf.toString();}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("TableColumn");
-    }
   }
 
   final public String OracleObjectName() throws ParseException {
-    trace_call("OracleObjectName");
-    try {
   Token t;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case S_IDENTIFIER:
-        t = jj_consume_token(S_IDENTIFIER);
+    t = jj_consume_token(S_IDENTIFIER);
                          {if (true) return t.toString();}
-        break;
-      case S_QUOTED_IDENTIFIER:
-        t = jj_consume_token(S_QUOTED_IDENTIFIER);
-                                                                              {if (true) return t.toString();}
-        break;
-      default:
-        jj_la1[29] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("OracleObjectName");
-    }
   }
 
   final public String Relop() throws ParseException {
-    trace_call("Relop");
-    try {
   Token op;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 95:
-        op = jj_consume_token(95);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 93:
+      op = jj_consume_token(93);
                {if (true) return op.toString();}
-        break;
-      case 97:
-        op = jj_consume_token(97);
+      break;
+    case 95:
+      op = jj_consume_token(95);
                {if (true) return op.toString();}
-        break;
-      case 98:
-        op = jj_consume_token(98);
+      break;
+    case 96:
+      op = jj_consume_token(96);
                {if (true) return op.toString();}
-        break;
-      case 99:
-        op = jj_consume_token(99);
+      break;
+    case 97:
+      op = jj_consume_token(97);
                {if (true) return op.toString();}
-        break;
-      case 100:
-        op = jj_consume_token(100);
+      break;
+    case 98:
+      op = jj_consume_token(98);
                {if (true) return op.toString();}
-        break;
-      case 101:
-        op = jj_consume_token(101);
+      break;
+    case 99:
+      op = jj_consume_token(99);
                {if (true) return op.toString();}
-        break;
-      case 102:
-        op = jj_consume_token(102);
+      break;
+    case 100:
+      op = jj_consume_token(100);
                {if (true) return op.toString();}
-        break;
-      default:
-        jj_la1[30] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("Relop");
+      break;
+    default:
+      jj_la1[29] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
   }
 
 // TableReference ::= OracleObjectName[.OracleObjectName]
   final public String TableReference() throws ParseException {
-    trace_call("TableReference");
-    try {
   StringBuffer buf = new StringBuffer();
   String s;
-      s = OracleObjectName();
+    s = OracleObjectName();
                              buf.append(s);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 96:
-        jj_consume_token(96);
-        s = OracleObjectName();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 94:
+      jj_consume_token(94);
+      s = OracleObjectName();
                                   buf.append("." + s);
-        break;
-      default:
-        jj_la1[31] = jj_gen;
-        ;
-      }
+      break;
+    default:
+      jj_la1[30] = jj_gen;
+      ;
+    }
       {if (true) return buf.toString();}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("TableReference");
-    }
   }
 
   final public void NumOrID() throws ParseException {
-    trace_call("NumOrID");
-    try {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case S_IDENTIFIER:
+      jj_consume_token(S_IDENTIFIER);
+      break;
+    case S_NUMBER:
+    case 101:
+    case 102:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case S_IDENTIFIER:
-        jj_consume_token(S_IDENTIFIER);
-        break;
-      case S_NUMBER:
-      case 103:
-      case 104:
+      case 101:
+      case 102:
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 103:
-        case 104:
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case 103:
-            jj_consume_token(103);
-            break;
-          case 104:
-            jj_consume_token(104);
-            break;
-          default:
-            jj_la1[32] = jj_gen;
-            jj_consume_token(-1);
-            throw new ParseException();
-          }
+        case 101:
+          jj_consume_token(101);
+          break;
+        case 102:
+          jj_consume_token(102);
           break;
         default:
-          jj_la1[33] = jj_gen;
-          ;
+          jj_la1[31] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
         }
-        jj_consume_token(S_NUMBER);
         break;
       default:
-        jj_la1[34] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
+        jj_la1[32] = jj_gen;
+        ;
       }
-    } finally {
-      trace_return("NumOrID");
+      jj_consume_token(S_NUMBER);
+      break;
+    default:
+      jj_la1[33] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
   }
 
@@ -862,104 +753,97 @@ public class ZqlJJParser implements ZqlJJParserConstants {
 
 /* ----------- SQL productions start here ----------------- */
   final public ZQuery SelectStatement() throws ParseException {
-    trace_call("SelectStatement");
-    try {
   ZQuery q;
   Vector v;
-      q = SelectWithoutOrder();
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_ORDER:
-        v = OrderByClause();
+    q = SelectWithoutOrder();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_ORDER:
+      v = OrderByClause();
                           q.addOrderBy(v);
-        break;
-      default:
-        jj_la1[35] = jj_gen;
-        ;
-      }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_FOR:
-        ForUpdateClause();
+      break;
+    default:
+      jj_la1[34] = jj_gen;
+      ;
+    }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_FOR:
+      ForUpdateClause();
                         q.forupdate_ = true;
-        break;
-      default:
-        jj_la1[36] = jj_gen;
-        ;
-      }
+      break;
+    default:
+      jj_la1[35] = jj_gen;
+      ;
+    }
     {if (true) return q;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SelectStatement");
-    }
   }
 
   final public ZQuery SelectWithoutOrder() throws ParseException {
-    trace_call("SelectWithoutOrder");
-    try {
   ZQuery q = new ZQuery();
   Vector select;
   Vector from;
   ZExp where = null;
   ZGroupBy groupby = null;
   ZExpression setclause = null;
-      jj_consume_token(K_SELECT);
+    jj_consume_token(K_SELECT);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_ALL:
+    case K_DISTINCT:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case K_ALL:
+        jj_consume_token(K_ALL);
+        break;
       case K_DISTINCT:
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_ALL:
-          jj_consume_token(K_ALL);
-          break;
-        case K_DISTINCT:
-          jj_consume_token(K_DISTINCT);
+        jj_consume_token(K_DISTINCT);
                                   q.distinct_ = true;
-          break;
-        default:
-          jj_la1[37] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
         break;
       default:
-        jj_la1[38] = jj_gen;
-        ;
+        jj_la1[36] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
-      select = SelectList();
-      from = FromClause();
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_WHERE:
-        where = WhereClause();
-        break;
-      default:
-        jj_la1[39] = jj_gen;
-        ;
-      }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_CONNECT:
-      case K_START:
-        ConnectClause();
-        break;
-      default:
-        jj_la1[40] = jj_gen;
-        ;
-      }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_GROUP:
-        groupby = GroupByClause();
-        break;
-      default:
-        jj_la1[41] = jj_gen;
-        ;
-      }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_INTERSECT:
-      case K_MINUS:
-      case K_UNION:
-        setclause = SetClause();
-        break;
-      default:
-        jj_la1[42] = jj_gen;
-        ;
-      }
+      break;
+    default:
+      jj_la1[37] = jj_gen;
+      ;
+    }
+    select = SelectList();
+    from = FromClause();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_WHERE:
+      where = WhereClause();
+      break;
+    default:
+      jj_la1[38] = jj_gen;
+      ;
+    }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_CONNECT:
+    case K_START:
+      ConnectClause();
+      break;
+    default:
+      jj_la1[39] = jj_gen;
+      ;
+    }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_GROUP:
+      groupby = GroupByClause();
+      break;
+    default:
+      jj_la1[40] = jj_gen;
+      ;
+    }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_INTERSECT:
+    case K_MINUS:
+    case K_UNION:
+      setclause = SetClause();
+      break;
+    default:
+      jj_la1[41] = jj_gen;
+      ;
+    }
     q.addSelect(select);
     q.addFrom(from);
     q.addWhere(where);
@@ -968,9 +852,6 @@ public class ZqlJJParser implements ZqlJJParserConstants {
 
     {if (true) return q;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SelectWithoutOrder");
-    }
   }
 
 /* Checks for whatever follows  SELECT */
@@ -979,57 +860,52 @@ public class ZqlJJParser implements ZqlJJParserConstants {
 // 18/10/01 PY. Gibello - Removed "COUNT(*)" from here
 // COUNT is an aggregate, like AVG...
   final public Vector SelectList() throws ParseException {
-    trace_call("SelectList");
-    try {
   Vector v = new Vector(8);
   ZSelectItem elem;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 105:
-        jj_consume_token(105);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 103:
+      jj_consume_token(103);
         v.addElement(new ZSelectItem("*")); {if (true) return v;}
-        break;
-      case K_AVG:
-      case K_COUNT:
-      case K_MAX:
-      case K_MIN:
-      case K_NULL:
-      case K_SUM:
-      case S_NUMBER:
-      case S_IDENTIFIER:
-      case S_BIND:
-      case S_CHAR_LITERAL:
-      case S_QUOTED_IDENTIFIER:
-      case 91:
-      case 103:
-      case 104:
-      case 113:
-        elem = SelectItem();
+      break;
+    case K_AVG:
+    case K_COUNT:
+    case K_EXISTS:
+    case K_MAX:
+    case K_MIN:
+    case K_NOT:
+    case K_NULL:
+    case K_SUM:
+    case S_NUMBER:
+    case S_IDENTIFIER:
+    case S_CHAR_LITERAL:
+    case 89:
+    case 101:
+    case 102:
+    case 111:
+      elem = SelectItem();
                           v.addElement(elem);
-        label_5:
-        while (true) {
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case 92:
-            ;
-            break;
-          default:
-            jj_la1[43] = jj_gen;
-            break label_5;
-          }
-          jj_consume_token(92);
-          elem = SelectItem();
-                               v.addElement(elem);
+      label_5:
+      while (true) {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case 90:
+          ;
+          break;
+        default:
+          jj_la1[42] = jj_gen;
+          break label_5;
         }
-                                                          {if (true) return v;}
-        break;
-      default:
-        jj_la1[44] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
+        jj_consume_token(90);
+        elem = SelectItem();
+                               v.addElement(elem);
       }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SelectList");
+                                                          {if (true) return v;}
+      break;
+    default:
+      jj_la1[43] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
   }
 
 // 01/07/00 PY. Gibello - Added LOOKAHEAD(3) before COUNT
@@ -1038,197 +914,145 @@ public class ZqlJJParser implements ZqlJJParserConstants {
 
 // SelectItem() ::= SelectStar | SQLSimpleExpression() [SelectAlias]
   final public ZSelectItem SelectItem() throws ParseException {
-    trace_call("SelectItem");
-    try {
   String s;
   ZSelectItem it;
   ZExp e;
-      if (jj_2_2(2147483647)) {
-        s = SelectStar();
+    if (jj_2_2(2147483647)) {
+      s = SelectStar();
                                                {if (true) return new ZSelectItem(s);}
-      } else {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_AVG:
-        case K_COUNT:
-        case K_MAX:
-        case K_MIN:
-        case K_NULL:
-        case K_SUM:
-        case S_NUMBER:
-        case S_IDENTIFIER:
-        case S_BIND:
-        case S_CHAR_LITERAL:
-        case S_QUOTED_IDENTIFIER:
-        case 91:
-        case 103:
-        case 104:
-        case 113:
-          e = SQLSimpleExpression();
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_AVG:
+      case K_COUNT:
+      case K_EXISTS:
+      case K_MAX:
+      case K_MIN:
+      case K_NOT:
+      case K_NULL:
+      case K_SUM:
+      case S_NUMBER:
+      case S_IDENTIFIER:
+      case S_CHAR_LITERAL:
+      case 89:
+      case 101:
+      case 102:
+      case 111:
+        e = SQLExpression();
       //PY.Gibello 21 Apr 2001 - added e.toString() as arg
       it = new ZSelectItem(e.toString());
       it.setExpression(e);
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case K_AS:
-            s = SelectAlias();
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case K_AS:
+          s = SelectAlias();
                          it.setAlias(s);
-            break;
-          default:
-            jj_la1[45] = jj_gen;
-            ;
-          }
-      {if (true) return it;}
           break;
         default:
-          jj_la1[46] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
+          jj_la1[44] = jj_gen;
+          ;
         }
+      {if (true) return it;}
+        break;
+      default:
+        jj_la1[45] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SelectItem");
     }
+    throw new Error("Missing return statement in function");
   }
 
 // SelectAlias ::= (<S_IDENTIFIER>)+
   final public String SelectAlias() throws ParseException {
-    trace_call("SelectAlias");
-    try {
   Token tk;
-  StringBuffer b = null;
-      jj_consume_token(K_AS);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case S_QUOTED_IDENTIFIER:
-        tk = jj_consume_token(S_QUOTED_IDENTIFIER);
-                                        {if (true) return tk.toString().trim();}
-        break;
-      case S_IDENTIFIER:
-        label_6:
-        while (true) {
-          tk = jj_consume_token(S_IDENTIFIER);
-        if(b == null) b = new StringBuffer(tk.toString().trim());
-        else b.append(" " + tk.toString().trim());
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case S_IDENTIFIER:
-            ;
-            break;
-          default:
-            jj_la1[47] = jj_gen;
-            break label_6;
-          }
-        }
-        break;
-      default:
-        jj_la1[48] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
-    {if (true) return b.toString().trim();}
+    jj_consume_token(K_AS);
+    tk = jj_consume_token(S_IDENTIFIER);
+                        {if (true) return tk.toString();}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SelectAlias");
-    }
   }
 
 // SelectStar() ::= OracleObjectName()".*" |
 //               OracleObjectName()"." OracleObjectName() ".*"
   final public String SelectStar() throws ParseException {
-    trace_call("SelectStar");
-    try {
   String s, s2;
-      if (jj_2_3(2)) {
-        s = OracleObjectName();
-        jj_consume_token(106);
+    if (jj_2_3(2)) {
+      s = OracleObjectName();
+      jj_consume_token(104);
                                {if (true) return new String(s + ".*");}
-      } else if (jj_2_4(4)) {
-        s = OracleObjectName();
-        jj_consume_token(96);
-        s2 = OracleObjectName();
-        jj_consume_token(106);
+    } else if (jj_2_4(4)) {
+      s = OracleObjectName();
+      jj_consume_token(94);
+      s2 = OracleObjectName();
+      jj_consume_token(104);
     {if (true) return new String(s + "." + s2 + ".*");}
-      } else {
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SelectStar");
+    } else {
+      jj_consume_token(-1);
+      throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
   }
 
 // FromClause ::= FromItem (, FromItem)*
   final public Vector FromClause() throws ParseException {
-    trace_call("FromClause");
-    try {
   Vector v = new Vector(8);
   ZFromItemEx f;
-      jj_consume_token(K_FROM);
-      f = FromItemEx();
+    jj_consume_token(K_FROM);
+    f = FromItemEx();
                               v.addElement(f);
-      label_7:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 92:
-          ;
-          break;
-        default:
-          jj_la1[49] = jj_gen;
-          break label_7;
-        }
-        jj_consume_token(92);
-        f = FromItemEx();
-                             v.addElement(f);
+    label_6:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 90:
+        ;
+        break;
+      default:
+        jj_la1[46] = jj_gen;
+        break label_6;
       }
+      jj_consume_token(90);
+      f = FromItemEx();
+                             v.addElement(f);
+    }
       {if (true) return v;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("FromClause");
-    }
   }
 
 // FromItemEx ::= ( FromItem | "(" SelectStatement ")" ) [ "AS" alias ]
   final public ZFromItemEx FromItemEx() throws ParseException {
-    trace_call("FromItemEx");
-    try {
         ZFromItemEx f = null;
         ZQuery subq = null;
         ZFromItem tab_item = null;
         String tab = null;
         Token tk = null;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case S_IDENTIFIER:
-      case S_QUOTED_IDENTIFIER:
-        tab = TableReference();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case S_IDENTIFIER:
+      tab = TableReference();
                                       tab_item = new ZFromItem(tab); f = new ZFromItemEx(tab_item);
-        break;
-      case 91:
-        jj_consume_token(91);
-        subq = SubQuery();
-        jj_consume_token(93);
+      break;
+    case 89:
+      jj_consume_token(89);
+      subq = SubQuery();
+      jj_consume_token(91);
                                          f = new ZFromItemEx(subq);
-        break;
-      default:
-        jj_la1[50] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_AS:
-        jj_consume_token(K_AS);
-        tk = jj_consume_token(S_IDENTIFIER);
+      break;
+    default:
+      jj_la1[47] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_AS:
+      jj_consume_token(K_AS);
+      tk = jj_consume_token(S_IDENTIFIER);
                  if(subq != null)
                          subq.setAlias(tk.toString());
                  else tab_item.setAlias(tk.toString());
-        break;
-      default:
-        jj_la1[51] = jj_gen;
-        ;
-      }
+      break;
+    default:
+      jj_la1[48] = jj_gen;
+      ;
+    }
          {if (true) return f;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("FromItemEx");
-    }
   }
 
 // FromItem ::= TableReference [as alias]
@@ -1244,142 +1068,155 @@ public class ZqlJJParser implements ZqlJJParserConstants {
 //  { return f; }
 //}
   final public ZExp WhereClause() throws ParseException {
-    trace_call("WhereClause");
-    try {
   ZExp e;
-      jj_consume_token(K_WHERE);
-      e = SQLExpression();
+    jj_consume_token(K_WHERE);
+    e = SQLExpression();
                                   {if (true) return e;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("WhereClause");
-    }
   }
 
   final public void ConnectClause() throws ParseException {
-    trace_call("ConnectClause");
-    try {
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_START:
-        jj_consume_token(K_START);
-        jj_consume_token(K_WITH);
-        SQLExpression();
-        break;
-      default:
-        jj_la1[52] = jj_gen;
-        ;
-      }
-      jj_consume_token(K_CONNECT);
-      jj_consume_token(K_BY);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_START:
+      jj_consume_token(K_START);
+      jj_consume_token(K_WITH);
       SQLExpression();
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_START:
-        jj_consume_token(K_START);
-        jj_consume_token(K_WITH);
-        SQLExpression();
-        break;
-      default:
-        jj_la1[53] = jj_gen;
-        ;
-      }
-    } finally {
-      trace_return("ConnectClause");
+      break;
+    default:
+      jj_la1[49] = jj_gen;
+      ;
+    }
+    jj_consume_token(K_CONNECT);
+    jj_consume_token(K_BY);
+    SQLExpression();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_START:
+      jj_consume_token(K_START);
+      jj_consume_token(K_WITH);
+      SQLExpression();
+      break;
+    default:
+      jj_la1[50] = jj_gen;
+      ;
     }
   }
 
   final public ZGroupBy GroupByClause() throws ParseException {
-    trace_call("GroupByClause");
-    try {
   ZGroupBy g = null;
   Vector v;
   ZExp e;
-      jj_consume_token(K_GROUP);
-      jj_consume_token(K_BY);
-      v = SQLExpressionList();
+    jj_consume_token(K_GROUP);
+    jj_consume_token(K_BY);
+    v = SQLExpressionList();
                                          g = new ZGroupBy(v);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_HAVING:
-        jj_consume_token(K_HAVING);
-        e = SQLExpression();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_HAVING:
+      jj_consume_token(K_HAVING);
+      e = SQLExpression();
                                   g.setHaving(e);
-        break;
-      default:
-        jj_la1[54] = jj_gen;
-        ;
-      }
+      break;
+    default:
+      jj_la1[51] = jj_gen;
+      ;
+    }
     {if (true) return g;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("GroupByClause");
-    }
   }
 
 // SetClause ::= UNION [ALL] Qry | INTERSECT Qry | MINUS Qry
 // Qry ::= SelectWithoutOrder | ( SelectWithoutOrder )
   final public ZExpression SetClause() throws ParseException {
-    trace_call("SetClause");
-    try {
   ZExpression e;
   ZQuery q;
   Token t;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_UNION:
+      t = jj_consume_token(K_UNION);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_UNION:
-        t = jj_consume_token(K_UNION);
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_ALL:
-          jj_consume_token(K_ALL);
-          break;
-        default:
-          jj_la1[55] = jj_gen;
-          ;
-        }
-        break;
-      case K_INTERSECT:
-        t = jj_consume_token(K_INTERSECT);
-        break;
-      case K_MINUS:
-        t = jj_consume_token(K_MINUS);
+      case K_ALL:
+        jj_consume_token(K_ALL);
         break;
       default:
-        jj_la1[56] = jj_gen;
+        jj_la1[52] = jj_gen;
+        ;
+      }
+      break;
+    case K_INTERSECT:
+      t = jj_consume_token(K_INTERSECT);
+      break;
+    case K_MINUS:
+      t = jj_consume_token(K_MINUS);
+      break;
+    default:
+      jj_la1[53] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    e = new ZExpression(t.toString());
+    if (jj_2_5(2147483647)) {
+      jj_consume_token(89);
+      q = SelectWithoutOrder();
+                                                  e.addOperand(q);
+      jj_consume_token(91);
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_SELECT:
+        q = SelectWithoutOrder();
+                                   e.addOperand(q);
+        break;
+      default:
+        jj_la1[54] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-    e = new ZExpression(t.toString());
-      if (jj_2_5(2147483647)) {
-        jj_consume_token(91);
-        q = SelectWithoutOrder();
-                                                  e.addOperand(q);
-        jj_consume_token(93);
-      } else {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_SELECT:
-          q = SelectWithoutOrder();
-                                   e.addOperand(q);
-          break;
-        default:
-          jj_la1[57] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
-      }
+    }
     {if (true) return e;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SetClause");
-    }
   }
 
   final public Vector OrderByClause() throws ParseException {
-    trace_call("OrderByClause");
-    try {
   Vector v = new Vector();
   ZExp e;
   ZOrderBy ob;
-      jj_consume_token(K_ORDER);
-      jj_consume_token(K_BY);
-      e = SQLSimpleExpression();
+    jj_consume_token(K_ORDER);
+    jj_consume_token(K_BY);
+    e = SQLSimpleExpression();
                                              ob = new ZOrderBy(e);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_ASC:
+    case K_DESC:
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_ASC:
+        jj_consume_token(K_ASC);
+        break;
+      case K_DESC:
+        jj_consume_token(K_DESC);
+                      ob.setAscOrder(false);
+        break;
+      default:
+        jj_la1[55] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      break;
+    default:
+      jj_la1[56] = jj_gen;
+      ;
+    }
+                                                  v.addElement(ob);
+    label_7:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 90:
+        ;
+        break;
+      default:
+        jj_la1[57] = jj_gen;
+        break label_7;
+      }
+      jj_consume_token(90);
+      e = SQLSimpleExpression();
+                                     ob = new ZOrderBy(e);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case K_ASC:
       case K_DESC:
@@ -1389,7 +1226,7 @@ public class ZqlJJParser implements ZqlJJParserConstants {
           break;
         case K_DESC:
           jj_consume_token(K_DESC);
-                      ob.setAscOrder(false);
+                       ob.setAscOrder(false);
           break;
         default:
           jj_la1[58] = jj_gen;
@@ -1401,242 +1238,177 @@ public class ZqlJJParser implements ZqlJJParserConstants {
         jj_la1[59] = jj_gen;
         ;
       }
-                                                  v.addElement(ob);
+                                                   v.addElement(ob);
+    }
+      {if (true) return v;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public void ForUpdateClause() throws ParseException {
+    jj_consume_token(K_FOR);
+    jj_consume_token(K_UPDATE);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_OF:
+      jj_consume_token(K_OF);
+      TableColumn();
       label_8:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 92:
+        case 90:
           ;
           break;
         default:
           jj_la1[60] = jj_gen;
           break label_8;
         }
-        jj_consume_token(92);
-        e = SQLSimpleExpression();
-                                     ob = new ZOrderBy(e);
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_ASC:
-        case K_DESC:
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case K_ASC:
-            jj_consume_token(K_ASC);
-            break;
-          case K_DESC:
-            jj_consume_token(K_DESC);
-                       ob.setAscOrder(false);
-            break;
-          default:
-            jj_la1[61] = jj_gen;
-            jj_consume_token(-1);
-            throw new ParseException();
-          }
-          break;
-        default:
-          jj_la1[62] = jj_gen;
-          ;
-        }
-                                                   v.addElement(ob);
-      }
-      {if (true) return v;}
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("OrderByClause");
-    }
-  }
-
-  final public void ForUpdateClause() throws ParseException {
-    trace_call("ForUpdateClause");
-    try {
-      jj_consume_token(K_FOR);
-      jj_consume_token(K_UPDATE);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_OF:
-        jj_consume_token(K_OF);
+        jj_consume_token(90);
         TableColumn();
-        label_9:
-        while (true) {
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case 92:
-            ;
-            break;
-          default:
-            jj_la1[63] = jj_gen;
-            break label_9;
-          }
-          jj_consume_token(92);
-          TableColumn();
-        }
-        break;
-      default:
-        jj_la1[64] = jj_gen;
-        ;
       }
-    } finally {
-      trace_return("ForUpdateClause");
+      break;
+    default:
+      jj_la1[61] = jj_gen;
+      ;
     }
   }
 
-  final public ZExp SQLExpression() throws ParseException {
-    trace_call("SQLExpression");
-    try {
+  final public ZExp SQLExpression(int expr_type) throws ParseException {
   ZExp e1, e2;
   ZExpression e = null;
   boolean single = true;
-      e1 = SQLAndExpression();
-      label_10:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_OR:
-        case 107:
-          ;
-          break;
-        default:
-          jj_la1[65] = jj_gen;
-          break label_10;
-        }
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_OR:
-          jj_consume_token(K_OR);
-          break;
-        case 107:
-          jj_consume_token(107);
-          break;
-        default:
-          jj_la1[66] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
-        e2 = SQLAndExpression();
+    e1 = SQLAndExpression();
+    label_9:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_OR:
+      case 105:
+        ;
+        break;
+      default:
+        jj_la1[62] = jj_gen;
+        break label_9;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_OR:
+        jj_consume_token(K_OR);
+        break;
+      case 105:
+        jj_consume_token(105);
+        break;
+      default:
+        jj_la1[63] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      e2 = SQLAndExpression();
       if(single) { e = new ZExpression("OR", e1); }
       single=false;
       e.addOperand(e2);
-      }
+    }
       {if (true) return (single ? e1 : e);}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLExpression");
-    }
   }
 
   final public ZExp SQLAndExpression() throws ParseException {
-    trace_call("SQLAndExpression");
-    try {
   ZExp e1, e2;
   ZExpression e = null;
   boolean single = true;
-      e1 = SQLUnaryLogicalExpression();
-      label_11:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_AND:
-        case 108:
-          ;
-          break;
-        default:
-          jj_la1[67] = jj_gen;
-          break label_11;
-        }
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_AND:
-          jj_consume_token(K_AND);
-          break;
-        case 108:
-          jj_consume_token(108);
-          break;
-        default:
-          jj_la1[68] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
-        e2 = SQLUnaryLogicalExpression();
+    e1 = SQLUnaryLogicalExpression();
+    label_10:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_AND:
+      case 106:
+        ;
+        break;
+      default:
+        jj_la1[64] = jj_gen;
+        break label_10;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_AND:
+        jj_consume_token(K_AND);
+        break;
+      case 106:
+        jj_consume_token(106);
+        break;
+      default:
+        jj_la1[65] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      e2 = SQLUnaryLogicalExpression();
       if(single) { e = new ZExpression("AND", e1); }
       single=false;
       e.addOperand(e2);
-      }
+    }
       {if (true) return (single ? e1 : e);}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLAndExpression");
-    }
   }
 
   final public ZExp SQLUnaryLogicalExpression() throws ParseException {
-    trace_call("SQLUnaryLogicalExpression");
-    try {
   ZExp e1, e;
   boolean not = false;
-      if (jj_2_6(2)) {
-        e = ExistsClause();
+    if (jj_2_6(2)) {
+      e = ExistsClause();
                                       {if (true) return e;}
-      } else {
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_AVG:
+      case K_COUNT:
+      case K_MAX:
+      case K_MIN:
+      case K_NOT:
+      case K_NULL:
+      case K_SUM:
+      case S_NUMBER:
+      case S_IDENTIFIER:
+      case S_CHAR_LITERAL:
+      case 89:
+      case 101:
+      case 102:
+      case 111:
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_AVG:
-        case K_COUNT:
-        case K_MAX:
-        case K_MIN:
         case K_NOT:
-        case K_NULL:
-        case K_SUM:
-        case S_NUMBER:
-        case S_IDENTIFIER:
-        case S_BIND:
-        case S_CHAR_LITERAL:
-        case S_QUOTED_IDENTIFIER:
-        case 91:
-        case 103:
-        case 104:
-        case 113:
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case K_NOT:
-            jj_consume_token(K_NOT);
+          jj_consume_token(K_NOT);
                not = true;
-            break;
-          default:
-            jj_la1[69] = jj_gen;
-            ;
-          }
-          e1 = SQLRelationalExpression();
+          break;
+        default:
+          jj_la1[66] = jj_gen;
+          ;
+        }
+        e1 = SQLRelationalExpression();
        if(not) e = new ZExpression("NOT", e1);
        else e = e1;
        {if (true) return e;}
-          break;
-        default:
-          jj_la1[70] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
+        break;
+      default:
+        jj_la1[67] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLUnaryLogicalExpression");
     }
+    throw new Error("Missing return statement in function");
   }
 
   final public ZExpression ExistsClause() throws ParseException {
-    trace_call("ExistsClause");
-    try {
   ZQuery q;
   boolean not = false;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_NOT:
-        jj_consume_token(K_NOT);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_NOT:
+      jj_consume_token(K_NOT);
              not = true;
-        break;
-      default:
-        jj_la1[71] = jj_gen;
-        ;
-      }
-      jj_consume_token(K_EXISTS);
-      jj_consume_token(91);
-      q = SubQuery();
-      jj_consume_token(93);
+      break;
+    default:
+      jj_la1[68] = jj_gen;
+      ;
+    }
+    jj_consume_token(K_EXISTS);
+    jj_consume_token(89);
+    q = SubQuery();
+    jj_consume_token(91);
       if(not) {if (true) return new ZExpression("NOT EXISTS", q);}
       else {if (true) return new ZExpression("EXISTS", q);}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("ExistsClause");
-    }
   }
 
 // SQLRelationalExpression ::=
@@ -1644,61 +1416,62 @@ public class ZqlJJParser implements ZqlJJParserConstants {
 //    ( SQLRelationalOperatorExpression
 //      | SQLInClause | SQLBetweenClause | SQLLikeClause | IsNullClause )?
   final public ZExp SQLRelationalExpression() throws ParseException {
-    trace_call("SQLRelationalExpression");
-    try {
   ZExp e1, eleft;
   ZExpression eright = null;
   Vector v;
-      e1 = SQLSimpleExpression();
+    e1 = SQLSimpleExpression();
         eleft = e1;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_BETWEEN:
+    case K_IN:
+    case K_IS:
+    case K_LIKE:
+    case K_NOT:
+    case K_REGEXP:
+    case 93:
+    case 95:
+    case 96:
+    case 97:
+    case 98:
+    case 99:
+    case 100:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_BETWEEN:
-      case K_IN:
-      case K_IS:
-      case K_LIKE:
-      case K_NOT:
+      case 93:
       case 95:
+      case 96:
       case 97:
       case 98:
       case 99:
       case 100:
-      case 101:
-      case 102:
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 95:
-        case 97:
-        case 98:
-        case 99:
-        case 100:
-        case 101:
-        case 102:
-          eright = SQLRelationalOperatorExpression();
-          break;
-        default:
-          jj_la1[72] = jj_gen;
-          if (jj_2_7(2)) {
-            eright = SQLInClause();
-          } else if (jj_2_8(2)) {
-            eright = SQLBetweenClause();
-          } else if (jj_2_9(2)) {
-            eright = SQLLikeClause();
-          } else {
-            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-            case K_IS:
-              eright = IsNullClause();
-              break;
-            default:
-              jj_la1[73] = jj_gen;
-              jj_consume_token(-1);
-              throw new ParseException();
-            }
-          }
-        }
+        eright = SQLRelationalOperatorExpression();
         break;
       default:
-        jj_la1[74] = jj_gen;
-        ;
+        jj_la1[69] = jj_gen;
+        if (jj_2_7(2)) {
+          eright = SQLInClause();
+        } else if (jj_2_8(2)) {
+          eright = SQLBetweenClause();
+        } else if (jj_2_9(2)) {
+          eright = SQLLikeClause();
+        } else if (jj_2_10(2)) {
+          eright = SQLREGEXPClause();
+        } else {
+          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case K_IS:
+            eright = IsNullClause();
+            break;
+          default:
+            jj_la1[70] = jj_gen;
+            jj_consume_token(-1);
+            throw new ParseException();
+          }
+        }
       }
+      break;
+    default:
+      jj_la1[71] = jj_gen;
+      ;
+    }
      if(eright == null) {if (true) return eleft;}
      Vector v2 = eright.getOperands();
      if(v2 == null) v2 = new Vector(); //For IS NULL, which is unary!
@@ -1706,107 +1479,92 @@ public class ZqlJJParser implements ZqlJJParserConstants {
      eright.setOperands(v2);
      {if (true) return eright;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLRelationalExpression");
-    }
   }
 
   final public Vector SQLExpressionList() throws ParseException {
-    trace_call("SQLExpressionList");
-    try {
   Vector v = new Vector(8);
   ZExp e;
-      e = SQLSimpleExpression();
+    e = SQLSimpleExpression();
                                 v.addElement(e);
-      label_12:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 92:
-          ;
-          break;
-        default:
-          jj_la1[75] = jj_gen;
-          break label_12;
-        }
-        jj_consume_token(92);
-        e = SQLSimpleExpression();
-                                     v.addElement(e);
+    label_11:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 90:
+        ;
+        break;
+      default:
+        jj_la1[72] = jj_gen;
+        break label_11;
       }
+      jj_consume_token(90);
+      e = SQLSimpleExpression();
+                                     v.addElement(e);
+    }
       {if (true) return v;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLExpressionList");
-    }
   }
 
   final public ZExpression SQLRelationalOperatorExpression() throws ParseException {
-    trace_call("SQLRelationalOperatorExpression");
-    try {
   ZExpression e;
   ZExp e1, eright;
   String op;
   String unaryOp = null;
-      op = Relop();
+    op = Relop();
                    e = new ZExpression(op);
-      if (jj_2_10(2147483647)) {
+    if (jj_2_11(2147483647)) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_ALL:
+      case K_ANY:
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case K_ALL:
-        case K_ANY:
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case K_ALL:
-            jj_consume_token(K_ALL);
+          jj_consume_token(K_ALL);
                   unaryOp = "ALL";
-            break;
-          case K_ANY:
-            jj_consume_token(K_ANY);
+          break;
+        case K_ANY:
+          jj_consume_token(K_ANY);
                                                unaryOp = "ANY";
-            break;
-          default:
-            jj_la1[76] = jj_gen;
-            jj_consume_token(-1);
-            throw new ParseException();
-          }
           break;
         default:
-          jj_la1[77] = jj_gen;
-          ;
-        }
-        jj_consume_token(91);
-        e1 = SubQuery();
-        jj_consume_token(93);
-            if(unaryOp == null) eright = e1;
-            else eright = new ZExpression(unaryOp, e1);
-      } else {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_AVG:
-        case K_COUNT:
-        case K_MAX:
-        case K_MIN:
-        case K_NULL:
-        case K_SUM:
-        case S_NUMBER:
-        case S_IDENTIFIER:
-        case S_BIND:
-        case S_CHAR_LITERAL:
-        case S_QUOTED_IDENTIFIER:
-        case 91:
-        case 103:
-        case 104:
-        case 113:
-          e1 = SQLSimpleExpression();
-                                      eright = e1;
-          break;
-        default:
-          jj_la1[78] = jj_gen;
+          jj_la1[73] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
+        break;
+      default:
+        jj_la1[74] = jj_gen;
+        ;
       }
+      jj_consume_token(89);
+      e1 = SubQuery();
+      jj_consume_token(91);
+            if(unaryOp == null) eright = e1;
+            else eright = new ZExpression(unaryOp, e1);
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_AVG:
+      case K_COUNT:
+      case K_MAX:
+      case K_MIN:
+      case K_NULL:
+      case K_SUM:
+      case S_NUMBER:
+      case S_IDENTIFIER:
+      case S_CHAR_LITERAL:
+      case 89:
+      case 101:
+      case 102:
+      case 111:
+        e1 = SQLSimpleExpression();
+                                      eright = e1;
+        break;
+      default:
+        jj_la1[75] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
       e.addOperand(eright); {if (true) return e;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLRelationalOperatorExpression");
-    }
   }
 
 /*
@@ -1821,363 +1579,306 @@ ZExp SQLSimpleExpressionOrPreparedCol():
 */
 // For prepared columns ("?")
   final public ZExp PreparedCol() throws ParseException {
-    trace_call("PreparedCol");
-    try {
-      jj_consume_token(109);
+    jj_consume_token(107);
         {if (true) return new ZExpression("?");}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("PreparedCol");
-    }
   }
 
   final public ZExpression SQLInClause() throws ParseException {
-    trace_call("SQLInClause");
-    try {
   ZExpression e;
   ZQuery q;
   boolean not = false;
   Vector v;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_NOT:
-        jj_consume_token(K_NOT);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_NOT:
+      jj_consume_token(K_NOT);
            not = true;
-        break;
-      default:
-        jj_la1[79] = jj_gen;
-        ;
-      }
-      jj_consume_token(K_IN);
+      break;
+    default:
+      jj_la1[76] = jj_gen;
+      ;
+    }
+    jj_consume_token(K_IN);
          e = new ZExpression(not ? "NOT IN" : "IN");
-      jj_consume_token(91);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_AVG:
-      case K_COUNT:
-      case K_MAX:
-      case K_MIN:
-      case K_NULL:
-      case K_SUM:
-      case S_NUMBER:
-      case S_IDENTIFIER:
-      case S_BIND:
-      case S_CHAR_LITERAL:
-      case S_QUOTED_IDENTIFIER:
-      case 91:
-      case 103:
-      case 104:
-      case 113:
-        v = SQLExpressionList();
+    jj_consume_token(89);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_AVG:
+    case K_COUNT:
+    case K_MAX:
+    case K_MIN:
+    case K_NULL:
+    case K_SUM:
+    case S_NUMBER:
+    case S_IDENTIFIER:
+    case S_CHAR_LITERAL:
+    case 89:
+    case 101:
+    case 102:
+    case 111:
+      v = SQLExpressionList();
                                  e.setOperands(v);
-        break;
-      case K_SELECT:
-        q = SubQuery();
+      break;
+    case K_SELECT:
+      q = SubQuery();
                       e.addOperand(q);
-        break;
-      default:
-        jj_la1[80] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
-      jj_consume_token(93);
+      break;
+    default:
+      jj_la1[77] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+    jj_consume_token(91);
     {if (true) return e;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLInClause");
-    }
   }
 
   final public ZExpression SQLBetweenClause() throws ParseException {
-    trace_call("SQLBetweenClause");
-    try {
   ZExpression e;
   ZExp  e1, e2;
   boolean not = false;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_NOT:
-        jj_consume_token(K_NOT);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_NOT:
+      jj_consume_token(K_NOT);
            not = true;
-        break;
-      default:
-        jj_la1[81] = jj_gen;
-        ;
-      }
-      jj_consume_token(K_BETWEEN);
-      e1 = SQLSimpleExpression();
-      jj_consume_token(K_AND);
-      e2 = SQLSimpleExpression();
+      break;
+    default:
+      jj_la1[78] = jj_gen;
+      ;
+    }
+    jj_consume_token(K_BETWEEN);
+    e1 = SQLSimpleExpression();
+    jj_consume_token(K_AND);
+    e2 = SQLSimpleExpression();
     if(not) e = new ZExpression("NOT BETWEEN", e1, e2);
     else e = new ZExpression("BETWEEN", e1, e2);
     {if (true) return e;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLBetweenClause");
-    }
   }
 
   final public ZExpression SQLLikeClause() throws ParseException {
-    trace_call("SQLLikeClause");
-    try {
   ZExp eright;
   ZExpression e;
   boolean not = false;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_NOT:
-        jj_consume_token(K_NOT);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_NOT:
+      jj_consume_token(K_NOT);
            not = true;
-        break;
-      default:
-        jj_la1[82] = jj_gen;
-        ;
-      }
-      jj_consume_token(K_LIKE);
-      eright = SQLSimpleExpression();
+      break;
+    default:
+      jj_la1[79] = jj_gen;
+      ;
+    }
+    jj_consume_token(K_LIKE);
+    eright = SQLSimpleExpression();
     if(not) e = new ZExpression("NOT LIKE", eright);
     else e = new ZExpression("LIKE", eright);
     {if (true) return e;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLLikeClause");
-    }
   }
 
   final public ZExpression SQLREGEXPClause() throws ParseException {
-    trace_call("SQLREGEXPClause");
-    try {
   ZExp eright;
   ZExpression e;
   boolean not = false;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_NOT:
-        jj_consume_token(K_NOT);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_NOT:
+      jj_consume_token(K_NOT);
            not = true;
-        break;
-      default:
-        jj_la1[83] = jj_gen;
-        ;
-      }
-      jj_consume_token(K_REGEXP);
-      eright = SQLSimpleExpression();
+      break;
+    default:
+      jj_la1[80] = jj_gen;
+      ;
+    }
+    jj_consume_token(K_REGEXP);
+    eright = SQLSimpleExpression();
     if(not) e = new ZExpression("NOT REGEXP", eright);
     else e = new ZExpression("REGEXP", eright);
     {if (true) return e;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLREGEXPClause");
-    }
   }
 
   final public ZExpression IsNullClause() throws ParseException {
-    trace_call("IsNullClause");
-    try {
   boolean not = false;
-      jj_consume_token(K_IS);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_NOT:
-        jj_consume_token(K_NOT);
+    jj_consume_token(K_IS);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_NOT:
+      jj_consume_token(K_NOT);
                 not = true;
-        break;
-      default:
-        jj_la1[84] = jj_gen;
-        ;
-      }
-      jj_consume_token(K_NULL);
+      break;
+    default:
+      jj_la1[81] = jj_gen;
+      ;
+    }
+    jj_consume_token(K_NULL);
     {if (true) return(not ? new ZExpression("IS NOT NULL") : new ZExpression("IS NULL"));}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("IsNullClause");
-    }
   }
 
 // SQLSimpleExpression
 //    ::= SQLMultiplicativeExpression (OP SQLMultiplicativeExpression)*
 // OP ::= + | - 
   final public ZExp SQLSimpleExpression() throws ParseException {
-    trace_call("SQLSimpleExpression");
-    try {
   Token op;
   ZExp e1, e2;
   ZExpression e = null;
-      e1 = SQLMultiplicativeExpression();
-      label_13:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 103:
-        case 104:
-          ;
-          break;
-        default:
-          jj_la1[85] = jj_gen;
-          break label_13;
-        }
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 103:
-          op = jj_consume_token(103);
-          break;
-        case 104:
-          op = jj_consume_token(104);
-          break;
-        default:
-          jj_la1[86] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
-        e2 = SQLMultiplicativeExpression();
+    e1 = SQLMultiplicativeExpression();
+    label_12:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 101:
+      case 102:
+        ;
+        break;
+      default:
+        jj_la1[82] = jj_gen;
+        break label_12;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 101:
+        op = jj_consume_token(101);
+        break;
+      case 102:
+        op = jj_consume_token(102);
+        break;
+      default:
+        jj_la1[83] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      e2 = SQLMultiplicativeExpression();
       e = new ZExpression(op.toString(), e1);
       e.addOperand(e2);
       e1 = e;
-      }
+    }
       {if (true) return e1;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLSimpleExpression");
-    }
   }
 
 // SQLMultiplicativeExpression
 //    ::= SQLExpotentExpression (OP SQLExpotentExpression)*
 // OP ::= * | / | "DIV" | "MOD" | % |
   final public ZExp SQLMultiplicativeExpression() throws ParseException {
-    trace_call("SQLMultiplicativeExpression");
-    try {
   Token op;
   ZExp e1, e2;
   ZExpression e = null;
-      e1 = SQLExpotentExpression();
-      label_14:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case K_DIV:
-        case K_MOD:
-        case 105:
-        case 110:
-        case 111:
-          ;
-          break;
-        default:
-          jj_la1[87] = jj_gen;
-          break label_14;
-        }
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 105:
-          op = jj_consume_token(105);
-          break;
-        case 110:
-          op = jj_consume_token(110);
-          break;
-        case 111:
-          op = jj_consume_token(111);
-          break;
-        case K_DIV:
-          op = jj_consume_token(K_DIV);
-          break;
-        case K_MOD:
-          op = jj_consume_token(K_MOD);
-          break;
-        default:
-          jj_la1[88] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
-        e2 = SQLExpotentExpression();
+    e1 = SQLExpotentExpression();
+    label_13:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case K_DIV:
+      case K_MOD:
+      case 103:
+      case 108:
+      case 109:
+        ;
+        break;
+      default:
+        jj_la1[84] = jj_gen;
+        break label_13;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 103:
+        op = jj_consume_token(103);
+        break;
+      case 108:
+        op = jj_consume_token(108);
+        break;
+      case 109:
+        op = jj_consume_token(109);
+        break;
+      case K_DIV:
+        op = jj_consume_token(K_DIV);
+        break;
+      case K_MOD:
+        op = jj_consume_token(K_MOD);
+        break;
+      default:
+        jj_la1[85] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+      e2 = SQLExpotentExpression();
       e = new ZExpression(op.toString(), e1);
       e.addOperand(e2);
       e1 = e;
-      }
+    }
       {if (true) return e1;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLMultiplicativeExpression");
-    }
   }
 
 // SQLExpotentExpression ::= SQLUnaryExpression (** SQLUnaryExpression)*
   final public ZExp SQLExpotentExpression() throws ParseException {
-    trace_call("SQLExpotentExpression");
-    try {
   Token op;
   ZExp e1, e2;
   ZExpression e = null;
   boolean single = true;
-      e1 = SQLUnaryExpression();
-      label_15:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 112:
-          ;
-          break;
-        default:
-          jj_la1[89] = jj_gen;
-          break label_15;
-        }
-        op = jj_consume_token(112);
-        e2 = SQLUnaryExpression();
+    e1 = SQLUnaryExpression();
+    label_14:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 110:
+        ;
+        break;
+      default:
+        jj_la1[86] = jj_gen;
+        break label_14;
+      }
+      op = jj_consume_token(110);
+      e2 = SQLUnaryExpression();
       if(single) e = new ZExpression(op.toString(), e1);
       single = false;
       e.addOperand(e2);
-      }
+    }
       {if (true) return (single ? e1 : e);}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLExpotentExpression");
-    }
   }
 
 // SQLUnaryExpression ::= [+|-] SQLInversionExpression
   final public ZExp SQLUnaryExpression() throws ParseException {
-    trace_call("SQLUnaryExpression");
-    try {
   Token op = null;
   ZExp e1, e;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 101:
+    case 102:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 103:
-      case 104:
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 103:
-          op = jj_consume_token(103);
-          break;
-        case 104:
-          op = jj_consume_token(104);
-          break;
-        default:
-          jj_la1[90] = jj_gen;
-          jj_consume_token(-1);
-          throw new ParseException();
-        }
+      case 101:
+        op = jj_consume_token(101);
+        break;
+      case 102:
+        op = jj_consume_token(102);
         break;
       default:
-        jj_la1[91] = jj_gen;
-        ;
+        jj_la1[87] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
-      e1 = SQLInversionExpression();
-    if(op == null || op == "+" ) e = e1;
+      break;
+    default:
+      jj_la1[88] = jj_gen;
+      ;
+    }
+    e1 = SQLInversionExpression();
+    if(op == null || op.toString().equals("+") ) e = e1;
     else e = new ZExpression(op.toString(), e1);
     {if (true) return e;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLUnaryExpression");
-    }
   }
 
   final public ZExp SQLInversionExpression() throws ParseException {
-    trace_call("SQLInversionExpression");
-    try {
   Token op = null;
   ZExp e;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 113:
-        op = jj_consume_token(113);
-        break;
-      default:
-        jj_la1[92] = jj_gen;
-        ;
-      }
-      e = SQLPrimaryExpression();
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 111:
+      op = jj_consume_token(111);
+      break;
+    default:
+      jj_la1[89] = jj_gen;
+      ;
+    }
+    e = SQLPrimaryExpression();
     if(op == null ) {if (true) return e;}
     else {if (true) return new ZExpression(op.toString(), e);}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLInversionExpression");
-    }
   }
 
 // 01/07/00 PY.Gibello - Added COUNT(*) to SQLPrimaryExpression
@@ -2192,75 +1893,71 @@ ZExp SQLSimpleExpressionOrPreparedCol():
 //   | COUNT(*)
 //   | <NUMBER> | <STRING> | <BIND>
   final public ZExp SQLPrimaryExpression() throws ParseException {
-    trace_call("SQLPrimaryExpression");
-    try {
   Token t;
   String s, s2;
   int modifier = -1;
   ZExp e = null;
   int nparm;
   Vector parm = null;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_NULL:
-        jj_consume_token(K_NULL);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_NULL:
+      jj_consume_token(K_NULL);
            {if (true) return new ZConstant("NULL", ZConstant.NULL);}
-        break;
-      default:
-        jj_la1[95] = jj_gen;
-        if (jj_2_13(3)) {
-          jj_consume_token(K_COUNT);
-          jj_consume_token(91);
-          jj_consume_token(105);
-          jj_consume_token(93);
+      break;
+    default:
+      jj_la1[92] = jj_gen;
+      if (jj_2_14(3)) {
+        jj_consume_token(K_COUNT);
+        jj_consume_token(89);
+        jj_consume_token(103);
+        jj_consume_token(91);
      {if (true) return new ZExpression("COUNT",
       new ZConstant("*", ZConstant.COLUMNNAME), ZExpression.AGGR_ALL);}
-        } else if (jj_2_14(3)) {
-          s = FunctionOrAggregateName();
-          jj_consume_token(91);
-          if (jj_2_11(2147483647)) {
-            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-            case K_ALL:
-              jj_consume_token(K_ALL);
+      } else if (jj_2_15(3)) {
+        s = FunctionOrAggregateName();
+        jj_consume_token(89);
+        if (jj_2_12(2147483647)) {
+          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case K_ALL:
+            jj_consume_token(K_ALL);
                                                  modifier = ZExpression.AGGR_ALL;
-              break;
-            case K_DISTINCT:
-              jj_consume_token(K_DISTINCT);
+            break;
+          case K_DISTINCT:
+            jj_consume_token(K_DISTINCT);
                                                                                                    modifier = ZExpression.AGGR_DISTINCT;
-              break;
-            default:
-              jj_la1[93] = jj_gen;
-              jj_consume_token(-1);
-              throw new ParseException();
-            }
-            e = SQLSimpleExpression();
-          } else if (jj_2_12(2147483647)) {
-                                           parm = new Vector(0);
-          } else {
-            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-            case K_AVG:
-            case K_COUNT:
-            case K_MAX:
-            case K_MIN:
-            case K_NULL:
-            case K_SUM:
-            case S_NUMBER:
-            case S_IDENTIFIER:
-            case S_BIND:
-            case S_CHAR_LITERAL:
-            case S_QUOTED_IDENTIFIER:
-            case 91:
-            case 103:
-            case 104:
-            case 113:
-              parm = SQLExpressionList();
-              break;
-            default:
-              jj_la1[94] = jj_gen;
-              jj_consume_token(-1);
-              throw new ParseException();
-            }
+            break;
+          default:
+            jj_la1[90] = jj_gen;
+            jj_consume_token(-1);
+            throw new ParseException();
           }
-          jj_consume_token(93);
+          e = SQLSimpleExpression();
+        } else if (jj_2_13(2147483647)) {
+                                           parm = new Vector(0);
+        } else {
+          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case K_AVG:
+          case K_COUNT:
+          case K_MAX:
+          case K_MIN:
+          case K_NULL:
+          case K_SUM:
+          case S_NUMBER:
+          case S_IDENTIFIER:
+          case S_CHAR_LITERAL:
+          case 89:
+          case 101:
+          case 102:
+          case 111:
+            parm = SQLExpressionList();
+            break;
+          default:
+            jj_la1[91] = jj_gen;
+            jj_consume_token(-1);
+            throw new ParseException();
+          }
+        }
+        jj_consume_token(91);
             if( ZUtils.isAggregate(s) || ZUtils.isCustomAggregate(s) ){
                 if(modifier == -1){
                         modifier = ZExpression.AGGR_ALL;
@@ -2282,86 +1979,70 @@ ZExp SQLSimpleExpressionOrPreparedCol():
             {if (true) return new ZExpression(s, parm);}
           }
           else {if (true) throw new ParseException("Undefined function/aggreation: " + s);}
-        } else {
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case S_IDENTIFIER:
-          case S_QUOTED_IDENTIFIER:
-            s = TableColumn();
+      } else {
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case S_IDENTIFIER:
+          s = TableColumn();
                        {if (true) return new ZConstant(s, ZConstant.COLUMNNAME);}
-            break;
-          case S_NUMBER:
-            t = jj_consume_token(S_NUMBER);
+          break;
+        case S_NUMBER:
+          t = jj_consume_token(S_NUMBER);
                     {if (true) return new ZConstant(t.toString(), ZConstant.NUMBER);}
-            break;
-          case S_CHAR_LITERAL:
-            t = jj_consume_token(S_CHAR_LITERAL);
-     s = t.toString();
-     if(s.startsWith("\'")) s = s.substring(1);
-     if(s.endsWith("\'")) s = s.substring(0, s.length()-1);
-     {if (true) return new ZConstant(s, ZConstant.STRING);}
-            break;
-          case S_BIND:
-            t = jj_consume_token(S_BIND);
-                  {if (true) return new ZConstant(t.toString(), ZConstant.STRING);}
-            break;
-          case 91:
-            jj_consume_token(91);
-            e = SQLExpression();
-            jj_consume_token(93);
+          break;
+        case S_CHAR_LITERAL:
+          t = jj_consume_token(S_CHAR_LITERAL);
+                          {if (true) return new ZConstant(t.toString(), ZConstant.STRING);}
+          break;
+        case 89:
+          jj_consume_token(89);
+          e = SQLExpression();
+          jj_consume_token(91);
                                  {if (true) return e;}
-            break;
-          default:
-            jj_la1[96] = jj_gen;
-            jj_consume_token(-1);
-            throw new ParseException();
-          }
+          break;
+        default:
+          jj_la1[93] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
         }
       }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SQLPrimaryExpression");
     }
+    throw new Error("Missing return statement in function");
   }
 
   final public String FunctionOrAggregateName() throws ParseException {
-    trace_call("FunctionOrAggregateName");
-    try {
   Token t;
   String s;
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case K_SUM:
-        t = jj_consume_token(K_SUM);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case K_SUM:
+      t = jj_consume_token(K_SUM);
               {if (true) return t.toString();}
-        break;
-      case K_AVG:
-        t = jj_consume_token(K_AVG);
+      break;
+    case K_AVG:
+      t = jj_consume_token(K_AVG);
               {if (true) return t.toString();}
-        break;
-      case K_MAX:
-        t = jj_consume_token(K_MAX);
+      break;
+    case K_MAX:
+      t = jj_consume_token(K_MAX);
               {if (true) return t.toString();}
-        break;
-      case K_MIN:
-        t = jj_consume_token(K_MIN);
+      break;
+    case K_MIN:
+      t = jj_consume_token(K_MIN);
               {if (true) return t.toString();}
-        break;
-      case K_COUNT:
-        t = jj_consume_token(K_COUNT);
+      break;
+    case K_COUNT:
+      t = jj_consume_token(K_COUNT);
                 {if (true) return t.toString();}
-        break;
-      case S_IDENTIFIER:
-        t = jj_consume_token(S_IDENTIFIER);
+      break;
+    case S_IDENTIFIER:
+      t = jj_consume_token(S_IDENTIFIER);
                       {if (true) return t.toString();}
-        break;
-      default:
-        jj_la1[97] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
-      }
-    throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("FunctionOrAggregateName");
+      break;
+    default:
+      jj_la1[94] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
+    throw new Error("Missing return statement in function");
   }
 
 // AggregateFunc ::= SUM | AVG | MAX | MIN | COUNT
@@ -2431,15 +2112,10 @@ String OuterJoinExpression():
 }
 */
   final public ZQuery SubQuery() throws ParseException {
-    trace_call("SubQuery");
-    try {
   ZQuery q;
-      q = SelectWithoutOrder();
+    q = SelectWithoutOrder();
                              {if (true) return q;}
     throw new Error("Missing return statement in function");
-    } finally {
-      trace_return("SubQuery");
-    }
   }
 
   final private boolean jj_2_1(int xla) {
@@ -2540,35 +2216,43 @@ String OuterJoinExpression():
     finally { jj_save(13, xla); }
   }
 
-  final private boolean jj_3R_36() {
+  final private boolean jj_2_15(int xla) {
+    jj_la = xla; jj_lastpos = jj_scanpos = token;
+    try { return !jj_3_15(); }
+    catch(LookaheadSuccess ls) { return true; }
+    finally { jj_save(14, xla); }
+  }
+
+  final private boolean jj_3R_35() {
     if (jj_scan_token(S_IDENTIFIER)) return true;
     return false;
   }
 
-  final private boolean jj_3R_35() {
+  final private boolean jj_3R_34() {
     if (jj_scan_token(K_COUNT)) return true;
     return false;
   }
 
-  final private boolean jj_3R_34() {
+  final private boolean jj_3R_33() {
     if (jj_scan_token(K_MIN)) return true;
     return false;
   }
 
-  final private boolean jj_3R_33() {
+  final private boolean jj_3R_32() {
     if (jj_scan_token(K_MAX)) return true;
     return false;
   }
 
-  final private boolean jj_3R_32() {
+  final private boolean jj_3R_31() {
     if (jj_scan_token(K_AVG)) return true;
     return false;
   }
 
   final private boolean jj_3R_23() {
-    if (!jj_rescan) trace_call("FunctionOrAggregateName(LOOKING AHEAD...)");
     Token xsp;
     xsp = jj_scanpos;
+    if (jj_3R_30()) {
+    jj_scanpos = xsp;
     if (jj_3R_31()) {
     jj_scanpos = xsp;
     if (jj_3R_32()) {
@@ -2577,150 +2261,92 @@ String OuterJoinExpression():
     jj_scanpos = xsp;
     if (jj_3R_34()) {
     jj_scanpos = xsp;
-    if (jj_3R_35()) {
-    jj_scanpos = xsp;
-    if (jj_3R_36()) { if (!jj_rescan) trace_return("FunctionOrAggregateName(LOOKAHEAD FAILED)"); return true; }
+    if (jj_3R_35()) return true;
     }
     }
     }
     }
     }
-    { if (!jj_rescan) trace_return("FunctionOrAggregateName(LOOKAHEAD SUCCEEDED)"); return false; }
+    return false;
   }
 
-  final private boolean jj_3R_31() {
+  final private boolean jj_3R_30() {
     if (jj_scan_token(K_SUM)) return true;
     return false;
   }
 
-  final private boolean jj_3R_49() {
-    if (jj_scan_token(91)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_48() {
-    if (jj_scan_token(S_BIND)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_41() {
-    if (!jj_rescan) trace_call("SQLInversionExpression(LOOKING AHEAD...)");
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(113)) jj_scanpos = xsp;
-    if (jj_3R_42()) { if (!jj_rescan) trace_return("SQLInversionExpression(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("SQLInversionExpression(LOOKAHEAD SUCCEEDED)"); return false; }
-  }
-
-  final private boolean jj_3R_17() {
-    if (!jj_rescan) trace_call("OracleObjectName(LOOKING AHEAD...)");
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_24()) {
-    jj_scanpos = xsp;
-    if (jj_3R_25()) { if (!jj_rescan) trace_return("OracleObjectName(LOOKAHEAD FAILED)"); return true; }
-    }
-    { if (!jj_rescan) trace_return("OracleObjectName(LOOKAHEAD SUCCEEDED)"); return false; }
-  }
-
-  final private boolean jj_3R_24() {
+  final private boolean jj_3R_16() {
     if (jj_scan_token(S_IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_47() {
-    if (jj_scan_token(S_CHAR_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_46() {
-    if (jj_scan_token(S_NUMBER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_45() {
-    if (jj_3R_50()) return true;
     return false;
   }
 
   final private boolean jj_3R_40() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(103)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(104)) return true;
-    }
+    if (jj_scan_token(111)) jj_scanpos = xsp;
+    if (jj_3R_41()) return true;
     return false;
   }
 
-  final private boolean jj_3_12() {
-    if (jj_scan_token(93)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_50() {
-    if (!jj_rescan) trace_call("TableColumn(LOOKING AHEAD...)");
-    if (jj_3R_17()) { if (!jj_rescan) trace_return("TableColumn(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("TableColumn(LOOKAHEAD SUCCEEDED)"); return false; }
-  }
-
-  final private boolean jj_3R_39() {
-    if (!jj_rescan) trace_call("SQLUnaryExpression(LOOKING AHEAD...)");
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_40()) jj_scanpos = xsp;
-    if (jj_3R_41()) { if (!jj_rescan) trace_return("SQLUnaryExpression(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("SQLUnaryExpression(LOOKAHEAD SUCCEEDED)"); return false; }
-  }
-
-  final private boolean jj_3R_30() {
+  final private boolean jj_3R_29() {
     if (jj_scan_token(K_NOT)) return true;
     return false;
   }
 
   final private boolean jj_3R_21() {
-    if (!jj_rescan) trace_call("SQLLikeClause(LOOKING AHEAD...)");
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_30()) jj_scanpos = xsp;
-    if (jj_scan_token(K_LIKE)) { if (!jj_rescan) trace_return("SQLLikeClause(LOOKAHEAD FAILED)"); return true; }
-    if (jj_3R_29()) { if (!jj_rescan) trace_return("SQLLikeClause(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("SQLLikeClause(LOOKAHEAD SUCCEEDED)"); return false; }
+    if (jj_3R_29()) jj_scanpos = xsp;
+    if (jj_scan_token(K_REGEXP)) return true;
+    if (jj_3R_27()) return true;
+    return false;
   }
 
-  final private boolean jj_3_11() {
+  final private boolean jj_3R_47() {
+    if (jj_scan_token(89)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_46() {
+    if (jj_scan_token(S_CHAR_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_45() {
+    if (jj_scan_token(S_NUMBER)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_44() {
+    if (jj_3R_48()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_48() {
+    if (jj_3R_16()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_39() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(5)) {
+    if (jj_scan_token(101)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(23)) return true;
+    if (jj_scan_token(102)) return true;
     }
     return false;
   }
 
-  final private boolean jj_3_9() {
-    if (jj_3R_21()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_8() {
-    if (jj_3R_20()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_7() {
-    if (jj_3R_19()) return true;
+  final private boolean jj_3_13() {
+    if (jj_scan_token(91)) return true;
     return false;
   }
 
   final private boolean jj_3R_38() {
-    if (!jj_rescan) trace_call("SQLExpotentExpression(LOOKING AHEAD...)");
-    if (jj_3R_39()) { if (!jj_rescan) trace_return("SQLExpotentExpression(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("SQLExpotentExpression(LOOKAHEAD SUCCEEDED)"); return false; }
-  }
-
-  final private boolean jj_3_5() {
-    if (jj_scan_token(91)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_39()) jj_scanpos = xsp;
+    if (jj_3R_40()) return true;
     return false;
   }
 
@@ -2730,75 +2356,51 @@ String OuterJoinExpression():
   }
 
   final private boolean jj_3R_20() {
-    if (!jj_rescan) trace_call("SQLBetweenClause(LOOKING AHEAD...)");
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_28()) jj_scanpos = xsp;
-    if (jj_scan_token(K_BETWEEN)) { if (!jj_rescan) trace_return("SQLBetweenClause(LOOKAHEAD FAILED)"); return true; }
-    if (jj_3R_29()) { if (!jj_rescan) trace_return("SQLBetweenClause(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("SQLBetweenClause(LOOKAHEAD SUCCEEDED)"); return false; }
-  }
-
-  final private boolean jj_3_14() {
-    if (jj_3R_23()) return true;
-    if (jj_scan_token(91)) return true;
+    if (jj_scan_token(K_LIKE)) return true;
+    if (jj_3R_27()) return true;
     return false;
   }
 
-  final private boolean jj_3_4() {
-    if (jj_3R_17()) return true;
-    if (jj_scan_token(96)) return true;
-    if (jj_3R_17()) return true;
-    if (jj_scan_token(106)) return true;
+  final private boolean jj_3_12() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(5)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(23)) return true;
+    }
     return false;
   }
 
-  final private boolean jj_3R_27() {
-    if (jj_scan_token(K_NOT)) return true;
+  final private boolean jj_3_10() {
+    if (jj_3R_21()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_9() {
+    if (jj_3R_20()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_8() {
+    if (jj_3R_19()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_7() {
+    if (jj_3R_18()) return true;
     return false;
   }
 
   final private boolean jj_3R_37() {
-    if (!jj_rescan) trace_call("SQLMultiplicativeExpression(LOOKING AHEAD...)");
-    if (jj_3R_38()) { if (!jj_rescan) trace_return("SQLMultiplicativeExpression(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("SQLMultiplicativeExpression(LOOKAHEAD SUCCEEDED)"); return false; }
-  }
-
-  final private boolean jj_3R_16() {
-    if (!jj_rescan) trace_call("SelectStar(LOOKING AHEAD...)");
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_3()) {
-    jj_scanpos = xsp;
-    if (jj_3_4()) { if (!jj_rescan) trace_return("SelectStar(LOOKAHEAD FAILED)"); return true; }
-    }
-    { if (!jj_rescan) trace_return("SelectStar(LOOKAHEAD SUCCEEDED)"); return false; }
-  }
-
-  final private boolean jj_3_3() {
-    if (jj_3R_17()) return true;
-    if (jj_scan_token(106)) return true;
+    if (jj_3R_38()) return true;
     return false;
   }
 
-  final private boolean jj_3R_19() {
-    if (!jj_rescan) trace_call("SQLInClause(LOOKING AHEAD...)");
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_27()) jj_scanpos = xsp;
-    if (jj_scan_token(K_IN)) { if (!jj_rescan) trace_return("SQLInClause(LOOKAHEAD FAILED)"); return true; }
-    if (jj_scan_token(91)) { if (!jj_rescan) trace_return("SQLInClause(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("SQLInClause(LOOKAHEAD SUCCEEDED)"); return false; }
-  }
-
-  final private boolean jj_3R_25() {
-    if (jj_scan_token(S_QUOTED_IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_22() {
-    if (jj_scan_token(91)) return true;
-    if (jj_scan_token(K_SELECT)) return true;
+  final private boolean jj_3_5() {
+    if (jj_scan_token(89)) return true;
     return false;
   }
 
@@ -2807,46 +2409,130 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_18() {
-    if (!jj_rescan) trace_call("ExistsClause(LOOKING AHEAD...)");
+  final private boolean jj_3R_19() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_26()) jj_scanpos = xsp;
-    if (jj_scan_token(K_EXISTS)) { if (!jj_rescan) trace_return("ExistsClause(LOOKAHEAD FAILED)"); return true; }
-    if (jj_scan_token(91)) { if (!jj_rescan) trace_return("ExistsClause(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("ExistsClause(LOOKAHEAD SUCCEEDED)"); return false; }
+    if (jj_scan_token(K_BETWEEN)) return true;
+    if (jj_3R_27()) return true;
+    return false;
   }
 
-  final private boolean jj_3R_44() {
+  final private boolean jj_3_15() {
+    if (jj_3R_23()) return true;
+    if (jj_scan_token(89)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_4() {
+    if (jj_3R_16()) return true;
+    if (jj_scan_token(94)) return true;
+    if (jj_3R_16()) return true;
+    if (jj_scan_token(104)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_25() {
+    if (jj_scan_token(K_NOT)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_36() {
+    if (jj_3R_37()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_18() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_25()) jj_scanpos = xsp;
+    if (jj_scan_token(K_IN)) return true;
+    if (jj_scan_token(89)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_15() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_3()) {
+    jj_scanpos = xsp;
+    if (jj_3_4()) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3_3() {
+    if (jj_3R_16()) return true;
+    if (jj_scan_token(104)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_22() {
+    if (jj_scan_token(89)) return true;
+    if (jj_scan_token(K_SELECT)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_24() {
+    if (jj_scan_token(K_NOT)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_43() {
     if (jj_3R_23()) return true;
     return false;
   }
 
-  final private boolean jj_3_13() {
-    if (jj_scan_token(K_COUNT)) return true;
-    if (jj_scan_token(91)) return true;
-    if (jj_scan_token(105)) return true;
+  final private boolean jj_3R_17() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_24()) jj_scanpos = xsp;
+    if (jj_scan_token(K_EXISTS)) return true;
+    if (jj_scan_token(89)) return true;
     return false;
   }
 
-  final private boolean jj_3R_29() {
-    if (!jj_rescan) trace_call("SQLSimpleExpression(LOOKING AHEAD...)");
-    if (jj_3R_37()) { if (!jj_rescan) trace_return("SQLSimpleExpression(LOOKAHEAD FAILED)"); return true; }
-    { if (!jj_rescan) trace_return("SQLSimpleExpression(LOOKAHEAD SUCCEEDED)"); return false; }
+  final private boolean jj_3_14() {
+    if (jj_scan_token(K_COUNT)) return true;
+    if (jj_scan_token(89)) return true;
+    if (jj_scan_token(103)) return true;
+    return false;
   }
 
-  final private boolean jj_3R_43() {
-    if (jj_scan_token(K_NULL)) return true;
+  final private boolean jj_3_1() {
+    Token xsp;
+    if (jj_scan_token(89)) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_scan_token(89)) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(K_SELECT)) return true;
+    return false;
+  }
+
+  final private boolean jj_3_2() {
+    if (jj_3R_15()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_27() {
+    if (jj_3R_36()) return true;
     return false;
   }
 
   final private boolean jj_3R_42() {
-    if (!jj_rescan) trace_call("SQLPrimaryExpression(LOOKING AHEAD...)");
+    if (jj_scan_token(K_NULL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_41() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_43()) {
+    if (jj_3R_42()) {
     jj_scanpos = xsp;
-    if (jj_3_13()) {
+    if (jj_3_14()) {
+    jj_scanpos = xsp;
+    if (jj_3R_43()) {
     jj_scanpos = xsp;
     if (jj_3R_44()) {
     jj_scanpos = xsp;
@@ -2854,22 +2540,17 @@ String OuterJoinExpression():
     jj_scanpos = xsp;
     if (jj_3R_46()) {
     jj_scanpos = xsp;
-    if (jj_3R_47()) {
-    jj_scanpos = xsp;
-    if (jj_3R_48()) {
-    jj_scanpos = xsp;
-    if (jj_3R_49()) { if (!jj_rescan) trace_return("SQLPrimaryExpression(LOOKAHEAD FAILED)"); return true; }
+    if (jj_3R_47()) return true;
     }
     }
     }
     }
     }
     }
-    }
-    { if (!jj_rescan) trace_return("SQLPrimaryExpression(LOOKAHEAD SUCCEEDED)"); return false; }
+    return false;
   }
 
-  final private boolean jj_3_10() {
+  final private boolean jj_3_11() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(7)) {
@@ -2882,24 +2563,8 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3_1() {
-    Token xsp;
-    if (jj_scan_token(91)) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_scan_token(91)) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(K_SELECT)) return true;
-    return false;
-  }
-
-  final private boolean jj_3_2() {
-    if (jj_3R_16()) return true;
-    return false;
-  }
-
   final private boolean jj_3_6() {
-    if (jj_3R_18()) return true;
+    if (jj_3R_17()) return true;
     return false;
   }
 
@@ -2912,7 +2577,7 @@ String OuterJoinExpression():
   public boolean lookingAhead = false;
   private boolean jj_semLA;
   private int jj_gen;
-  final private int[] jj_la1 = new int[98];
+  final private int[] jj_la1 = new int[95];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -2924,18 +2589,18 @@ String OuterJoinExpression():
       jj_la1_3();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x10008000,0x0,0x0,0x1010b000,0x8220000,0x8000000,0x8220000,0x0,0x10000,0x0,0x0,0x0,0x10000,0x0,0x2000000,0x0,0x0,0x2000000,0x0,0x0,0x0,0x4080400,0x0,0x0,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000000,0x800020,0x800020,0x0,0x40000,0x80000000,0x0,0x0,0x80400,0x100,0x80400,0x0,0x0,0x0,0x0,0x100,0x0,0x0,0x0,0x20,0x0,0x0,0x400200,0x400200,0x0,0x400200,0x400200,0x0,0x0,0x0,0x0,0x40,0x40,0x0,0x80400,0x0,0x0,0x0,0x800,0x0,0xa0,0xa0,0x80400,0x0,0x80400,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x1000000,0x0,0x0,0x0,0x0,0x800020,0x80400,0x0,0x0,0x80400,};
+      jj_la1_0 = new int[] {0x10008000,0x0,0x0,0x1010b000,0x8220000,0x8000000,0x8220000,0x0,0x10000,0x0,0x0,0x0,0x10000,0x0,0x2000000,0x0,0x0,0x2000000,0x0,0x0,0x0,0x4080400,0x0,0x0,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000000,0x800020,0x800020,0x0,0x40000,0x80000000,0x0,0x0,0x4080400,0x100,0x4080400,0x0,0x0,0x100,0x0,0x0,0x0,0x20,0x0,0x0,0x400200,0x400200,0x0,0x400200,0x400200,0x0,0x0,0x0,0x0,0x40,0x40,0x0,0x80400,0x0,0x0,0x0,0x800,0x0,0xa0,0xa0,0x80400,0x0,0x80400,0x0,0x0,0x0,0x0,0x0,0x0,0x1000000,0x1000000,0x0,0x0,0x0,0x0,0x800020,0x80400,0x0,0x0,0x80400,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x4044008,0x0,0x0,0x4044008,0xd1000104,0x1000000,0xd1000104,0x0,0x0,0x0,0x10000,0x0,0x0,0x100000,0x0,0x20000000,0x20000000,0x20000000,0x0,0x0,0x0,0x28600,0x0,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x1010,0x0,0x20600,0x0,0x20600,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x1010,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x80000,0x200000,0x200000,0x0,0x0,0x8000,0x28600,0x8000,0x0,0x40,0x80c2,0x0,0x0,0x0,0x20600,0x8000,0x40020600,0x8000,0x8000,0x8000,0x8000,0x0,0x0,0x800,0x800,0x0,0x0,0x0,0x0,0x0,0x20600,0x20000,0x0,0x600,};
+      jj_la1_1 = new int[] {0x4044008,0x0,0x0,0x4044008,0xd1000104,0x1000000,0xd1000104,0x0,0x0,0x0,0x10000,0x0,0x0,0x100000,0x0,0x20000000,0x20000000,0x20000000,0x0,0x0,0x0,0x28600,0x0,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x400000,0x0,0x0,0x0,0x0,0x0,0x0,0x1010,0x0,0x28600,0x0,0x28600,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x1010,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x80000,0x200000,0x200000,0x0,0x0,0x8000,0x28600,0x8000,0x0,0x40,0x80080c2,0x0,0x0,0x0,0x20600,0x8000,0x40020600,0x8000,0x8000,0x8000,0x8000,0x0,0x0,0x800,0x800,0x0,0x0,0x0,0x0,0x0,0x20600,0x20000,0x0,0x600,};
    }
    private static void jj_la1_2() {
-      jj_la1_2 = new int[] {0x600,0x10000000,0x8000000,0x600,0x80,0x0,0x80,0x2000,0x0,0x10000000,0x0,0x2000,0x0,0x4000,0x1,0x80,0x80,0x1,0x200000,0x800,0x10000000,0xf208008,0x10000000,0x8000000,0x100,0x0,0x800,0x0,0x0,0x4200000,0x80000000,0x0,0x0,0x0,0x208000,0x0,0x0,0x0,0x0,0x800,0x4,0x0,0x40,0x10000000,0xf208008,0x0,0xf208008,0x200000,0x4200000,0x10000000,0xc200000,0x0,0x4,0x4,0x0,0x0,0x40,0x0,0x0,0x0,0x10000000,0x0,0x0,0x10000000,0x0,0x0,0x0,0x0,0x0,0x0,0xf208008,0x0,0x80000000,0x0,0x80000000,0x10000000,0x0,0x0,0xf208008,0x0,0xf208008,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xf208008,0x0,0xf208000,0x200008,};
+      jj_la1_2 = new int[] {0x600,0x4000000,0x2000000,0x600,0x80,0x0,0x80,0x2000,0x0,0x4000000,0x0,0x2000,0x0,0x4000,0x1,0x80,0x80,0x1,0x200000,0x800,0x4000000,0x3208008,0x4000000,0x2000000,0x100,0x0,0x800,0x40000000,0x40000000,0xa0000000,0x40000000,0x0,0x0,0x208000,0x0,0x0,0x0,0x0,0x800,0x4,0x0,0x40,0x4000000,0x3208008,0x0,0x3208008,0x4000000,0x2200000,0x0,0x4,0x4,0x0,0x0,0x40,0x0,0x0,0x0,0x4000000,0x0,0x0,0x4000000,0x0,0x0,0x0,0x0,0x0,0x0,0x3208008,0x0,0xa0000000,0x0,0xa0000000,0x4000000,0x0,0x0,0x3208008,0x0,0x3208008,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3208008,0x0,0x3208000,0x200008,};
    }
    private static void jj_la1_3() {
-      jj_la1_3 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x22180,0x0,0x0,0x0,0x0,0x0,0x1,0x1,0x0,0x7e,0x1,0x180,0x180,0x180,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20380,0x0,0x20180,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x800,0x1000,0x1000,0x0,0x20180,0x0,0x7e,0x0,0x7e,0x0,0x0,0x0,0x20180,0x0,0x20180,0x0,0x0,0x0,0x0,0x180,0x180,0xc200,0xc200,0x10000,0x180,0x180,0x20000,0x0,0x20180,0x0,0x0,0x0,};
+      jj_la1_3 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8860,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1f,0x0,0x60,0x60,0x60,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x80e0,0x0,0x8060,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x200,0x200,0x400,0x400,0x0,0x8060,0x0,0x1f,0x0,0x1f,0x0,0x0,0x0,0x8060,0x0,0x8060,0x0,0x0,0x0,0x0,0x60,0x60,0x3080,0x3080,0x4000,0x60,0x60,0x8000,0x0,0x8060,0x0,0x0,0x0,};
    }
-  final private JJCalls[] jj_2_rtns = new JJCalls[14];
+  final private JJCalls[] jj_2_rtns = new JJCalls[15];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
@@ -2948,7 +2613,7 @@ String OuterJoinExpression():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 98; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2961,7 +2626,7 @@ String OuterJoinExpression():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 98; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2971,7 +2636,7 @@ String OuterJoinExpression():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 98; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2981,7 +2646,7 @@ String OuterJoinExpression():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 98; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2990,7 +2655,7 @@ String OuterJoinExpression():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 98; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2999,7 +2664,7 @@ String OuterJoinExpression():
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 98; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 95; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3020,7 +2685,6 @@ String OuterJoinExpression():
           }
         }
       }
-      trace_token(token, "");
       return token;
     }
     token = oldToken;
@@ -3045,8 +2709,6 @@ String OuterJoinExpression():
       int i = 0; Token tok = token;
       while (tok != null && tok != jj_scanpos) { i++; tok = tok.next; }
       if (tok != null) jj_add_error_token(kind, i);
-    } else {
-      trace_scan(jj_scanpos, kind);
     }
     if (jj_scanpos.kind != kind) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) throw jj_ls;
@@ -3058,7 +2720,6 @@ String OuterJoinExpression():
     else token = token.next = token_source.getNextToken();
     jj_ntk = -1;
     jj_gen++;
-      trace_token(token, " (in getNextToken)");
     return token;
   }
 
@@ -3114,12 +2775,12 @@ String OuterJoinExpression():
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[114];
+    boolean[] la1tokens = new boolean[112];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 98; i++) {
+    for (int i = 0; i < 95; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -3137,7 +2798,7 @@ String OuterJoinExpression():
         }
       }
     }
-    for (int i = 0; i < 114; i++) {
+    for (int i = 0; i < 112; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
@@ -3154,58 +2815,15 @@ String OuterJoinExpression():
     return new ParseException(token, exptokseq, tokenImage);
   }
 
-  private int trace_indent = 0;
-  private boolean trace_enabled = true;
-
   final public void enable_tracing() {
-    trace_enabled = true;
   }
 
   final public void disable_tracing() {
-    trace_enabled = false;
-  }
-
-  final private void trace_call(String s) {
-    if (trace_enabled) {
-      for (int i = 0; i < trace_indent; i++) { System.out.print(" "); }
-      System.out.println("Call:   " + s);
-    }
-    trace_indent = trace_indent + 2;
-  }
-
-  final private void trace_return(String s) {
-    trace_indent = trace_indent - 2;
-    if (trace_enabled) {
-      for (int i = 0; i < trace_indent; i++) { System.out.print(" "); }
-      System.out.println("Return: " + s);
-    }
-  }
-
-  final private void trace_token(Token t, String where) {
-    if (trace_enabled) {
-      for (int i = 0; i < trace_indent; i++) { System.out.print(" "); }
-      System.out.print("Consumed token: <" + tokenImage[t.kind]);
-      if (t.kind != 0 && !tokenImage[t.kind].equals("\"" + t.image + "\"")) {
-        System.out.print(": \"" + t.image + "\"");
-      }
-      System.out.println(" at line " + t.beginLine + " column " + t.beginColumn + ">" + where);
-    }
-  }
-
-  final private void trace_scan(Token t1, int t2) {
-    if (trace_enabled) {
-      for (int i = 0; i < trace_indent; i++) { System.out.print(" "); }
-      System.out.print("Visited token: <" + tokenImage[t1.kind]);
-      if (t1.kind != 0 && !tokenImage[t1.kind].equals("\"" + t1.image + "\"")) {
-        System.out.print(": \"" + t1.image + "\"");
-      }
-      System.out.println(" at line " + t1.beginLine + " column " + t1.beginColumn + ">; Expected token: <" + tokenImage[t2] + ">");
-    }
   }
 
   final private void jj_rescan_token() {
     jj_rescan = true;
-    for (int i = 0; i < 14; i++) {
+    for (int i = 0; i < 15; i++) {
     try {
       JJCalls p = jj_2_rtns[i];
       do {
@@ -3226,6 +2844,7 @@ String OuterJoinExpression():
             case 11: jj_3_12(); break;
             case 12: jj_3_13(); break;
             case 13: jj_3_14(); break;
+            case 14: jj_3_15(); break;
           }
         }
         p = p.next;

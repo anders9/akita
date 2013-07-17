@@ -24,7 +24,7 @@ import java.util.* ;
  * ZQuery: an SQL SELECT statement
  */
 public class ZQuery implements ZStatement, ZExp {
-
+	
 	String alias_;//used for sub-query.
 	
   Vector select_;

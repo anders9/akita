@@ -87,9 +87,7 @@ public interface ZqlJJParserConstants {
   int S_IDENTIFIER = 85;
   int LETTER = 86;
   int SPECIAL_CHARS = 87;
-  int S_BIND = 88;
-  int S_CHAR_LITERAL = 89;
-  int S_QUOTED_IDENTIFIER = 90;
+  int S_CHAR_LITERAL = 88;
 
   int DEFAULT = 0;
 
@@ -182,9 +180,7 @@ public interface ZqlJJParserConstants {
     "<S_IDENTIFIER>",
     "<LETTER>",
     "<SPECIAL_CHARS>",
-    "<S_BIND>",
     "<S_CHAR_LITERAL>",
-    "<S_QUOTED_IDENTIFIER>",
     "\"(\"",
     "\",\"",
     "\")\"",
