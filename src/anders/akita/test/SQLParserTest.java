@@ -18,7 +18,11 @@ public class SQLParserTest {
 			} catch (ParseException pe) {
 				System.out.println(pe.getMessage());
 				parser.ReInit(System.in);
-			}
+			} 
+			catch (org.gibello.zql.TokenMgrError te) {
+				System.out.println(te.getMessage());
+				parser.ReInit(System.in);
+			} 
 		}
 	}
 

@@ -23,70 +23,73 @@ public interface ZqlJJParserConstants {
   int K_DELETE = 21;
   int K_DESC = 22;
   int K_DISTINCT = 23;
-  int K_EXCLUSIVE = 24;
-  int K_EXISTS = 25;
-  int K_EXIT = 26;
-  int K_FLOAT = 27;
-  int K_FOR = 28;
-  int K_FROM = 29;
-  int K_GROUP = 30;
-  int K_HAVING = 31;
-  int K_IN = 32;
-  int K_INSERT = 33;
-  int K_INTEGER = 34;
-  int K_INTERSECT = 35;
-  int K_INTO = 36;
-  int K_IS = 37;
-  int K_LIKE = 38;
-  int K_LOCK = 39;
-  int K_MAX = 40;
-  int K_MIN = 41;
-  int K_MINUS = 42;
-  int K_MODE = 43;
-  int K_NATURAL = 44;
-  int K_NOT = 45;
-  int K_NOWAIT = 46;
-  int K_NULL = 47;
-  int K_NUMBER = 48;
-  int K_OF = 49;
-  int K_ONLY = 50;
-  int K_OR = 51;
-  int K_ORDER = 52;
-  int K_PRIOR = 53;
-  int K_QUIT = 54;
-  int K_READ = 55;
-  int K_REAL = 56;
-  int K_ROLLBACK = 57;
-  int K_ROW = 58;
-  int K_SELECT = 59;
-  int K_SET = 60;
-  int K_SHARE = 61;
-  int K_SMALLINT = 62;
-  int K_START = 63;
-  int K_SUM = 64;
-  int K_TABLE = 65;
-  int K_TRANSACTION = 66;
-  int K_UNION = 67;
-  int K_UPDATE = 68;
-  int K_VALUES = 69;
-  int K_VARCHAR2 = 70;
-  int K_VARCHAR = 71;
-  int K_WHERE = 72;
-  int K_WITH = 73;
-  int K_WORK = 74;
-  int K_WRITE = 75;
-  int S_NUMBER = 76;
-  int FLOAT = 77;
-  int INTEGER = 78;
-  int DIGIT = 79;
-  int LINE_COMMENT = 80;
-  int MULTI_LINE_COMMENT = 81;
-  int S_IDENTIFIER = 82;
-  int LETTER = 83;
-  int SPECIAL_CHARS = 84;
-  int S_BIND = 85;
-  int S_CHAR_LITERAL = 86;
-  int S_QUOTED_IDENTIFIER = 87;
+  int K_DIV = 24;
+  int K_EXCLUSIVE = 25;
+  int K_EXISTS = 26;
+  int K_EXIT = 27;
+  int K_FLOAT = 28;
+  int K_FOR = 29;
+  int K_FROM = 30;
+  int K_GROUP = 31;
+  int K_HAVING = 32;
+  int K_IN = 33;
+  int K_INSERT = 34;
+  int K_INTEGER = 35;
+  int K_INTERSECT = 36;
+  int K_INTO = 37;
+  int K_IS = 38;
+  int K_LIKE = 39;
+  int K_LOCK = 40;
+  int K_MAX = 41;
+  int K_MIN = 42;
+  int K_MOD = 43;
+  int K_MINUS = 44;
+  int K_MODE = 45;
+  int K_NATURAL = 46;
+  int K_NOT = 47;
+  int K_NOWAIT = 48;
+  int K_NULL = 49;
+  int K_NUMBER = 50;
+  int K_OF = 51;
+  int K_ONLY = 52;
+  int K_OR = 53;
+  int K_ORDER = 54;
+  int K_PRIOR = 55;
+  int K_QUIT = 56;
+  int K_READ = 57;
+  int K_REAL = 58;
+  int K_REGEXP = 59;
+  int K_ROLLBACK = 60;
+  int K_ROW = 61;
+  int K_SELECT = 62;
+  int K_SET = 63;
+  int K_SHARE = 64;
+  int K_SMALLINT = 65;
+  int K_START = 66;
+  int K_SUM = 67;
+  int K_TABLE = 68;
+  int K_TRANSACTION = 69;
+  int K_UNION = 70;
+  int K_UPDATE = 71;
+  int K_VALUES = 72;
+  int K_VARCHAR2 = 73;
+  int K_VARCHAR = 74;
+  int K_WHERE = 75;
+  int K_WITH = 76;
+  int K_WORK = 77;
+  int K_WRITE = 78;
+  int S_NUMBER = 79;
+  int FLOAT = 80;
+  int INTEGER = 81;
+  int DIGIT = 82;
+  int LINE_COMMENT = 83;
+  int MULTI_LINE_COMMENT = 84;
+  int S_IDENTIFIER = 85;
+  int LETTER = 86;
+  int SPECIAL_CHARS = 87;
+  int S_BIND = 88;
+  int S_CHAR_LITERAL = 89;
+  int S_QUOTED_IDENTIFIER = 90;
 
   int DEFAULT = 0;
 
@@ -115,6 +118,7 @@ public interface ZqlJJParserConstants {
     "\"DELETE\"",
     "\"DESC\"",
     "\"DISTINCT\"",
+    "\"DIV\"",
     "\"EXCLUSIVE\"",
     "\"EXISTS\"",
     "\"EXIT\"",
@@ -133,6 +137,7 @@ public interface ZqlJJParserConstants {
     "\"LOCK\"",
     "\"MAX\"",
     "\"MIN\"",
+    "\"MOD\"",
     "\"MINUS\"",
     "\"MODE\"",
     "\"NATURAL\"",
@@ -148,6 +153,7 @@ public interface ZqlJJParserConstants {
     "\"QUIT\"",
     "\"READ\"",
     "\"REAL\"",
+    "\"REGEXP\"",
     "\"ROLLBACK\"",
     "\"ROW\"",
     "\"SELECT\"",
@@ -186,7 +192,6 @@ public interface ZqlJJParserConstants {
     "\"=\"",
     "\".\"",
     "\"!=\"",
-    "\"#\"",
     "\"<>\"",
     "\">\"",
     "\">=\"",
@@ -196,10 +201,13 @@ public interface ZqlJJParserConstants {
     "\"-\"",
     "\"*\"",
     "\".*\"",
-    "\"?\"",
     "\"||\"",
+    "\"&&\"",
+    "\"?\"",
     "\"/\"",
-    "\"**\"",
+    "\"%\"",
+    "\"^\"",
+    "\"!\"",
   };
 
 }
