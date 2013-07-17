@@ -24,6 +24,14 @@ public class ZUtils {
   private static Hashtable fcts_ = new Hashtable();
   private static Hashtable aggrs_ = new Hashtable();
   
+  static{
+	  //addCustomFunction()
+	  
+	  
+	  
+  }
+  
+  
   //public static final int VARIABLE_PLIST = 10000;
 
   public static void addCustomFunction(String fct, int nparm) {

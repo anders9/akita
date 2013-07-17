@@ -19,7 +19,8 @@ options{
 	JDK_VERSION = "1.6";
     IGNORE_CASE=true;
     STATIC=false;
-//  DEBUG_LOOKAHEAD= true ;
+	//DEBUG_LOOKAHEAD= true ;
+	//DEBUG_PARSER = true;
 }
 
 PARSER_BEGIN(ZqlJJParser)
@@ -1034,20 +1035,23 @@ ZExp SQLPrimaryExpression():
    }
 |  LOOKAHEAD(3) "COUNT" "(" "*" ")" {
      return new ZExpression("COUNT",
-      new ZConstant("*", ZConstant.COLUMNNAME));
+      new ZConstant("*", ZConstant.COLUMNNAME), ZExpression.AGGR_ALL);
    }
 |  
-   LOOKAHEAD(<S_IDENTIFIER> "(") //function/aggreation
-	     (t = <S_IDENTIFIER> { s = t.toString(); })
+   LOOKAHEAD(3, FunctionOrAggregateName() "(") //function/aggreation
+	      (s = FunctionOrAggregateName() 
 	      "("
-	           (LOOKAHEAD(["ALL"|"DISTINCT"]) 
 	           (
-	           		("ALL" { modifier = ZExpression.AGGR_ALL; } | "DISTINCT" { modifier = ZExpression.AGGR_DISTINCT; }) 
-	           		 e = SQLSimpleExpression()
-	           )
-	           |
-	           [ parm = SQLExpressionList() ] {if(parm == null) parm = new Vector();}) 
-	      ")" 
+		           LOOKAHEAD("ALL"|"DISTINCT") (
+		           		("ALL" { modifier = ZExpression.AGGR_ALL; } | "DISTINCT" { modifier = ZExpression.AGGR_DISTINCT; }) 
+		           		 e = SQLSimpleExpression()
+		           )
+		           |
+		           LOOKAHEAD(")") {parm = new Vector(0);}
+				   |
+		           parm = SQLExpressionList()
+	           ) 
+	      ")" )
 	 {
 	    if( ZUtils.isAggregate(s) || ZUtils.isCustomAggregate(s) ){
 	    	if(modifier == -1){
@@ -1055,8 +1059,8 @@ ZExp SQLPrimaryExpression():
 	    		if(parm.size() != 1)
 	    			throw new ParseException("Aggregate " + s + " should have 1 parameter");
 	    		e = (ZExp)parm.get(0);
-	    		return new ZExpression(s, e, modifier); 
 	    	}
+	    	return new ZExpression(s, e, modifier);
 	    }
 		
 	  else if( (nparm = ZUtils.isCustomFunction(s)) >= 0 ){
@@ -1092,7 +1096,19 @@ ZExp SQLPrimaryExpression():
 |  t = <S_BIND> { return new ZConstant(t.toString(), ZConstant.STRING); }
 |  "(" e = SQLExpression() ")" { return e; }
 }
-
+String FunctionOrAggregateName():
+{
+  Token t;
+  String s;
+}
+{
+  t = "SUM" { return t.toString(); }
+| t = "AVG" { return t.toString(); }
+| t = "MAX" { return t.toString(); }
+| t = "MIN" { return t.toString(); }
+| t = "COUNT" { return t.toString(); }
+| t = <S_IDENTIFIER> {return t.toString();}
+}
 // AggregateFunc ::= SUM | AVG | MAX | MIN | COUNT
 // 01/07/00 PY.Gibello - Added COUNT
 /*

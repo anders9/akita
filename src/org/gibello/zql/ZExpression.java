@@ -30,7 +30,9 @@ public class ZExpression implements ZExp {
 	public final static int AGGR_ALL = 1;
 	public final static int AGGR_DISTINCT = 2;
 	public final static int NOT_AGGR = 0;
+  
 	
+  boolean is_funciton_ = false;
   String op_ = null;
   Vector operands_ = null;
   int aggr_modifier_ = NOT_AGGR;
@@ -58,8 +60,9 @@ public class ZExpression implements ZExp {
    * @param v  The operands array
    */
   public ZExpression(String op, Vector v) {
-    op_ = new String(op);
+    op_ = op.toUpperCase();
     operands_ = v;
+    this.is_funciton_ = true;
   }
   
   
@@ -70,8 +73,9 @@ public class ZExpression implements ZExp {
    * @param aggr_modifier
    */
   public ZExpression(String op, ZExp o1, int aggr_modifier) {
-    this(op, o1);
+    this(op.toUpperCase(), o1);
     this.aggr_modifier_ = aggr_modifier;
+    this.is_funciton_ = true;
   }
   
   
@@ -166,11 +170,15 @@ public class ZExpression implements ZExp {
     return buf.toString();
   }
 
+  public boolean isFunction(){
+	  return is_funciton_;
+  }
+  
   public String toString() {
 
     if(op_.equals("?")) return op_; // For prepared columns ("?")
 
-    if(ZUtils.isCustomFunction(op_) >= 0)
+    if(isFunction())
       return formatFunction();
 
     StringBuffer buf = new StringBuffer();
@@ -245,6 +253,11 @@ public class ZExpression implements ZExp {
 
   private String formatFunction() {
     StringBuffer b = new StringBuffer(op_ + "(");
+    if(aggr_modifier_ == AGGR_ALL)
+    	b.append("ALL ");
+    else if(aggr_modifier_ == AGGR_DISTINCT)
+    	b.append("DISTINCT ");
+    
     int nb = nbOperands();
     for(int i = 0; i < nb; i++) {
       b.append(getOperand(i).toString() + (i < nb-1 ? "," : ""));
