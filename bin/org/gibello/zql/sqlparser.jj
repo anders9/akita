@@ -349,7 +349,7 @@ ZUpdate UpdateStatement():
   "UPDATE" s = TableReference() { u = new ZUpdate(s); }
   [ tk = <S_IDENTIFIER> { u.setAlias(tk.toString()); } ]  /* Alias Name */
   "SET" ColumnValues(u) { }
-  [ "WHERE" e = SQLExpression(ZExpr.WHERE_EXPR, false) { u.addWhere(e); } ] ";"
+  [ "WHERE" e = SQLExpression() { u.addWhere(e); } ] ";"
   { return u; }
 }
 
@@ -375,7 +375,7 @@ ZExp UpdatedValue(): // Can be a subquery or a expression
   LOOKAHEAD(("(")+ "SELECT")
   "(" e = SelectStatement() ")" { return e; }
   |
-  e = SQLExpression(ZExp.SELECT_EXPR, false) { return e; }
+  e = SQLExpression() { return e; }
   |
   e = PreparedCol() { return e; } // For prepared columns ("?")
 }
@@ -413,7 +413,7 @@ ZDelete DeleteStatement():
 }
 {
     "DELETE" ["FROM"] s = TableReference() { d = new ZDelete(s); }
-    ["WHERE" e = SQLExpression(ZExp.SELECT_EXPR, false) { d.addWhere(e); }] ";"
+    ["WHERE" e = SQLExpression() { d.addWhere(e); }] ";"
     { return d; }
 }
 
@@ -457,7 +457,7 @@ String Relop():
 {
    op = "="  { return op.toString(); }
  | op = "!=" { return op.toString(); }
- //| op = "<=>"{ return op.toString(); }
+ | op = "<=>"{ return op.toString(); }
  | op = "<>" { return op.toString(); }
  | op = ">"  { return op.toString(); }
  | op = ">=" { return op.toString(); }
@@ -563,7 +563,7 @@ ZSelectItem SelectItem():
     LOOKAHEAD(SelectStar()) s = SelectStar() { return new ZSelectItem(s); }
 // |   LOOKAHEAD(3) "COUNT" "(" s = SelectStar() ")"
 //     { return new ZSelectItem("COUNT(" + s + ")"); } //TBD expression ?
-|   e = SQLExpression(ZExpr.SELECT_EXPR, false) // Column or Expression
+|   e = SQLExpression() // Column or Expression
     {
       //PY.Gibello 21 Apr 2001 - added e.toString() as arg
       it = new ZSelectItem(e.toString());
@@ -653,7 +653,7 @@ ZExp WhereClause():
   ZExp e;
 }
 {
-    "WHERE" e = SQLExpression(ZExpr.WHERE_EXPR, false) { return e; }
+    "WHERE" e = SQLExpression() { return e; }
 }
 /*
 void ConnectClause():
@@ -674,7 +674,7 @@ ZGroupBy GroupByClause():
 }
 {
   "GROUP" "BY" v = GroupByList() { g = new ZGroupBy(v); }
-  ["HAVING" e = SQLExpression(ZExpr.HAVING_EXPR, false) { g.setHaving(e);} ]
+  ["HAVING" e = SQLExpression() { g.setHaving(e);} ]
   { return g; }
 }
 Vector GroupByList():
@@ -708,13 +708,13 @@ ZExpression SetClause():
 Vector OrderByClause():
 {
   Vector v = new Vector();
-  ZExp e;
+  String s;
   ZOrderBy ob;
 }
 {
-    "ORDER" "BY" e = SQLSimpleExpression() { ob = new ZOrderBy(e); }
+    "ORDER" "BY" s = TableColumn() { ob = new ZOrderBy(s); }
     ["ASC" | "DESC" { ob.setAscOrder(false); }] { v.addElement(ob); }
-    ("," e = SQLSimpleExpression() { ob = new ZOrderBy(e); }
+    ("," s = TableColumn() { ob = new ZOrderBy(s); }
      ["ASC" | "DESC" { ob.setAscOrder(false); }] { v.addElement(ob); } )*
     { return v; }
 }
@@ -725,15 +725,15 @@ void ForUpdateClause():
     "FOR" "UPDATE" [ "OF" TableColumn() ("," TableColumn())* ]
 }
 
-ZExp SQLExpression(int expr_type, boolean in_aggr):
+ZExp SQLExpression():
 {
   ZExp e1, e2;
   ZExpression e = null;
   boolean single = true;
 }
 {
-    e1 = SQLAndExpression(expr_type, in_aggr)
-    ( ("OR"|"||") e2 = SQLAndExpression(expr_type, in_aggr) {
+    e1 = SQLAndExpression()
+    ( ("OR"|"||") e2 = SQLAndExpression() {
       if(single) { e = new ZExpression("OR", e1); }
       single=false;
       e.addOperand(e2);
@@ -741,15 +741,15 @@ ZExp SQLExpression(int expr_type, boolean in_aggr):
     { return (single ? e1 : e); }
 }
 
-ZExp SQLAndExpression(int expr_type, boolean in_aggr):
+ZExp SQLAndExpression():
 {
   ZExp e1, e2;
   ZExpression e = null;
   boolean single = true;
 }
 {
-    e1 = SQLUnaryLogicalExpression(expr_type, in_aggr)
-    ( ("AND"|"&&") e2 = SQLUnaryLogicalExpression(expr_type, in_aggr) {
+    e1 = SQLUnaryLogicalExpression()
+    ( ("AND"|"&&") e2 = SQLUnaryLogicalExpression() {
       if(single) { e = new ZExpression("AND", e1); }
       single=false;
       e.addOperand(e2);
@@ -757,15 +757,15 @@ ZExp SQLAndExpression(int expr_type, boolean in_aggr):
     { return (single ? e1 : e); }
 }
 
-ZExp SQLUnaryLogicalExpression(int expr_type, boolean in_aggr):
+ZExp SQLUnaryLogicalExpression():
 {
   ZExp e1, e;
   boolean not = false;
 }
 {
-    LOOKAHEAD(2) e = ExistsClause(expr_type, in_aggr) { return e; }
+    LOOKAHEAD(2) e = ExistsClause() { return e; }
 |   ( ["NOT" { not = true; } ]
-     e1 = SQLRelationalExpression(expr_type, in_aggr) {
+     e1 = SQLRelationalExpression() {
        if(not) e = new ZExpression("NOT", e1);
        else e = e1;
        return e;
@@ -773,13 +773,13 @@ ZExp SQLUnaryLogicalExpression(int expr_type, boolean in_aggr):
     )
 }
 
-ZExpression ExistsClause(int expr_type, boolean in_aggr):
+ZExpression ExistsClause():
 {
   ZQuery q;
   boolean not = false;
 }
 {
-    ["NOT" { not = true; } ] "EXISTS" "(" q = SubQuery(expr_type, in_aggr) ")" {
+    ["NOT" { not = true; } ] "EXISTS" "(" q = SubQuery() ")" {
       if(not) return new ZExpression("NOT EXISTS", q);
       else return new ZExpression("EXISTS", q);
     }
@@ -789,7 +789,7 @@ ZExpression ExistsClause(int expr_type, boolean in_aggr):
 //    ( SQLSimpleExpression )
 //    ( SQLRelationalOperatorExpression
 //      | SQLInClause | SQLBetweenClause | SQLLikeClause | IsNullClause )?
-ZExp SQLRelationalExpression(int expr_type, boolean in_aggr):
+ZExp SQLRelationalExpression():
 {
   ZExp e1, eleft;
   ZExpression eright = null;
@@ -798,18 +798,18 @@ ZExp SQLRelationalExpression(int expr_type, boolean in_aggr):
 }
 {
     ( 
-      e1 = SQLExpression(expr_type, in_aggr) {
+      e1 = SQLSimpleExpression() {
         eleft = e1;
       } )
 
 
     /* Lookahead(2) is required because of NOT IN,NOT BETWEEN and NOT LIKE */
-   ( eright = SQLRelationalOperatorExpression(expr_type, in_aggr)
-    |  LOOKAHEAD(2) (eright = SQLInClause(expr_type, in_aggr))
-    |  LOOKAHEAD(2) (eright = SQLBetweenClause(expr_type, in_aggr))
-    |  LOOKAHEAD(2) (eright = SQLLikeClause(expr_type, in_aggr))
-    |  LOOKAHEAD(2) (eright = SQLREGEXPClause(expr_type, in_aggr))
-    |  eright = IsNullClause(expr_type, in_aggr)
+   ( eright = SQLRelationalOperatorExpression()
+    |  LOOKAHEAD(2) (eright = SQLInClause())
+    |  LOOKAHEAD(2) (eright = SQLBetweenClause())
+    |  LOOKAHEAD(2) (eright = SQLLikeClause())
+    |  LOOKAHEAD(2) (eright = SQLREGEXPClause())
+    |  eright = IsNullClause()
    )?
 
    {
@@ -822,18 +822,18 @@ ZExp SQLRelationalExpression(int expr_type, boolean in_aggr):
    }
 }
 
-Vector SQLExpressionList(int expr_type, boolean in_aggr):
+Vector SQLExpressionList():
 {
   Vector v = new Vector(8);
   ZExp e;
 }
 {
-    e = SQLExpression(expr_type, in_aggr) { v.addElement(e); }
-    ("," e = SQLExpression(expr_type, in_aggr) { v.addElement(e); } )*
+    e = SQLExpression() { v.addElement(e); }
+    ("," e = SQLExpression() { v.addElement(e); } )*
     { return v; }
 }
 
-ZExpression SQLRelationalOperatorExpression(int expr_type, boolean in_aggr):
+ZExpression SQLRelationalOperatorExpression():
 {
   ZExpression e;
   ZExp e1, eright;
@@ -849,13 +849,13 @@ ZExpression SQLRelationalOperatorExpression(int expr_type, boolean in_aggr):
     */
     (   LOOKAHEAD("ANY" | "ALL" | "(" "SELECT")    //)
         (["ALL" { unaryOp = "ALL"; } | "ANY" { unaryOp = "ANY"; } ]
-         "(" e1 = SubQuery(expr_type, in_aggr) ")" {
+         "(" e1 = SubQuery() ")" {
             if(unaryOp == null) eright = e1;
             else eright = new ZExpression(unaryOp, e1);
           }
         )
         |
-        e1 = SQLExpression(expr_type, in_aggr) {  eright = e1; }
+        e1 = SQLSimpleExpression() {  eright = e1; }
     )
 
     { e.addOperand(eright); return e; }
@@ -877,7 +877,7 @@ ZExp PreparedCol(): {}
   "?" { return new ZExpression("?"); } // For prepared columns ("?")
 }
 
-ZExpression SQLInClause(int expr_type, boolean in_aggr):
+ZExpression SQLInClause():
 {
   ZExpression e;
   ZQuery q;
@@ -887,12 +887,12 @@ ZExpression SQLInClause(int expr_type, boolean in_aggr):
 {
   ["NOT" { not = true; }]
   "IN" { e = new ZExpression(not ? "NOT IN" : "IN"); }
-  "(" (v = SQLExpressionList(expr_type, in_aggr) { e.setOperands(v); }
+  "(" (v = SQLExpressionList() { e.setOperands(v); }
    | q = SubQuery() { e.addOperand(q); }) ")"
   { return e; }
 }
 
-ZExpression SQLBetweenClause(int expr_type, boolean in_aggr):
+ZExpression SQLBetweenClause():
 {
   ZExpression e;
   ZExp  e1, e2;
@@ -900,14 +900,14 @@ ZExpression SQLBetweenClause(int expr_type, boolean in_aggr):
 }
 {
   ["NOT" { not = true; }]
-  "BETWEEN" e1 = SQLExpression(expr_type, in_aggr) "AND" e2 = SQLExpression(expr_type, in_aggr) {
+  "BETWEEN" e1 = SQLSimpleExpression() "AND" e2 = SQLSimpleExpression() {
     if(not) e = new ZExpression("NOT BETWEEN", e1, e2);
     else e = new ZExpression("BETWEEN", e1, e2);
     return e;
   }
 }
 
-ZExpression SQLLikeClause(int expr_type, boolean in_aggr):
+ZExpression SQLLikeClause():
 {
   ZExp eright;
   ZExpression e;
@@ -915,14 +915,14 @@ ZExpression SQLLikeClause(int expr_type, boolean in_aggr):
 }
 {
   ["NOT" { not = true; }]
-  "LIKE" eright = SQLExpression(expr_type, in_aggr) {
+  "LIKE" eright = SQLSimpleExpression() {
     if(not) e = new ZExpression("NOT LIKE", eright);
     else e = new ZExpression("LIKE", eright);
     return e;
   }
 }
 
-ZExpression SQLREGEXPClause(int expr_type, boolean in_aggr):
+ZExpression SQLREGEXPClause():
 {
   ZExp eright;
   ZExpression e;
@@ -930,14 +930,14 @@ ZExpression SQLREGEXPClause(int expr_type, boolean in_aggr):
 }
 {
   ["NOT" { not = true; }]
-  "REGEXP" eright = SQLExpression(expr_type, in_aggr) {
+  "REGEXP" eright = SQLSimpleExpression() {
     if(not) e = new ZExpression("NOT REGEXP", eright);
     else e = new ZExpression("REGEXP", eright);
     return e;
   }
 }
 
-ZExpression IsNullClause(int expr_type, boolean in_aggr):
+ZExpression IsNullClause():
 {
   boolean not = false;
 }
@@ -951,15 +951,15 @@ ZExpression IsNullClause(int expr_type, boolean in_aggr):
 // SQLSimpleExpression
 //    ::= SQLMultiplicativeExpression (OP SQLMultiplicativeExpression)*
 // OP ::= + | - 
-ZExp SQLSimpleExpression(int expr_type, boolean in_aggr):
+ZExp SQLSimpleExpression():
 {
   Token op;
   ZExp e1, e2;
   ZExpression e = null;
 }
 {
-    e1 = SQLMultiplicativeExpression(expr_type, in_aggr)
-    ( ( op = "+" |  op = "-" ) e2 = SQLMultiplicativeExpression(expr_type, in_aggr) {
+    e1 = SQLMultiplicativeExpression()
+    ( ( op = "+" |  op = "-" ) e2 = SQLMultiplicativeExpression() {
       e = new ZExpression(op.toString(), e1);
       e.addOperand(e2);
       e1 = e;
@@ -971,15 +971,15 @@ ZExp SQLSimpleExpression(int expr_type, boolean in_aggr):
 // SQLMultiplicativeExpression
 //    ::= SQLExpotentExpression (OP SQLExpotentExpression)*
 // OP ::= * | / | "DIV" | "MOD" | % |
-ZExp SQLMultiplicativeExpression(int expr_type, boolean in_aggr):
+ZExp SQLMultiplicativeExpression():
 {
   Token op;
   ZExp e1, e2;
   ZExpression e = null;
 }
 {
-    e1 = SQLExpotentExpression(expr_type, in_aggr)
-    ( (op = "*" | op = "/" | op = "%" | op = "DIV" | op = "MOD" ) e2 = SQLExpotentExpression(expr_type, in_aggr) {
+    e1 = SQLExpotentExpression()
+    ( (op = "*" | op = "/" | op = "%" | op = "DIV" | op = "MOD" ) e2 = SQLExpotentExpression() {
       e = new ZExpression(op.toString(), e1);
       e.addOperand(e2); 
       e1 = e;
@@ -988,7 +988,7 @@ ZExp SQLMultiplicativeExpression(int expr_type, boolean in_aggr):
 }
 
 // SQLExpotentExpression ::= SQLUnaryExpression (** SQLUnaryExpression)*
-ZExp SQLExpotentExpression(int expr_type, boolean in_aggr):
+ZExp SQLExpotentExpression():
 {
   Token op;
   ZExp e1, e2;
@@ -996,8 +996,8 @@ ZExp SQLExpotentExpression(int expr_type, boolean in_aggr):
   boolean single = true;
 }
 {
-    e1 = SQLUnaryExpression(expr_type, in_aggr)
-    ( op = "^" e2 = SQLUnaryExpression(expr_type, in_aggr) {
+    e1 = SQLUnaryExpression()
+    ( op = "^" e2 = SQLUnaryExpression() {
       if(single) e = new ZExpression(op.toString(), e1);
       single = false;
       e.addOperand(e2);
@@ -1006,26 +1006,26 @@ ZExp SQLExpotentExpression(int expr_type, boolean in_aggr):
 }
 
 // SQLUnaryExpression ::= [+|-] SQLInversionExpression
-ZExp SQLUnaryExpression(int expr_type, boolean in_aggr):
+ZExp SQLUnaryExpression():
 {
   Token op = null;
   ZExp e1, e;
 }
 {
-  [ op = "+" |  op = "-"] e1 = SQLInversionExpression(expr_type, in_aggr) { 
+  [ op = "+" |  op = "-"] e1 = SQLInversionExpression() { 
     if(op == null || op.toString().equals("+") ) e = e1;
     else e = new ZExpression(op.toString(), e1);
     return e;
   }
 }
 
-ZExp SQLInversionExpression(int expr_type, boolean in_aggr):
+ZExp SQLInversionExpression():
 {
   Token op = null;
   ZExp e;
 }
 {
-  [ op = "!" ] e = SQLPrimaryExpression(expr_type, in_aggr) { 
+  [ op = "!" ] e = SQLPrimaryExpression() { 
     if(op == null ) return e;
     else return new ZExpression(op.toString(), e);
   }
@@ -1043,7 +1043,7 @@ ZExp SQLInversionExpression(int expr_type, boolean in_aggr):
 //   | AggregateFunc ( [ ALL | DISTINCT ] SQLSimpleExpression ) | TableColumn
 //   | COUNT(*)
 //   | <NUMBER> | <STRING> | <BIND>
-ZExp SQLPrimaryExpression(int expr_type, boolean in_aggr):
+ZExp SQLPrimaryExpression():
 {
   Token t;
   String s, s2;
@@ -1071,12 +1071,12 @@ ZExp SQLPrimaryExpression(int expr_type, boolean in_aggr):
 	           (
 		           LOOKAHEAD("ALL"|"DISTINCT") (
 		           		("ALL" { modifier = ZExpression.AGGR_ALL; } | "DISTINCT" { modifier = ZExpression.AGGR_DISTINCT; }) 
-		           		 e = SQLExpression(expr_type, in_aggr)
+		           		 e = SQLExpression()
 		           )
 		           |
 		           LOOKAHEAD(")") {parm = new Vector(0);}
 				   |
-		           parm = SQLExpressionList(expr_type, in_aggr)
+		           parm = SQLExpressionList()
 	           ) 
 	      ")" )
 	 {
@@ -1117,7 +1117,7 @@ ZExp SQLPrimaryExpression(int expr_type, boolean in_aggr):
 |  t = <S_NUMBER> { return new ZConstant(t.toString(), ZConstant.NUMBER); }
 |  t = <S_CHAR_LITERAL> { return new ZConstant(t.toString(), ZConstant.STRING); }
 //|  t = <S_BIND> { return new ZConstant(t.toString(), ZConstant.STRING); }
-|  "(" e = SQLExpression(expr_type, in_aggr) ")" { return e; }
+|  "(" e = SQLExpression() ")" { return e; }
 }
 String FunctionOrAggregateName():
 {
@@ -1198,14 +1198,12 @@ String OuterJoinExpression():
     }
 }
 */
-ZQuery SubQuery(int expr_type, boolean in_aggr):
+ZQuery SubQuery():
 {
   ZQuery q;
 }
 {
-  q = SelectWithoutOrder() { 
-  	if(expr_type == ZExp.SELECT_TYPE)
-		throw new ParseException("You can't use sub-query in select-list.");
+  q = SelectWithoutOrder() {
 	return q; 
   }
 }

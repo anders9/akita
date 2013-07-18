@@ -66,7 +66,7 @@ public class ZConstant implements ZExp {
   public int getType() { return type_; }
 
   public String toString() {
-    if(type_ == STRING) return '\'' + val_ + '\'';
+    if(type_ == STRING) return  val_ ;
     else return val_;
   }
 };

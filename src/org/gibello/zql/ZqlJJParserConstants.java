@@ -188,6 +188,7 @@ public interface ZqlJJParserConstants {
     "\"=\"",
     "\".\"",
     "\"!=\"",
+    "\"<=>\"",
     "\"<>\"",
     "\">\"",
     "\">=\"",

@@ -21,10 +21,10 @@ package org.gibello.zql;
  * An SQL query ORDER BY clause.
  */
 public class ZOrderBy implements java.io.Serializable {
-  ZExp exp_;
+  String col_;
   boolean asc_ = true;
 
-  public ZOrderBy(ZExp e) { exp_ = e; }
+  public ZOrderBy(String s) { col_ = s; }
 
   /**
    * Set the order to ascending or descending (defailt is ascending order).
@@ -43,10 +43,10 @@ public class ZOrderBy implements java.io.Serializable {
    * @return An expression (generally, a ZConstant that represents a column
    * name).
    */
-  public ZExp getExpression() { return exp_; }
+  public String getCol() { return col_; }
 
   public String toString() {
-    return exp_.toString() + " " + (asc_ ? "ASC" : "DESC");
+    return col_.toString() + " " + (asc_ ? "ASC" : "DESC");
   }
 };
 

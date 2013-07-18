@@ -28,7 +28,7 @@ public interface ZExp extends java.io.Serializable {
 	
 	public static final int SELECT_EXPR = 1;
 	public static final int WHERE_EXPR = 2;
-	public static final int HAVING_EXPR = 2;	
-
+	public static final int HAVING_EXPR = 3;	
+	public static final int FROM_EXPR = 4;
 };
 
