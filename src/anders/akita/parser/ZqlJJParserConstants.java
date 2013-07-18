@@ -14,80 +14,85 @@ public interface ZqlJJParserConstants {
   int K_BINARY_INTEGER = 12;
   int K_BOOLEAN = 13;
   int K_BY = 14;
-  int K_CHAR = 15;
-  int K_COMMENT = 16;
-  int K_COMMIT = 17;
-  int K_CONNECT = 18;
-  int K_COUNT = 19;
-  int K_DATE = 20;
-  int K_DELETE = 21;
-  int K_DESC = 22;
-  int K_DISTINCT = 23;
-  int K_DIV = 24;
-  int K_EXCLUSIVE = 25;
-  int K_EXISTS = 26;
-  int K_EXIT = 27;
-  int K_FLOAT = 28;
-  int K_FOR = 29;
-  int K_FROM = 30;
-  int K_GROUP = 31;
-  int K_HAVING = 32;
-  int K_IN = 33;
-  int K_INSERT = 34;
-  int K_INTEGER = 35;
-  int K_INTERSECT = 36;
-  int K_INTO = 37;
-  int K_IS = 38;
-  int K_LIKE = 39;
-  int K_LOCK = 40;
-  int K_MAX = 41;
-  int K_MIN = 42;
-  int K_MOD = 43;
-  int K_MINUS = 44;
-  int K_MODE = 45;
-  int K_NATURAL = 46;
-  int K_NOT = 47;
-  int K_NOWAIT = 48;
-  int K_NULL = 49;
-  int K_NUMBER = 50;
-  int K_OF = 51;
-  int K_ONLY = 52;
-  int K_OR = 53;
-  int K_ORDER = 54;
-  int K_PRIOR = 55;
-  int K_QUIT = 56;
-  int K_READ = 57;
-  int K_REAL = 58;
-  int K_REGEXP = 59;
-  int K_ROLLBACK = 60;
-  int K_ROW = 61;
-  int K_SELECT = 62;
-  int K_SET = 63;
-  int K_SHARE = 64;
-  int K_SMALLINT = 65;
-  int K_START = 66;
-  int K_SUM = 67;
-  int K_TABLE = 68;
-  int K_TRANSACTION = 69;
-  int K_UNION = 70;
-  int K_UPDATE = 71;
-  int K_VALUES = 72;
-  int K_VARCHAR2 = 73;
-  int K_VARCHAR = 74;
-  int K_WHERE = 75;
-  int K_WITH = 76;
-  int K_WORK = 77;
-  int K_WRITE = 78;
-  int S_NUMBER = 79;
-  int FLOAT = 80;
-  int INTEGER = 81;
-  int DIGIT = 82;
-  int LINE_COMMENT = 83;
-  int MULTI_LINE_COMMENT = 84;
-  int S_IDENTIFIER = 85;
-  int LETTER = 86;
-  int SPECIAL_CHARS = 87;
-  int S_CHAR_LITERAL = 88;
+  int K_CASE = 15;
+  int K_CHAR = 16;
+  int K_COMMENT = 17;
+  int K_COMMIT = 18;
+  int K_CONNECT = 19;
+  int K_COUNT = 20;
+  int K_DATE = 21;
+  int K_DELETE = 22;
+  int K_DESC = 23;
+  int K_DISTINCT = 24;
+  int K_DIV = 25;
+  int K_ELSE = 26;
+  int K_END = 27;
+  int K_EXCLUSIVE = 28;
+  int K_EXISTS = 29;
+  int K_EXIT = 30;
+  int K_FLOAT = 31;
+  int K_FOR = 32;
+  int K_FROM = 33;
+  int K_GROUP = 34;
+  int K_HAVING = 35;
+  int K_IN = 36;
+  int K_INSERT = 37;
+  int K_INTEGER = 38;
+  int K_INTERSECT = 39;
+  int K_INTO = 40;
+  int K_IS = 41;
+  int K_LIKE = 42;
+  int K_LOCK = 43;
+  int K_MAX = 44;
+  int K_MIN = 45;
+  int K_MOD = 46;
+  int K_MINUS = 47;
+  int K_MODE = 48;
+  int K_NATURAL = 49;
+  int K_NOT = 50;
+  int K_NOWAIT = 51;
+  int K_NULL = 52;
+  int K_NUMBER = 53;
+  int K_OF = 54;
+  int K_ONLY = 55;
+  int K_OR = 56;
+  int K_ORDER = 57;
+  int K_PRIOR = 58;
+  int K_QUIT = 59;
+  int K_READ = 60;
+  int K_REAL = 61;
+  int K_REGEXP = 62;
+  int K_ROLLBACK = 63;
+  int K_ROW = 64;
+  int K_SELECT = 65;
+  int K_SET = 66;
+  int K_SHARE = 67;
+  int K_SMALLINT = 68;
+  int K_START = 69;
+  int K_SUM = 70;
+  int K_TABLE = 71;
+  int K_THEN = 72;
+  int K_TRANSACTION = 73;
+  int K_UNION = 74;
+  int K_UPDATE = 75;
+  int K_VALUES = 76;
+  int K_VARCHAR2 = 77;
+  int K_VARCHAR = 78;
+  int K_WHEN = 79;
+  int K_WHERE = 80;
+  int K_WITH = 81;
+  int K_WORK = 82;
+  int K_WRITE = 83;
+  int S_NUMBER = 84;
+  int FLOAT = 85;
+  int INTEGER = 86;
+  int DIGIT = 87;
+  int LINE_COMMENT = 88;
+  int MULTI_LINE_COMMENT = 89;
+  int S_IDENTIFIER = 90;
+  int LETTER = 91;
+  int SPECIAL_CHARS = 92;
+  int S_CHAR_LITERAL = 93;
 
   int DEFAULT = 0;
 
@@ -107,6 +112,7 @@ public interface ZqlJJParserConstants {
     "\"BINARY_INTEGER\"",
     "\"BOOLEAN\"",
     "\"BY\"",
+    "\"CASE\"",
     "\"CHAR\"",
     "\"COMMENT\"",
     "\"COMMIT\"",
@@ -117,6 +123,8 @@ public interface ZqlJJParserConstants {
     "\"DESC\"",
     "\"DISTINCT\"",
     "\"DIV\"",
+    "\"ELSE\"",
+    "\"END\"",
     "\"EXCLUSIVE\"",
     "\"EXISTS\"",
     "\"EXIT\"",
@@ -161,12 +169,14 @@ public interface ZqlJJParserConstants {
     "\"START\"",
     "\"SUM\"",
     "\"TABLE\"",
+    "\"THEN\"",
     "\"TRANSACTION\"",
     "\"UNION\"",
     "\"UPDATE\"",
     "\"VALUES\"",
     "\"VARCHAR2\"",
     "\"VARCHAR\"",
+    "\"WHEN\"",
     "\"WHERE\"",
     "\"WITH\"",
     "\"WORK\"",

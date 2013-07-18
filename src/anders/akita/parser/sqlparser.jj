@@ -107,6 +107,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BINARY_INTEGER: "BINARY_INTEGER">
 |   <K_BOOLEAN:"BOOLEAN">
 |   <K_BY:"BY">
+|	<K_CASE:"CASE">
 |   <K_CHAR:"CHAR">
 |   <K_COMMENT:"COMMENT">
 |   <K_COMMIT:"COMMIT">
@@ -117,6 +118,8 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_DESC:"DESC">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DIV:"DIV">
+|	<K_ELSE:"ELSE">
+|	<K_END:"END">
 |   <K_EXCLUSIVE:"EXCLUSIVE">
 |   <K_EXISTS:"EXISTS">
 |   <K_EXIT:"EXIT">
@@ -161,12 +164,14 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_START:"START">
 |   <K_SUM:"SUM">
 |   <K_TABLE:"TABLE">
+|	<K_THEN:"THEN">
 |   <K_TRANSACTION:"TRANSACTION">
 |   <K_UNION:"UNION">
 |   <K_UPDATE:"UPDATE">
 |   <K_VALUES:"VALUES">
 |   <K_VARCHAR2:"VARCHAR2">
 |   <K_VARCHAR:"VARCHAR">
+|	<K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
 |   <K_WITH:"WITH">
 |   <K_WORK:"WORK">
@@ -766,7 +771,7 @@ ZExp SQLUnaryLogicalExpression():
 {
     LOOKAHEAD(2) e = ExistsClause() { return e; }
 |   ( ["NOT" { not = true; } ]
-     e1 = SQLRelationalExpression() {
+     e1 = SQLConditionExpression() {
        if(not) e = new ZExpression("NOT", e1);
        else e = e1;
        return e;
@@ -785,6 +790,33 @@ ZExpression ExistsClause():
       else return new ZExpression("EXISTS", q);
     }
 }
+
+ZExp SQLConditionExpression():
+{
+	ZExp e;
+}
+{
+	LOOKAHEAD("CASE") e = SQLSwitchClause() {return e;}
+	|
+	e = SQLRelationalExpression() {return e;}
+}
+
+ZExp SQLSwitchClause():
+{
+	ZExp e, cmpVal = null, ce, re;
+	ZExp else_result = null;
+	Vector cond = new Vector(), result = new Vector() ;
+}
+{
+	"CASE" [cmpVal = SQLRelationalExpression() ]
+	("WHEN" ce = SQLRelationalExpression()
+	 "THEN" re = SQLRelationalExpression()
+	  {cond.addElement(ce); result.addElement(re);})+
+	["ELSE" else_result = SQLRelationalExpression() ]
+	"END"
+	{return new ZSwitchExpr(cond, result, cmpVal, else_result); }
+}
+
 
 // SQLRelationalExpression ::=
 //    ( SQLSimpleExpression )
@@ -842,7 +874,6 @@ ZExpression SQLRelationalOperatorExpression():
   String unaryOp = null;
 }
 {
-
     op = Relop() { e = new ZExpression(op); }
 
     /* Only after seeing an ANY/ALL or "(" followed by a SubQuery() we can
