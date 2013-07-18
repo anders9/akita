@@ -1,7 +1,7 @@
 package anders.akita.test;
 
 
-import org.gibello.zql.*;
+import anders.akita.parser.*;
 
 public class SQLParserTest {
 
@@ -19,7 +19,7 @@ public class SQLParserTest {
 				System.out.println(pe.getMessage());
 				parser.ReInit(System.in);
 			} 
-			catch (org.gibello.zql.TokenMgrError te) {
+			catch (anders.akita.parser.TokenMgrError te) {
 				System.out.println(te.getMessage());
 				parser.ReInit(System.in);
 			} 
