@@ -94,7 +94,6 @@ SKIP:
     K_          Keyword
     S_          Substitutes
 */
-
 TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 {
     <K_ALL: "ALL">
@@ -114,6 +113,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CONNECT:"CONNECT">
 |   <K_COUNT:"COUNT">
 |   <K_DATE:"DATE">
+|	<K_DAY:"DAY">
 |   <K_DELETE:"DELETE">
 |   <K_DESC:"DESC">
 |   <K_DISTINCT:"DISTINCT">
@@ -128,35 +128,45 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_FROM:"FROM">
 |   <K_GROUP:"GROUP">
 |   <K_HAVING:"HAVING">
+|	<K_HOUR:"HOUR">
 |   <K_IN:"IN">
 |   <K_INSERT:"INSERT">
 |   <K_INTEGER:"INTEGER">
 |   <K_INTERSECT:"INTERSECT">
+|	<K_INTERVAL:"INTERVAL">
 |   <K_INTO:"INTO">
 |   <K_IS:"IS">
+|	<K_JOIN:"JOIN">
+|	<K_LEFT:"LEFT">
 |   <K_LIKE:"LIKE">
 |   <K_LOCK:"LOCK">
 |   <K_MAX:"MAX">
 |   <K_MIN:"MIN">
 |   <K_MOD:"MOD">
 |   <K_MINUS:"MINUS">
+|	<K_MINUTE:"MINUTE">
 |   <K_MODE:"MODE">
+|	<K_MONTH:"MONTH">
 |   <K_NATURAL:"NATURAL">
 |   <K_NOT:"NOT">
 |   <K_NOWAIT:"NOWAIT">
 |   <K_NULL:"NULL">
 |   <K_NUMBER:"NUMBER">
 |   <K_OF:"OF">
+|	<K_ON:"ON">
 |   <K_ONLY:"ONLY">
 |   <K_OR:"OR">
 |   <K_ORDER:"ORDER">
+|	<K_OUTER:"OUTER">
 |   <K_PRIOR:"PRIOR">
+|	<K_QUARTER:"QUARTER">
 |   <K_QUIT:"QUIT">
 |   <K_READ:"READ">
 |   <K_REAL:"REAL">
 |   <K_REGEXP:"REGEXP">
 |   <K_ROLLBACK:"ROLLBACK">
 |   <K_ROW:"ROW">
+|	<K_SECOND:"SECOND">
 |   <K_SELECT:"SELECT">
 |   <K_SET:"SET">
 |   <K_SHARE:"SHARE">
@@ -171,11 +181,13 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_VALUES:"VALUES">
 |   <K_VARCHAR2:"VARCHAR2">
 |   <K_VARCHAR:"VARCHAR">
+|	<K_WEEK:"WEEK">
 |	<K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
 |   <K_WITH:"WITH">
 |   <K_WORK:"WORK">
 |   <K_WRITE:"WRITE">
+|	<K_YEAR:"YEAR">
 }
 
 TOKEN : /* Numeric Constants */
@@ -211,6 +223,7 @@ TOKEN:
 	>
 //|   < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
 }
+
 
 
 void BasicDataTypeDeclaration():
@@ -510,7 +523,7 @@ ZQuery SelectWithoutOrder():
 {
   ZQuery q = new ZQuery();
   Vector select;
-  Vector from;
+  ZFromClause from;
   ZExp where = null;
   ZGroupBy groupby = null;
   ZExpression setclause = null;
@@ -602,18 +615,46 @@ String SelectStar():
   { return new String(s + "." + s2 + ".*"); } // schema.table.*
 }
 
+ZFromClause FromClause():
+{
+	ZFromClause fc;
+}
+{
+	"FROM"
+	(
+		LOOKAHEAD(FromItemEx() "LEFT") fc = LeftOuterJoinClause() | 
+		fc = InnerJoinClause()
+	)
+	{return fc;}
+}
+
 // FromClause ::= FromItem (, FromItem)*
-Vector FromClause():
+ZFromClause InnerJoinClause():
 {
   Vector v = new Vector(8);
   ZFromItemEx f;
 }
 {
-    "FROM" f = FromItemEx() { v.addElement(f); }
+    f = FromItemEx() { v.addElement(f); }
     ( "," f = FromItemEx() { v.addElement(f); } )*
-    { return v; }
+    { return new ZFromClause(ZFromClause.INNER_JOIN, v, null); }
 }
-
+ZFromClause LeftOuterJoinClause():
+{
+	ZFromClause f;
+	ZFromItemEx il, ir;
+	ZExp cond = null;
+}
+{
+	il = FromItemEx() "LEFT" ["OUTER"] "JOIN" ir = FromItemEx() 
+	[ "ON" cond = SQLExpression() ]
+	{
+		Vector v = new Vector(2);
+		v.addElement(il);
+		v.addElement(ir);
+		return new ZFromClause(ZFromClause.LEFT_JOIN, v, cond);
+	}
+}
 // FromItemEx ::= ( FromItem | "(" SelectStatement ")" ) [ "AS" alias ]
 ZFromItemEx FromItemEx():
 {
@@ -1126,7 +1167,7 @@ ZExp SQLPrimaryExpression():
 	  	if(modifier != -1)
 	  		throw new ParseException("Function " + s + " should not have modifier ALL/DISTINCT");
 	    
-	    if(nparm != parm.size() ) {
+	    if( nparm != ZExpression.VAR_PARAM && nparm != parm.size() ) {
 	      throw new ParseException("Function " + s + " should have "
 	         + nparm + " parameter(s)");
 	    }
@@ -1150,6 +1191,7 @@ ZExp SQLPrimaryExpression():
 |  t = <S_CHAR_LITERAL> { return new ZConstant(t.toString(), ZConstant.STRING); }
 //|  t = <S_BIND> { return new ZConstant(t.toString(), ZConstant.STRING); }
 |  "(" e = SQLExpression() ")" { return e; }
+|  e = Interval() {return e;}
 }
 String FunctionOrAggregateName():
 {
@@ -1157,13 +1199,55 @@ String FunctionOrAggregateName():
   String s;
 }
 {
-  t = "SUM" { return t.toString(); }
-| t = "AVG" { return t.toString(); }
-| t = "MAX" { return t.toString(); }
-| t = "MIN" { return t.toString(); }
-| t = "COUNT" { return t.toString(); }
-| t = <S_IDENTIFIER> {return t.toString();}
+(  t = "SUM" 
+| t = "AVG" 
+| t = "MAX" 
+| t = "MIN"
+| t = "COUNT"
+| t = "LEFT"
+| t = "MOD"
+| t = "DATE"
+| t = "DAY"
+| t = "HOUR"
+| t = "MINUTE"
+| t = "MONTH"
+| t = "QUARTER"
+| t = "SECOND"
+| t = "WEEK"
+| t = "YEAR"
+| t = <S_IDENTIFIER> 
+)
+{return t.toString();}
 }
+ZInterval Interval():
+{ 	
+	String type;
+	ZExp exp;
+}	
+{
+	"INTERVAL" exp = SQLExpression() type = IntervalType()
+	{return new ZInterval(type, exp);}
+}
+
+
+String IntervalType():
+{
+	Token t;
+}
+{
+	(
+	t = "SECOND"
+|	t = "MINUTE"
+|	t = "HOUR"
+|	t = "DAY"
+|	t = "WEEK"
+|	t = "MONTH"
+|	t = "QUARTER"
+|	t = "YEAR"
+)
+	{return t.toString();}
+}
+
 // AggregateFunc ::= SUM | AVG | MAX | MIN | COUNT
 // 01/07/00 PY.Gibello - Added COUNT
 /*

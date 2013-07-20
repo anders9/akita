@@ -29,7 +29,7 @@ public class ZQuery implements ZStatement, ZExp {
 	
   Vector select_;
   boolean distinct_ = false;
-  Vector from_;
+  ZFromClause from_;
   ZExp where_ = null;
   ZGroupBy groupby_ = null;
   ZExpression setclause_ = null;
@@ -56,7 +56,7 @@ public class ZQuery implements ZStatement, ZExp {
    * Insert the FROM part of the statement
    * @param f a Vector of ZFromItem objects
    */
-  public void addFrom(Vector f) { from_ = f; }
+  public void addFrom(ZFromClause f) { from_ = f; }
 
   /**
    * Insert a WHERE clause
@@ -92,7 +92,7 @@ public class ZQuery implements ZStatement, ZExp {
    * Get the FROM part of the statement
    * @return A vector of ZFromItem objects
    */
-  public Vector getFrom() { return from_; }
+  public ZFromClause getFrom() { return from_; }
 
   /**
    * Get the WHERE part of the statement
@@ -141,10 +141,25 @@ public class ZQuery implements ZStatement, ZExp {
     }
 
     //buf.append(" from " + from_.toString());
-    buf.append(" from ");
-    buf.append(from_.elementAt(0).toString());
-    for(i=1; i<from_.size(); i++) {
-      buf.append(", " + from_.elementAt(i).toString());
+    if(from_ != null){
+	    buf.append(" from ");
+	    if(from_.join_type == ZFromClause.INNER_JOIN){
+	    	Vector from_ = this.from_.items;
+		    
+		    buf.append(from_.elementAt(0).toString());
+		    for(i=1; i<from_.size(); i++) {
+		      buf.append(", " + from_.elementAt(i).toString());
+		    }
+	    }
+	    else if(from_.join_type == ZFromClause.LEFT_JOIN){
+	    	buf.append(this.from_.items.elementAt(0).toString())
+	    	.append(" LEFT JOIN ")
+	    	.append(this.from_.items.elementAt(1).toString());
+	    	if(from_.join_cond != null){
+	    		buf.append(" ON ")
+	    		.append(from_.join_cond.toString());
+	    	}
+	    }
     }
 
     if(where_ != null) {

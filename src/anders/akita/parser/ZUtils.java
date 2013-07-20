@@ -25,10 +25,13 @@ public class ZUtils {
   private static Hashtable aggrs_ = new Hashtable();
   
   static{
-	  //addCustomFunction()
-	  
-	  
-	  
+	  for(Object[] a: MySQLFunc.func){
+		  fcts_.put(a[0], a[1]);
+	  }
+	  Object o = new Object();
+	  for(String s: MySQLFunc.aggr){
+		  aggrs_.put(s, o);
+	  }
   }
   
   
@@ -56,7 +59,7 @@ public class ZUtils {
     String tmp = op.toUpperCase().trim();
     return tmp.equals("SUM") || tmp.equals("AVG")
         || tmp.equals("MAX") || tmp.equals("MIN")
-        || tmp.equals("COUNT") || (fcts_ != null && fcts_.get(tmp) != null);
+        || tmp.equals("COUNT");
   }
   public static boolean isCustomAggregate(String op) {
 	  if(op == null)return false;

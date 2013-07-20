@@ -30,7 +30,7 @@ public class ZExpression implements ZExp {
 	public final static int AGGR_ALL = 1;
 	public final static int AGGR_DISTINCT = 2;
 	public final static int NOT_AGGR = 0;
-  
+	public final static int VAR_PARAM = 1000000;
 	
   boolean is_funciton_ = false;
   String op_ = null;
