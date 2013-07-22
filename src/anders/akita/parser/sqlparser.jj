@@ -214,7 +214,7 @@ TOKEN:
 {
 	< S_IDENTIFIER: ( <LETTER> )+ ( <DIGIT> | <LETTER> |<SPECIAL_CHARS>)* >
 | 	< #LETTER: ["a"-"z", "A"-"Z"] >
-|   < #SPECIAL_CHARS: "$" | "_">
+|   < #SPECIAL_CHARS:  "_">
 //|   < S_BIND: ":" <S_IDENTIFIER> ("." <S_IDENTIFIER>)? >
 |   < S_CHAR_LITERAL: 
 		 ("'"( ( (~["'","\\"]) | ("\\"( ["n","t","b","r","0","\\","'","\"", "Z", "%", "_"])) )* )"'")

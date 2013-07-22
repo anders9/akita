@@ -215,7 +215,7 @@ public interface ZqlJJParserConstants {
     "<MULTI_LINE_COMMENT>",
     "<S_IDENTIFIER>",
     "<LETTER>",
-    "<SPECIAL_CHARS>",
+    "\"_\"",
     "<S_CHAR_LITERAL>",
     "\"(\"",
     "\",\"",

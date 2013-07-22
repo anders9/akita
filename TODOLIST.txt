@@ -1,4 +1,9 @@
-  公司 有道云笔记 密码
+
+pass1：
+col-> tab-name
+expr-> tab-list
+relsub-expr-> rel-cond ->out-tab
+
   
   join on...
   case ... when... then...
@@ -8,6 +13,7 @@
   
   outer join preds push down
   
+  group by 前后表达式
   
   
   
