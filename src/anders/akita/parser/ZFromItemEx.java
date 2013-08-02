@@ -2,6 +2,9 @@ package anders.akita.parser;
 
 public class ZFromItemEx {
 
+	public String alias;//filled by pass1
+	public String table;//filled by pass1
+	
 	ZQuery subQuery = null;
 	ZFromItem fromItem = null;
 	

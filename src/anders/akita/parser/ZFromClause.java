@@ -10,7 +10,12 @@ public class ZFromClause {
 	public static final int INNER_JOIN = 1;
 	public static final int LEFT_JOIN = 2;
 	
-	
+	public int getItemN(){
+		return items.size();
+	}
+	public ZFromItemEx getItem(int idx){
+		return (ZFromItemEx)items.get(idx);
+	}
 	public ZFromClause(int join_type, Vector items, ZExp join_cond){
 		this.join_cond = join_cond;
 		this.join_type = join_type;

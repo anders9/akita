@@ -597,7 +597,7 @@ String SelectAlias():
   Token tk;
 }
 {
-   "AS" 
+   ["AS"] 
    tk = <S_IDENTIFIER> {return tk.toString(); }
 }
 
@@ -668,7 +668,7 @@ ZFromItemEx FromItemEx():
 	( (tab =  TableReference()) { tab_item = new ZFromItem(tab); f = new ZFromItemEx(tab_item); }
 	 | ("(" subq = SubQuery() ")") { f = new ZFromItemEx(subq); }
 	)
-	 [ "AS" tk = <S_IDENTIFIER> {
+	 [ ["AS"] tk = <S_IDENTIFIER> {
 	 	 if(subq != null)
 	 	 	 subq.setAlias(tk.toString());
 	 	 else tab_item.setAlias(tk.toString());

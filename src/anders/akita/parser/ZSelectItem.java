@@ -39,7 +39,9 @@ public class ZSelectItem extends ZAliasedName {
    * @param fullname A string that represents a column name or wildcard
    * (example: a.*).
    */
-  public ZSelectItem(String fullname) {
+  public ZSelectItem(String fullname) 
+  	throws ParseException
+  {
     super(fullname, ZAliasedName.FORM_COLUMN);
     setAggregate(ZUtils.getAggregateCall(fullname)); //PY.Gibello 21 Apr 2001
   }

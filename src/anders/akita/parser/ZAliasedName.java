@@ -30,8 +30,10 @@ import java.util.* ;
  */
 public class ZAliasedName implements java.io.Serializable {
 
+	public String tableFilled;
+	
   String strform_ = "";
-  String schema_ = null;
+  //String schema_ = null;
   String table_ = null;
   String column_ = null;
   String alias_ = null;
@@ -48,12 +50,16 @@ public class ZAliasedName implements java.io.Serializable {
    * @param fullname The full name: [[schema.]table.]column
    * @param form The name form (FORM_TABLE or FORM_COLUMN)
    */
-  public ZAliasedName(String fullname, int form) {
+  public ZAliasedName(String fullname, int form) 
+  	throws ParseException
+  {
 
     form_ = form;
     strform_ = new String(fullname);
 
     StringTokenizer st = new StringTokenizer(fullname, ".");
+    
+    String schema;
     switch(st.countTokens()) {
       case 1:
         if(form == FORM_TABLE) table_ = new String(st.nextToken());
@@ -61,8 +67,9 @@ public class ZAliasedName implements java.io.Serializable {
         break;
       case 2:
         if(form == FORM_TABLE) {
-          schema_ = new String(st.nextToken());
+          schema = new String(st.nextToken());
           table_ = new String(st.nextToken());
+          throw new ParseException("Not support schema: " + schema + "." + table_);
         } else {
           table_ = new String(st.nextToken());
           column_ = new String(st.nextToken());
@@ -70,12 +77,12 @@ public class ZAliasedName implements java.io.Serializable {
         break;
       case 3:
       default:
-        schema_ = new String(st.nextToken());
+        schema = new String(st.nextToken());
         table_ = new String(st.nextToken());
         column_ = new String(st.nextToken());
-        break;
+        throw new ParseException("Not support schema: " + schema + "." + table_ + "." + column_);
     }
-    schema_ = postProcess(schema_);
+    //schema_ = postProcess(schema_);
     table_ = postProcess(table_);
     column_ = postProcess(column_);
   }
@@ -96,7 +103,7 @@ public class ZAliasedName implements java.io.Serializable {
    * @return If the name is of the form schema.table.column,
    * returns the schema part
    */
-  public String getSchema() { return schema_; }
+  //public String getSchema() { return schema_; }
 
   /**
    * @return If the name is of the form [schema.]table.column,

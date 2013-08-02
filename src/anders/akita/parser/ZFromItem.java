@@ -36,7 +36,9 @@ public class ZFromItem extends ZAliasedName {
    * See the ZAliasedName constructor for more information.
    * @param fullname the table name.
    */
-  public ZFromItem(String fullname) {
+  public ZFromItem(String fullname)
+  	throws ParseException
+  {
     super(fullname, ZAliasedName.FORM_TABLE);
   }
 
