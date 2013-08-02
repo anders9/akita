@@ -10,6 +10,12 @@ public final class Table {
 	
 	Column[] col;
 	
+	boolean isDistr;
+	
+	public boolean isDistributed(){
+		return isDistr;
+	}
+	
 	public Column getCol(String colName){
 		int idx = Util.findStr(colName, this.colName);
 		if(idx != -1)
