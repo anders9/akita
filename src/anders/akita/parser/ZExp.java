@@ -22,7 +22,7 @@ import java.util.* ;
 
 /**
  * A common interface for all SQL Expressions (ZQueries, ZExpressions and
- * ZConstants are ZExps).
+ * ZConstants, ZSwitchExpr, ZInterval are ZExps).
  */
 public interface ZExp extends java.io.Serializable {
 	

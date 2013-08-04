@@ -11,8 +11,11 @@ public class ZInterval implements ZExp {
 		this.exp = exp;
 	}
 	
+	public ZExp getExpr(){
+		return exp;
+	}
 	public String toString(){
-		return "Interval " + exp + " " + type;
+		return "Interval " + exp.toString() + " " + type;
 	}
 	
 }

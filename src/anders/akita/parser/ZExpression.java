@@ -109,10 +109,11 @@ public class ZExpression implements ZExp {
    * Get this expression's operands.
    * @return the operands (as a Vector of ZExp objects).
    */
+  
   public Vector getOperands() {
     return operands_;
   }
-
+	
   /**
    * Add an operand to the current expression.
    * @param o The operand to add.

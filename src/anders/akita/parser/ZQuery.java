@@ -25,6 +25,10 @@ import java.util.* ;
  */
 public class ZQuery implements ZStatement, ZExp {
 	
+	public ZQuery parent;
+	public ZQuery outer;
+	
+	
 	String alias_;//used for sub-query.
 	
   Vector select_;

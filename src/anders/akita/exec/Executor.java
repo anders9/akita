@@ -12,7 +12,9 @@ public class Executor {
 		
 		//syntax check
 	}
-	
+	void buildQueryTree(ZQuery q){
+		
+	}
 	
 	//fill table/alias in FromClause->FromItem-Vector
 	void pass1_fillTabAliasName(ZQuery q){
@@ -34,6 +36,53 @@ public class Executor {
 		}
 	}
 	
+	interface ExprIterCallback{
+		void handleColRef(ZConstant colRef);
+		void handleSubQuery(ZQuery subQ);
+	}
+	//iterator of Columne in Expr
+	void colInExprIter(ZExp expr, ExprIterCallback callback){
+		if(expr == null)
+			return;
+		if(expr instanceof ZExpression){
+			ZExpression e = (ZExpression)expr;
+			for(int i = 0; i < e.nbOperands(); ++i){
+				colInExprIter(e.getOperand(i), callback);
+			}
+		}
+		else if(expr instanceof ZConstant){
+			ZConstant c = (ZConstant)expr;
+			if(c.getType() == ZConstant.COLUMNNAME){
+				callback.handleColRef(c);
+			}
+		}
+		else if(expr instanceof ZInterval){
+			ZInterval i = (ZInterval)expr;
+			colInExprIter(i.getExpr(), callback);		
+		}
+		else if(expr instanceof ZSwitchExpr){
+			ZSwitchExpr s = (ZSwitchExpr)expr;
+			for(Object sube: s.getCond()){
+				colInExprIter((ZExp)sube, callback);
+			}
+			for(Object sube: s.getResult()){
+				colInExprIter((ZExp)sube, callback);
+			}
+			if(s.getCmpVal() != null)
+				colInExprIter((ZExp)s.getCmpVal(), callback);
+			if(s.getElseResult() != null)
+				colInExprIter((ZExp)s.getElseResult(), callback);		
+		}
+		else if(expr instanceof ZQuery){
+			callback.handleSubQuery((ZQuery)expr);
+		}
+		else throw new ExecException("Parse error #colInExprIter");
+	}
+	
+	
+	void pass2_fillColRefTab(ZQuery q){
+		
+	}
 	
 	ArrayList<Row> exec(){
 		
