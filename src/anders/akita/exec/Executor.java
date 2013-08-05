@@ -12,8 +12,22 @@ public class Executor {
 		
 		//syntax check
 	}
+	
+
 	void buildQueryTree(ZQuery q){
 		
+		int fN = q.getFrom().getItemN();
+		
+		
+		
+		for(int i = 0; i < fN; ++i){
+			ZFromItemEx item = (ZFromItemEx)q.getFrom().getItem(i);
+			if(item.isSubQuery()){
+				ZQuery subQ = item.getSubQuery();
+				subQ.parent = q;
+				buildQueryTree(subQ);
+			}
+		}
 	}
 	
 	//fill table/alias in FromClause->FromItem-Vector
