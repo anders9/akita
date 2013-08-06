@@ -31,6 +31,10 @@ public class ZFromItem extends ZAliasedName {
    */
   public ZFromItem() { super(); }
 
+  private String table;
+  public String getTable(){ return table; }
+  
+  
   /**
    * Create a new FROM clause on a given table.
    * See the ZAliasedName constructor for more information.
