@@ -453,10 +453,9 @@ String TableColumn():
   String s;
 }
 {
-    // user.table.column
+    // [table.]column
     s = OracleObjectName() { buf.append(s); }
-    [ "." s = OracleObjectName() { buf.append("." + s); }
-     ["." s = OracleObjectName() { buf.append("." + s); } ]]
+    [ "." s = OracleObjectName() { buf.append("." + s); } ]
     { return buf.toString(); }
 }
 
@@ -486,13 +485,10 @@ String Relop():
 // TableReference ::= OracleObjectName[.OracleObjectName]
 String TableReference():
 {
-  StringBuffer buf = new StringBuffer();
   String s;
 }
 {
-    s = OracleObjectName() { buf.append(s); }
-    ["." s = OracleObjectName() { buf.append("." + s); } ]
-    { return buf.toString(); }
+    s = OracleObjectName() { return s; }
 }
 
 void NumOrID():
@@ -558,11 +554,18 @@ Vector SelectList():
   ZSelectItem elem;
 }
 {
-  "*" { v.addElement(new ZSelectItem("*")); return v; }
-//  | LOOKAHEAD(3) "COUNT" "(" "*" ")"
-//  { v.addElement(new ZSelectItem("COUNT(*)")); return v; } //TBD Expression ?
-  | elem = SelectItem() { v.addElement(elem); }
-    ("," elem = SelectItem() { v.addElement(elem); } )* { return v; }
+    elem = SelectItem() { v.addElement(elem); }
+    ("," elem = SelectItem() { v.addElement(elem); } )*
+     { 
+     	int star_cnt = 0;
+    	for(Object e: v){
+    		if(((ZSelectItem)e).type == ZSelectItem.STAR)
+    			++star_cnt;
+    	}
+    	if(star_cnt > 1)
+    		throw new ParseException("Parse error: not permit multiple select *");
+    	return v; 
+     }
 }
 
 
@@ -573,22 +576,18 @@ Vector SelectList():
 // SelectItem() ::= SelectStar | SQLSimpleExpression() [SelectAlias]
 ZSelectItem SelectItem():
 {
-  String s;
+  String s = null;
   ZSelectItem it;
   ZExp e;
 }
 {
-    LOOKAHEAD(SelectStar()) s = SelectStar() { return new ZSelectItem(s); }
-// |   LOOKAHEAD(3) "COUNT" "(" s = SelectStar() ")"
-//     { return new ZSelectItem("COUNT(" + s + ")"); } //TBD expression ?
-|   e = SQLExpression() // Column or Expression
-    {
-      //PY.Gibello 21 Apr 2001 - added e.toString() as arg
-      it = new ZSelectItem(e.toString());
-      it.setExpression(e);
-    }
-    [s = SelectAlias() { it.setAlias(s); } ] // Column Alias
-    { return it; }
+	LOOKAHEAD(1) ("*" {return new ZSelectItem();})
+|
+	LOOKAHEAD(2)(s = OracleObjectName()".*" { return new ZSelectItem(s); } )// table.*
+|   
+	(e = SQLExpression() // Column or Expression
+    [s = SelectAlias()  ] // Column Alias
+    { return new ZSelectItem(e, s); })
 }
 
 // SelectAlias ::= (<S_IDENTIFIER>)+
@@ -599,20 +598,6 @@ String SelectAlias():
 {
    ["AS"] 
    tk = <S_IDENTIFIER> {return tk.toString(); }
-}
-
-// SelectStar() ::= OracleObjectName()".*" |
-//               OracleObjectName()"." OracleObjectName() ".*"
-String SelectStar():
-{
-  String s, s2;
-}
-{
-  LOOKAHEAD(2)
-  s = OracleObjectName()".*" { return new String(s + ".*"); } // table.*
-| LOOKAHEAD(4)
-  s = OracleObjectName()"." s2 = OracleObjectName() ".*"
-  { return new String(s + "." + s2 + ".*"); } // schema.table.*
 }
 
 ZFromClause FromClause():
@@ -669,12 +654,8 @@ ZFromItemEx FromItemEx():
 	 | ("(" subq = SubQuery() ")") { f = new ZFromItemEx(subq); }
 	)
 	 [ ["AS"] tk = <S_IDENTIFIER> {
-	 	 if(subq != null)
-	 	 	 subq.setAlias(tk.toString());
-	 	 else tab_item.setAlias(tk.toString());
+	 	 f.alias = tk.toString();
 	  } ]  /* Alias Name */
-	
-	
 	{return f; }
 }
 
@@ -1135,7 +1116,7 @@ ZExp SQLPrimaryExpression():
 */
 |  LOOKAHEAD(3) "COUNT" "(" "*" ")" {
      return new ZExpression("COUNT",
-      new ZConstant("*", ZConstant.COLUMNNAME), ZExpression.AGGR_ALL);
+      new ZConstant("*", ZConstant.STAR), ZExpression.AGGR_ALL);
    }
 |  
    LOOKAHEAD(3, FunctionOrAggregateName() "(") //function/aggreation

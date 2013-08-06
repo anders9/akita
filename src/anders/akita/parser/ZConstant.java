@@ -28,6 +28,8 @@ public class ZConstant implements ZExp {
   /**
    * ZConstant types
    */
+	
+  public static final int STAR = -2;
   public static final int UNKNOWN = -1;
   public static final int COLUMNNAME = 0;
   public static final int NULL = 1;

@@ -23,7 +23,7 @@ import java.util.* ;
 /**
  * ZFromItem: an SQL FROM clause (example: the FROM part of a SELECT...FROM).
  */
-public class ZFromItem extends ZAliasedName {
+public class ZFromItem {
 
   /**
    * Create a new FROM clause.
@@ -31,9 +31,7 @@ public class ZFromItem extends ZAliasedName {
    */
   public ZFromItem() { super(); }
 
-  private String table;
-  public String getTable(){ return table; }
-  
+  public String table;
   
   /**
    * Create a new FROM clause on a given table.
@@ -43,8 +41,10 @@ public class ZFromItem extends ZAliasedName {
   public ZFromItem(String fullname)
   	throws ParseException
   {
-    super(fullname, ZAliasedName.FORM_TABLE);
+	  table = fullname;
   }
-
+  public String toString(){
+	  return table;
+  }
 };
 

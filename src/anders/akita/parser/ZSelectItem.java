@@ -24,81 +24,48 @@ import java.util.* ;
  * ZSelectItem: an item in the SELECT part of an SQL query.
  * (The SELECT part of a query is a Vector of ZSelectItem).
  */
-public class ZSelectItem extends ZAliasedName {
+public class ZSelectItem {
 
-  ZExp expression_ = null;
-  String aggregate_ = null;
-
-  /**
-   * Create a new SELECT item
-   */
-  public ZSelectItem() { super(); }
-
-  /**
-   * Create a new SELECT item, given its name (for column names and wildcards).
-   * @param fullname A string that represents a column name or wildcard
-   * (example: a.*).
-   */
-  public ZSelectItem(String fullname) 
-  	throws ParseException
-  {
-    super(fullname, ZAliasedName.FORM_COLUMN);
-    setAggregate(ZUtils.getAggregateCall(fullname)); //PY.Gibello 21 Apr 2001
-  }
-
-  /**
-   * @return An SQL Expression if this SELECT item is an expression,
-   * a ZConstant if it is a column name,  null if it is a wildcard
-   */
-  public ZExp getExpression() {
-    if(isExpression()) return expression_;
-    else if(isWildcard()) return null;
-    else {
-      //return new ZConstant(getColumn(), ZConstant.COLUMNNAME);
-    	return new ZConstant(expression_.toString(), ZConstant.COLUMNNAME);
-    }
-  }
-
-  /**
-   * Initialize this SELECT item as an SQL expression (not a column name
-   * nor wildcard)
-   * Example: SELECT a+b FROM table1; (a+b is an expression)
-   */
-  public void setExpression(ZExp e) {
-    expression_ = e;
-    strform_ = expression_.toString();
-  }
-
-  /**
-   * @return true if this item is an SQL expression, false if not.
-   * (Example: SELECT a+b, c FROM num; -> a+b is an expression, not c)
-   */
-  public boolean isExpression() { return (expression_ != null && expression_ instanceof ZExpression); }
-
-  /**
-   * Initialize an aggregate function on this item
-   * (generally SUM, AVG, MAX, MIN)
-   * Example: SELECT AVG(age) FROM people; -> The aggregate function is AVG.
-   * @param a The name of the aggregate function
-   * (a String, like SUM, AVG, MAX, MIN)
-   */
-  public void setAggregate(String a) { aggregate_ = a; }
-
-  /**
-   * If this item is an aggregate function, return the function name.
-   * @return The name of an aggregate function (generally SUM, AVG, MAX, MIN),
-   * or null if there's no aggregate.
-   * Example: SELECT name, AVG(age) FROM people; -> null for the "name" item,
-   * and "AVG" for the "AVG(age)" item.
-   */
-  public String getAggregate() { return aggregate_; }
-
-/** TBD
-  public String toString() {
-    String agg = getAggregate();
-    if(agg == null) agg = "";
-    return agg + super.toString();
-  }
-**/
+	public final static int STAR = 1;
+	public final static int TAB_DOT_STAR = 2;
+	public final static int EXPR = 3;
+	
+	public ZExp expr;
+	
+	public String table;
+	
+	public int type;
+	
+	public String alias;
+	
+	public ZSelectItem(ZExp exp, String alias){
+		this.expr = exp;
+		this.alias = alias;
+		this.type = EXPR;
+	}
+	public ZSelectItem(String table){
+		this.table = table;
+		this.type = TAB_DOT_STAR;
+	}
+	public ZSelectItem(){
+		this.type = STAR;
+	}
+	
+	public String toString(){
+		String s;
+		switch(type){
+		case STAR:
+			return "*";
+		case TAB_DOT_STAR:
+			return table + ".*";
+		case EXPR:
+			s = expr.toString();
+			if(alias != null)
+				s += (" AS " + alias);
+			return s;
+		default:
+			throw new ExecException("Parse error#ZSelectItem");
+		}
+	}
 };
 

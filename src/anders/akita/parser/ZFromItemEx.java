@@ -2,8 +2,8 @@ package anders.akita.parser;
 
 public class ZFromItemEx {
 
-	public String alias;//filled by pass1
-	public String table;//filled by pass1
+	public String alias;
+	public String table;
 	
 	ZQuery subQuery = null;
 	ZFromItem fromItem = null;
@@ -29,12 +29,16 @@ public class ZFromItemEx {
 	}
 	
 	public String toString(){
+		String s;
 		if(isSubQuery()){
-			String r = "(" + subQuery.toString() + ")";
-			if(subQuery.getAlias() != null)
-				r += (" AS " + subQuery.getAlias());
-			return r;
+			s = "(" + subQuery.toString() + ")";
 		}
-		return fromItem.toString();
+		else{
+			s = fromItem.toString();
+		}
+		if(alias != null){
+			s += (" AS " + alias);
+		}
+		return s;
 	}
 }

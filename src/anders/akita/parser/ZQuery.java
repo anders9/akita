@@ -29,9 +29,6 @@ public class ZQuery implements ZStatement, ZExp {
 	public ZQuery parent;
 	public ZQuery outer;
 	
-	
-	String alias_;//used for sub-query.
-	
   Vector select_;
   boolean distinct_ = false;
   ZFromClause from_;
@@ -45,10 +42,6 @@ public class ZQuery implements ZStatement, ZExp {
    * Create a new SELECT statement
    */
   public ZQuery() {}
-
-  public void setAlias(String alias) { alias_ = alias; }
-  
-  public String getAlias() { return alias_; }
   
   
   /**
