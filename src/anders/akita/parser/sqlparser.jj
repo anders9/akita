@@ -192,8 +192,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 
 TOKEN : /* Numeric Constants */
 {
-	< S_NUMBER: <FLOAT>
-	    | <FLOAT> ( ["e","E"] ([ "-","+"])? <INTEGER> )?
+	< S_NUMBER:  (["-","+"])? (<FLOAT>  | <FLOAT> ( ["e","E"] ([ "-","+"])? <INTEGER> )? )
     	>
   | 	< #FLOAT: <INTEGER>
 	    | <INTEGER> ( "." <INTEGER> )?
@@ -1066,7 +1065,9 @@ ZExp SQLUnaryExpression():
   ZExp e1, e;
 }
 {
-  [ op = "+" |  op = "-"] e1 = SQLInversionExpression() { 
+	LOOKAHEAD(<S_NUMBER>) op = <S_NUMBER> {return new ZConstant(op.toString(), ZConstant.NUMBER);}
+|
+   [ op = "+" |  op = "-"] e1 = SQLInversionExpression() { 
     if(op == null || op.toString().equals("+") ) e = e1;
     else e = new ZExpression(op.toString(), e1);
     return e;

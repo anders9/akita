@@ -1,5 +1,30 @@
 package anders.akita.exec;
 
+/**
+ * 
+
+check from item, alias, repeat, subQ need alias
+
+fill outer/parent query
+
+inner-query can't contain subQuery/innerQuery,and group by, order by
+inner-query 's rel-condition
+
+expand * , tab.*
+check col repeat
+fill col'tab,check alias, may ref outer-query's col
+if alias exit, then parent-query ref it must use alias(field list),but self-query not need.
+
+check aggr function in select list, 
+if no group-by-claus, then add one(total)
+
+group-by /having/ order-by can ref self-select-list' alias, but where condition can't 
+check group by list, having expr and order by list, can ref alias in select list
+re-check select list and having expr: if exist aggr-fun, ref group-by list OR aggr-Expr
+re-check order by list, if exist aggr, then...
+
+ */
+
 import anders.akita.parser.*;
 
 import java.util.*;
@@ -38,12 +63,12 @@ public class Executor {
 			ZFromItemEx fi = fc.getItem(i);
 			if(fi.isSubQuery()){
 				fi.table = null;
-				fi.alias = fi.getSubQuery().getAlias();
+				//fi.alias = fi.getSubQuery().getAlias();
 				pass1_fillTabAliasName(fi.getSubQuery());
 			}
 			else{
-				fi.table = fi.getFromItem().getTable();
-				fi.alias = fi.getFromItem().getAlias();
+				//fi.table = fi.getFromItem().getTable();
+				//fi.alias = fi.getFromItem().getAlias();
 				if(fi.alias == null)
 					fi.alias = fi.table;
 			}
