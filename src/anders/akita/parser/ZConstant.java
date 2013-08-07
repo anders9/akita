@@ -31,7 +31,7 @@ public class ZConstant implements ZExp {
 	
   public static final int STAR = -2;
   public static final int UNKNOWN = -1;
-  public static final int COLUMNNAME = 0;
+  //public static final int COLUMNNAME = 0;
   public static final int NULL = 1;
   public static final int NUMBER = 2;
   public static final int STRING = 3;
@@ -46,15 +46,6 @@ public class ZConstant implements ZExp {
   public ZConstant(String v, int typ) {
     val_ = new String(v);
     type_ = typ;
-    
-    if(type_ == COLUMNNAME &&
-    	(  val_.equals("TRUE") 
-    	|| val_.equals("true")
-    	|| val_.equals("FALSE")
-    	|| val_.equals("false")))
-    {
-    	type_ = BOOL;
-    }
   }
 
   /*

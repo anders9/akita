@@ -125,6 +125,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_EXIT:"EXIT">
 |   <K_FLOAT:"FLOAT">
 |   <K_FOR:"FOR">
+|	<K_FALSE: "FALSE">
 |   <K_FROM:"FROM">
 |   <K_GROUP:"GROUP">
 |   <K_HAVING:"HAVING">
@@ -176,6 +177,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_TABLE:"TABLE">
 |	<K_THEN:"THEN">
 |   <K_TRANSACTION:"TRANSACTION">
+|	<K_TRUE: "TRUE">
 |   <K_UNION:"UNION">
 |   <K_UPDATE:"UPDATE">
 |   <K_VALUES:"VALUES">
@@ -374,13 +376,13 @@ ZUpdate UpdateStatement():
 // ColumnValues ::= TableColumn = UpdatedValue (, TableColumn = UpdatedValue)*
 void ColumnValues(ZUpdate u):
 {
-  String key;
+  ZColRef key;
   ZExp val;
 }
 {
-  key = TableColumn() "=" val = UpdatedValue() { u.addColumnUpdate(key, val); }
+  key = TableColumn() "=" val = UpdatedValue() { u.addColumnUpdate(key.toString(), val); }
   ("," key = TableColumn() "=" val = UpdatedValue()
-    { u.addColumnUpdate(key, val); } )*
+    { u.addColumnUpdate(key.toString(), val); } )*
   { }
 }
 
@@ -406,13 +408,14 @@ ZInsert InsertStatement():
 {
   ZInsert ins;
   String s;
+  ZColRef col;
   Vector v;
   ZQuery q;
 }
 {
   "INSERT" "INTO" s = TableReference() { ins = new ZInsert(s); }
-   ["(" s = TableColumn() { v = new Vector(); v.addElement(s); }
-    ("," s = TableColumn() { v.addElement(s); } )* ")" { ins.addColumns(v); } ]
+   ["(" col = TableColumn() { v = new Vector(); v.addElement(s); }
+    ("," col = TableColumn() { v.addElement(s); } )* ")" { ins.addColumns(v); } ]
    ( "VALUES" "(" v = SQLExpressionList() ")"
      { ZExpression e = new ZExpression(",");
        e.setOperands(v); ins.addValueSpec(e); }
@@ -447,16 +450,15 @@ ZQuery QueryStatement():
 
 /* ---------------- General Productions --------------------- */
 
-String TableColumn():
+ZColRef TableColumn():
 {
-  StringBuffer buf = new StringBuffer();
-  String s;
+  String t = null, c;
 }
 {
-    // [table.]column
-    s = OracleObjectName() { buf.append(s); }
-    [ "." s = OracleObjectName() { buf.append("." + s); } ]
-    { return buf.toString(); }
+	(LOOKAHEAD(2) t = OracleObjectName() "." c = OracleObjectName()
+	|
+	c = OracleObjectName())
+    { return new ZColRef(t, c); }
 }
 
 String OracleObjectName():
@@ -510,7 +512,7 @@ ZQuery SelectStatement():
 {
   q = SelectWithoutOrder()
   [ v = OrderByClause() { q.addOrderBy(v); } ]
-  [ ForUpdateClause() { q.forupdate_ = true; } ]
+  //[ ForUpdateClause() { q.forupdate_ = true; } ]
   { return q; }
 
 }
@@ -708,7 +710,7 @@ ZGroupBy GroupByClause():
 Vector GroupByList():
 {
   Vector v = new Vector(8);
-  String e;
+  ZColRef e;
 }
 {
     e = TableColumn() { v.addElement(e); }
@@ -736,7 +738,7 @@ ZExpression SetClause():
 Vector OrderByClause():
 {
   Vector v = new Vector();
-  String s;
+  ZColRef s;
   ZOrderBy ob;
 }
 {
@@ -746,13 +748,13 @@ Vector OrderByClause():
      ["ASC" | "DESC" { ob.setAscOrder(false); }] { v.addElement(ob); } )*
     { return v; }
 }
-
+/*
 void ForUpdateClause():
 {}
 {
     "FOR" "UPDATE" [ "OF" TableColumn() ("," TableColumn())* ]
 }
-
+*/
 ZExp SQLExpression():
 {
   ZExp e1, e2;
@@ -1099,6 +1101,7 @@ ZExp SQLInversionExpression():
 //   | <NUMBER> | <STRING> | <BIND>
 ZExp SQLPrimaryExpression():
 {
+  ZColRef col;
   Token t;
   String s, s2;
   int modifier = -1;
@@ -1167,10 +1170,10 @@ ZExp SQLPrimaryExpression():
 /*
 |  LOOKAHEAD(<S_IDENTIFIER> "(") e = FunctionCall() { return e; }
 */
-|  s = TableColumn() { return new ZConstant(s, ZConstant.COLUMNNAME); }
+|  col = TableColumn() { return col; }
 |  t = <S_NUMBER> { return new ZConstant(t.toString(), ZConstant.NUMBER); }
 |  t = <S_CHAR_LITERAL> { return new ZConstant(t.toString(), ZConstant.STRING); }
-//|  t = <S_BIND> { return new ZConstant(t.toString(), ZConstant.STRING); }
+|  (t = "TRUE" | t = "FALSE") { return new ZConstant(t.toString(), ZConstant.BOOL); }
 |  "(" e = SQLExpression() ")" { return e; }
 |  e = Interval() {return e;}
 }
