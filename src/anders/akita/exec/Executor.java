@@ -23,6 +23,19 @@ check group by list, having expr and order by list, can ref alias in select list
 re-check select list and having expr: if exist aggr-fun, ref group-by list OR aggr-Expr
 re-check order by list, if exist aggr, then...
 
+corelate-subquery add distinct-ID...
+
+col in ( select icol)      exists ( select * where col = icol )    0 < (select count(*) where ...)
+
+col > ALL()     col > (  select max() ...) //if no corelated, transform to sub-Q
+col > ANY()     col > (  select min() ...) //if no corelated, transform to sub-Q
+col != ALL      col not in(..)
+col = ANY       col in(..)
+col = ALL       col = max() && col = min()    not exists ( select * where col != icol)  
+col != ANY      exists ( select * where col != icol)
+
+
+
  */
 
 import anders.akita.parser.*;
