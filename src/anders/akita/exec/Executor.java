@@ -9,7 +9,11 @@ fill outer/parent query
 
 inner-query can't contain subQuery/innerQuery,and group by, order by
 inner-query 's rel-condition
-
+inner-query fields-list cond:
+	1. exists => *
+	2. all/any/in => 1 expr
+	3. noraml => with aggregation
+	
 expand * , tab.*
 check col repeat
 fill col'tab,check alias, may ref outer-query's col

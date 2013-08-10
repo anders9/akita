@@ -709,10 +709,10 @@ ZGroupBy GroupByClause():
 Vector GroupByList():
 {
   Vector v = new Vector(8);
-  ZColRef e;
+  ZExp e;
 }
 {
-    e = TableColumn() { v.addElement(e); }
+    e = SQLExpression() { v.addElement(e); }
     ("," e = TableColumn() { v.addElement(e); } )*
     { return v; }
 }
@@ -737,13 +737,13 @@ ZExpression SetClause():
 Vector OrderByClause():
 {
   Vector v = new Vector();
-  ZColRef s;
+  ZExp s;
   ZOrderBy ob;
 }
 {
-    "ORDER" "BY" s = TableColumn() { ob = new ZOrderBy(s); }
+    "ORDER" "BY" s = SQLExpression() { ob = new ZOrderBy(s); }
     ["ASC" | "DESC" { ob.setAscOrder(false); }] { v.addElement(ob); }
-    ("," s = TableColumn() { ob = new ZOrderBy(s); }
+    ("," s = SQLExpression() { ob = new ZOrderBy(s); }
      ["ASC" | "DESC" { ob.setAscOrder(false); }] { v.addElement(ob); } )*
     { return v; }
 }

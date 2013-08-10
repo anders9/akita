@@ -1147,9 +1147,9 @@ void ConnectClause():
 
   final public Vector GroupByList() throws ParseException {
   Vector v = new Vector(8);
-  ZColRef e;
-    e = TableColumn();
-                        v.addElement(e);
+  ZExp e;
+    e = SQLExpression();
+                          v.addElement(e);
     label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1221,12 +1221,12 @@ void ConnectClause():
 
   final public Vector OrderByClause() throws ParseException {
   Vector v = new Vector();
-  ZColRef s;
+  ZExp s;
   ZOrderBy ob;
     jj_consume_token(K_ORDER);
     jj_consume_token(K_BY);
-    s = TableColumn();
-                                     ob = new ZOrderBy(s);
+    s = SQLExpression();
+                                       ob = new ZOrderBy(s);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case K_ASC:
     case K_DESC:
@@ -1260,8 +1260,8 @@ void ConnectClause():
         break label_8;
       }
       jj_consume_token(110);
-      s = TableColumn();
-                             ob = new ZOrderBy(s);
+      s = SQLExpression();
+                               ob = new ZOrderBy(s);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case K_ASC:
       case K_DESC:
@@ -2589,7 +2589,7 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_83() {
+  final private boolean jj_3R_82() {
     if (jj_3R_25()) return true;
     if (jj_scan_token(109)) return true;
     Token xsp;
@@ -2633,9 +2633,11 @@ String OuterJoinExpression():
   final private boolean jj_3R_76() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_82()) {
+    if (jj_3R_81()) {
     jj_scanpos = xsp;
     if (jj_3_17()) {
+    jj_scanpos = xsp;
+    if (jj_3R_82()) {
     jj_scanpos = xsp;
     if (jj_3R_83()) {
     jj_scanpos = xsp;
@@ -2647,9 +2649,7 @@ String OuterJoinExpression():
     jj_scanpos = xsp;
     if (jj_3R_87()) {
     jj_scanpos = xsp;
-    if (jj_3R_88()) {
-    jj_scanpos = xsp;
-    if (jj_3R_89()) return true;
+    if (jj_3R_88()) return true;
     }
     }
     }
@@ -2661,7 +2661,7 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_82() {
+  final private boolean jj_3R_81() {
     if (jj_scan_token(K_NULL)) return true;
     return false;
   }
@@ -2692,18 +2692,18 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_81() {
+  final private boolean jj_3R_80() {
     if (jj_scan_token(110)) return true;
-    if (jj_3R_80()) return true;
+    if (jj_3R_90()) return true;
     return false;
   }
 
   final private boolean jj_3R_74() {
-    if (jj_3R_80()) return true;
+    if (jj_3R_61()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_81()) { jj_scanpos = xsp; break; }
+      if (jj_3R_80()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -3388,7 +3388,7 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_91() {
+  final private boolean jj_3R_94() {
     if (jj_3R_16()) return true;
     return false;
   }
@@ -3433,12 +3433,12 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_80() {
+  final private boolean jj_3R_90() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3_2()) {
     jj_scanpos = xsp;
-    if (jj_3R_91()) return true;
+    if (jj_3R_94()) return true;
     }
     return false;
   }
@@ -3478,7 +3478,7 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_92() {
+  final private boolean jj_3R_91() {
     if (jj_scan_token(K_INTERVAL)) return true;
     if (jj_3R_61()) return true;
     if (jj_3R_134()) return true;
@@ -3495,7 +3495,7 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_94() {
+  final private boolean jj_3R_93() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_95()) {
@@ -3581,16 +3581,16 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_93() {
+  final private boolean jj_3R_92() {
     if (jj_scan_token(K_NOT)) return true;
     return false;
   }
 
-  final private boolean jj_3R_90() {
+  final private boolean jj_3R_89() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_93()) jj_scanpos = xsp;
-    if (jj_3R_94()) return true;
+    if (jj_3R_92()) jj_scanpos = xsp;
+    if (jj_3R_93()) return true;
     return false;
   }
 
@@ -3604,24 +3604,24 @@ String OuterJoinExpression():
     xsp = jj_scanpos;
     if (jj_3_7()) {
     jj_scanpos = xsp;
-    if (jj_3R_90()) return true;
+    if (jj_3R_89()) return true;
     }
     return false;
   }
 
-  final private boolean jj_3R_89() {
-    if (jj_3R_92()) return true;
+  final private boolean jj_3R_88() {
+    if (jj_3R_91()) return true;
     return false;
   }
 
-  final private boolean jj_3R_88() {
+  final private boolean jj_3R_87() {
     if (jj_scan_token(109)) return true;
     if (jj_3R_61()) return true;
     if (jj_scan_token(111)) return true;
     return false;
   }
 
-  final private boolean jj_3R_87() {
+  final private boolean jj_3R_86() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(86)) {
@@ -3631,18 +3631,18 @@ String OuterJoinExpression():
     return false;
   }
 
-  final private boolean jj_3R_86() {
+  final private boolean jj_3R_85() {
     if (jj_scan_token(S_CHAR_LITERAL)) return true;
     return false;
   }
 
-  final private boolean jj_3R_85() {
+  final private boolean jj_3R_84() {
     if (jj_scan_token(S_NUMBER)) return true;
     return false;
   }
 
-  final private boolean jj_3R_84() {
-    if (jj_3R_80()) return true;
+  final private boolean jj_3R_83() {
+    if (jj_3R_90()) return true;
     return false;
   }
 
