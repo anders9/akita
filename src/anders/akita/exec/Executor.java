@@ -7,7 +7,7 @@ check from item, alias, repeat, subQ need alias
 
 fill outer/parent query
 
-inner-query can't contain subQuery/innerQuery,and group by, order by
+inner-query can't contain subQuery/innerQuery,and group by, order by, limit 
 inner-query 's rel-condition
 inner-query fields-list cond:
 	1. exists => *
