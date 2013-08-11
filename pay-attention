@@ -1,0 +1,2 @@
+MySQL-jdbc url: rewriteBatchedStatements (addBatch)
+Socket.setOsTimeOut(5000);
