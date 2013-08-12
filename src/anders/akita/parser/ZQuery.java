@@ -29,14 +29,22 @@ public class ZQuery implements ZStatement, ZExp {
 	public ZQuery parent;
 	public ZQuery outer;
 	
-  Vector select_;
+	static class InnerQuery{
+		ZExp cond;
+		ZQuery query;
+	}
+	
+	public ArrayList<InnerQuery> innerQueryInWhere = new ArrayList<InnerQuery>();
+	public ArrayList<InnerQuery> innerQueryInHaving = new ArrayList<InnerQuery>();
+	
+  Vector<ZSelectItem> select_;
   boolean distinct_ = false;
   ZFromClause from_;
   ZExp where_ = null;
   ZGroupBy groupby_ = null;
-  ZExpression setclause_ = null;
-  Vector orderby_ = null;
-  boolean forupdate_ = false;
+  //ZExpression setclause_ = null;
+  Vector<ZExp> orderby_ = null;
+  //boolean forupdate_ = false;
 
   /**
    * Create a new SELECT statement
@@ -48,43 +56,43 @@ public class ZQuery implements ZStatement, ZExp {
    * Insert the SELECT part of the statement
    * @param s A vector of ZSelectItem objects
    */
-  public void addSelect(Vector s) { select_ = s; }
+  public void setSelect(Vector<ZSelectItem> s) { select_ = s; }
 
   /**
    * Insert the FROM part of the statement
    * @param f a Vector of ZFromItem objects
    */
-  public void addFrom(ZFromClause f) { from_ = f; }
+  public void setFrom(ZFromClause f) { from_ = f; }
 
   /**
    * Insert a WHERE clause
    * @param w An SQL Expression
    */
-  public void addWhere(ZExp w) { where_ = w; }
+  public void setWhere(ZExp w) { where_ = w; }
 
   /**
    * Insert a GROUP BY...HAVING clause
    * @param g A GROUP BY...HAVING clause
    */
-  public void addGroupBy(ZGroupBy g) { groupby_ = g; }
+  public void setGroupBy(ZGroupBy g) { groupby_ = g; }
 
   /**
    * Insert a SET clause (generally UNION, INTERSECT or MINUS)
    * @param s An SQL Expression (generally UNION, INTERSECT or MINUS)
    */
-  public void addSet(ZExpression s) { setclause_ = s; }
+  //public void addSet(ZExpression s) { setclause_ = s; }
 
   /**
    * Insert an ORDER BY clause
    * @param v A vector of ZOrderBy objects
    */
-  public void addOrderBy(Vector v) { orderby_ = v; }
+  public void setOrderBy(Vector<ZExp> v) { orderby_ = v; }
 
   /**
    * Get the SELECT part of the statement
    * @return A vector of ZSelectItem objects
    */
-  public Vector getSelect() { return select_; }
+  public Vector<ZSelectItem> getSelect() { return select_; }
 
   /**
    * Get the FROM part of the statement
@@ -108,13 +116,13 @@ public class ZQuery implements ZStatement, ZExp {
    * Get the SET clause (generally UNION, INTERSECT or MINUS)
    * @return An SQL Expression (generally UNION, INTERSECT or MINUS) 
    */
-  public ZExpression getSet() { return setclause_; }
+  //public ZExpression getSet() { return setclause_; }
 
   /**
    * Get the ORDER BY clause
    * @param v A vector of ZOrderBy objects
    */
-  public Vector getOrderBy() { return orderby_; }
+  public Vector<ZExp> getOrderBy() { return orderby_; }
 
   /**
    * @return true if it is a SELECT DISTINCT query, false otherwise.
@@ -124,7 +132,7 @@ public class ZQuery implements ZStatement, ZExp {
   /**
    * @return true if it is a FOR UPDATE query, false otherwise.
    */
-  public boolean isForUpdate() { return forupdate_; }
+  //public boolean isForUpdate() { return forupdate_; }
 
 
   public String toString() {
@@ -166,9 +174,9 @@ public class ZQuery implements ZStatement, ZExp {
     if(groupby_ != null) {
       buf.append(" " + groupby_.toString());
     }
-    if(setclause_ != null) {
-      buf.append(" " + setclause_.toString());
-    }
+    //if(setclause_ != null) {
+    //  buf.append(" " + setclause_.toString());
+    //}
     if(orderby_ != null) {
       buf.append(" order by ");
       //buf.append(orderby_.toString());
@@ -177,7 +185,7 @@ public class ZQuery implements ZStatement, ZExp {
         buf.append(", " + orderby_.elementAt(i).toString());
       }
     }
-    if(forupdate_) buf.append(" for update");
+    //if(forupdate_) buf.append(" for update");
 
     return buf.toString();
   }

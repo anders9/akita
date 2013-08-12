@@ -7,7 +7,8 @@ check from item, alias, repeat, subQ need alias
 
 fill outer/parent query
 
-inner-query can't contain subQuery/innerQuery,and group by, order by, limit 
+inner-query can't contain subQuery/innerQuery,and group by, order by, limit ,
+inner-query distinct move into aggr-function.
 inner-query 's rel-condition
 inner-query fields-list cond:
 	1. exists => *
@@ -38,8 +39,6 @@ col = ANY       col in(..)
 col = ALL       col = max() && col = min()    not exists ( select * where col != icol)  
 col != ANY      exists ( select * where col != icol)
 
-
-
  */
 
 import anders.akita.parser.*;
@@ -47,6 +46,8 @@ import anders.akita.parser.*;
 import java.util.*;
 
 public class Executor {
+	
+
 	ZQuery query;
 	
 	public Executor(ZQuery query){
@@ -60,7 +61,7 @@ public class Executor {
 		
 		int fN = q.getFrom().getItemN();
 		
-		
+		//for(Object o)
 		
 		for(int i = 0; i < fN; ++i){
 			ZFromItemEx item = (ZFromItemEx)q.getFrom().getItem(i);
@@ -93,7 +94,7 @@ public class Executor {
 	}
 	
 	interface ExprIterCallback{
-		void handleColRef(ZConstant colRef);
+		void handleColRef(ZColRef colRef);
 		void handleSubQuery(ZQuery subQ);
 	}
 	//iterator of Columne in Expr
@@ -106,11 +107,9 @@ public class Executor {
 				colInExprIter(e.getOperand(i), callback);
 			}
 		}
-		else if(expr instanceof ZConstant){
-			ZConstant c = (ZConstant)expr;
-			if(c.getType() == ZConstant.COLUMNNAME){
-				callback.handleColRef(c);
-			}
+		else if(expr instanceof ZColRef){
+			ZColRef c = (ZColRef)expr;
+			callback.handleColRef(c);
 		}
 		else if(expr instanceof ZInterval){
 			ZInterval i = (ZInterval)expr;
@@ -131,6 +130,9 @@ public class Executor {
 		}
 		else if(expr instanceof ZQuery){
 			callback.handleSubQuery((ZQuery)expr);
+		}
+		else if(expr instanceof ZConstant){
+			//do nothing
 		}
 		else throw new ExecException("Parse error #colInExprIter");
 	}

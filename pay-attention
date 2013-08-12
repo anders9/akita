@@ -1,2 +1,13 @@
 MySQL-jdbc url: rewriteBatchedStatements (addBatch)
 Socket.setOsTimeOut(5000);
+---------
+所以使用DBCP连接池放必须注意构造GenericObjectPool对象时
+
+     validationQuery：SELECT COUNT(*) FROM DUAL
+
+       _testOnBorrow、_testOnReturn、_testWhileIdle：最好都设为true
+
+       _minEvictableIdleTimeMillis：大于0 ，进行连接空闲时间判断，或为0，对空闲的连接不进行验证
+
+     _timeBetweenEvictionRunsMillis：失效检查线程运行时间间隔，如果小于等于0，不会启动检查线程
+----------

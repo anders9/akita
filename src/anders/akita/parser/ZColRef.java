@@ -5,7 +5,7 @@ public class ZColRef implements ZExp {
 	
 	public String table;
 	public String col;
-	
+	public ZQuery query;
 	
 	public ZColRef(String table, String col){
 		

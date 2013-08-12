@@ -510,7 +510,7 @@ ZQuery SelectStatement():
 }
 {
   q = SelectWithoutOrder()
-  [ v = OrderByClause() { q.addOrderBy(v); } ]
+  [ v = OrderByClause() { q.setOrderBy(v); } ]
   //[ ForUpdateClause() { q.forupdate_ = true; } ]
   { return q; }
 
@@ -523,7 +523,7 @@ ZQuery SelectWithoutOrder():
   ZFromClause from;
   ZExp where = null;
   ZGroupBy groupby = null;
-  ZExpression setclause = null;
+  //ZExpression setclause = null;
 }
 {
   "SELECT" [ "ALL" | "DISTINCT" { q.distinct_ = true; } ]
@@ -532,13 +532,13 @@ ZQuery SelectWithoutOrder():
   [ where = WhereClause() ]
   //[ ConnectClause() ]
   [ LOOKAHEAD( ("GROUP" "BY")|"HAVING") groupby = GroupByClause() ]
-  [ setclause = SetClause() ]
+  //[ setclause = SetClause() ]
   {
-    q.addSelect(select);
-    q.addFrom(from);
-    q.addWhere(where);
-    q.addGroupBy(groupby);
-    q.addSet(setclause);
+    q.setSelect(select);
+    q.setFrom(from);
+    q.setWhere(where);
+    q.setGroupBy(groupby);
+    //q.addSet(setclause);
 
     return q;
   }
