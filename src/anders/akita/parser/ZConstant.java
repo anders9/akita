@@ -17,8 +17,6 @@
 
 package anders.akita.parser;
 
-import java.io.* ;
-import java.util.* ;
 
 /**
  * ZConstant: a representation of SQL constants

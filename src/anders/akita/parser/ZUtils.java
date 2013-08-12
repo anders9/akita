@@ -17,20 +17,23 @@
 
 package anders.akita.parser;
 
-import java.util.Hashtable;
+import java.util.*;
 
 public class ZUtils {
 
-  private static Hashtable fcts_ = new Hashtable();
-  private static Hashtable aggrs_ = new Hashtable();
+	public static class AggrDef{
+		
+	}
+	
+  private static HashMap<String, Integer> fcts_ = new HashMap<String, Integer>();
+  private static HashMap<String, AggrDef> aggrs_ = new HashMap<String, AggrDef>();
   
   static{
 	  for(Object[] a: MySQLFunc.func){
-		  fcts_.put(a[0], a[1]);
+		  fcts_.put((String)a[0], (Integer)a[1]);
 	  }
-	  Object o = new Object();
-	  for(String s: MySQLFunc.aggr){
-		  aggrs_.put(s, o);
+	  for(Object[] s: MySQLFunc.aggr){
+		  aggrs_.put((String)s[0], (AggrDef)s[1]);
 	  }
   }
   

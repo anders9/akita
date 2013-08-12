@@ -17,8 +17,6 @@
 
 package anders.akita.parser;
 
-import java.io.* ;
-import java.util.* ;
 
 /**
  * ZSelectItem: an item in the SELECT part of an SQL query.

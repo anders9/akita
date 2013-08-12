@@ -17,7 +17,7 @@
 
 package anders.akita.parser;
 
-import java.io.* ;
+
 import java.util.* ;
 
 /**
@@ -150,7 +150,7 @@ public class ZQuery implements ZStatement, ZExp {
     if(from_ != null){
 	    buf.append(" from ");
 	    if(from_.join_type == ZFromClause.INNER_JOIN){
-	    	Vector from_ = this.from_.items;
+	    	Vector<ZFromItemEx> from_ = this.from_.items;
 		    
 		    buf.append(from_.elementAt(0).toString());
 		    for(i=1; i<from_.size(); i++) {

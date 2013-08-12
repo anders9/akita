@@ -17,14 +17,12 @@
 
 package anders.akita.parser;
 
-import java.io.* ;
-import java.util.* ;
 
 /**
  * A common interface for all SQL Expressions (ZQueries, ZExpressions and
  * ZConstants, ZSwitchExpr, ZInterval are ZExps).
  */
-public interface ZExp extends java.io.Serializable {
+public interface ZExp {
 	
 	public static final int SELECT_EXPR = 1;
 	public static final int WHERE_EXPR = 2;

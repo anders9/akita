@@ -1,8 +1,7 @@
 package anders.akita.parser;
 
 public class ZInterval implements ZExp {
-
-	private static final long serialVersionUID = 5715632701599297995L;
+	
 	String type;
 	ZExp exp;
 	

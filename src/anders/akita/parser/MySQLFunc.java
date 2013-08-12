@@ -1,5 +1,7 @@
 package anders.akita.parser;
 
+import anders.akita.parser.ZUtils.AggrDef;
+
 public final class MySQLFunc {
 	public static final Object[][] func = {
 		//cond
@@ -154,17 +156,17 @@ public final class MySQLFunc {
 		{"UUID",		0},
 		
 	};
-	public static final String[] aggr = {
-		"BIT_AND",
-		"BIT_OR",
-		"BIT_XOR",
-		"GROUP_CONCAT",
-		"STD",
-		"STDDEV",
-		"STDDEV_POP",
-		"STDDEV_SAMP",
-		"VAR_POP",
-		"VAR_SAMP",
-		"VARIANCE",
+	public static final Object[][] aggr = {
+		{"BIT_AND",		 new AggrDef()},
+		{"BIT_OR",		 new AggrDef()},
+		{"BIT_XOR",		 new AggrDef()},
+		{"GROUP_CONCAT", new AggrDef()},
+		{"STD",			 new AggrDef()},
+		{"STDDEV",		 new AggrDef()},
+		{"STDDEV_POP",	 new AggrDef()},
+		{"STDDEV_SAMP",	 new AggrDef()},
+		{"VAR_POP",		 new AggrDef()},
+		{"VAR_SAMP",	 new AggrDef()},
+		{"VARIANCE",	 new AggrDef()},
 	};
 }

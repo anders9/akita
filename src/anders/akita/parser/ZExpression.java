@@ -17,7 +17,6 @@
 
 package anders.akita.parser;
 
-import java.io.* ;
 import java.util.* ;
 
 /**
@@ -34,7 +33,7 @@ public class ZExpression implements ZExp {
 	
   boolean is_funciton_ = false;
   String op_ = null;
-  Vector operands_ = null;
+  Vector<ZExp> operands_ = null;
   int aggr_modifier_ = NOT_AGGR;
   /**
    * Create an SQL Expression given the operator
@@ -59,7 +58,7 @@ public class ZExpression implements ZExp {
    * @param op The operator
    * @param v  The operands array
    */
-  public ZExpression(String op, Vector v) {
+  public ZExpression(String op, Vector<ZExp> v) {
     op_ = op.toUpperCase();
     operands_ = v;
     this.is_funciton_ = true;
@@ -101,7 +100,7 @@ public class ZExpression implements ZExp {
    * Set the operands list
    * @param v A vector that contains all operands (ZExp objects).
    */
-  public void setOperands(Vector v) {
+  public void setOperands(Vector<ZExp> v) {
     operands_ = v;
   }
 
@@ -110,7 +109,7 @@ public class ZExpression implements ZExp {
    * @return the operands (as a Vector of ZExp objects).
    */
   
-  public Vector getOperands() {
+  public Vector<ZExp> getOperands() {
     return operands_;
   }
 	
@@ -119,7 +118,7 @@ public class ZExpression implements ZExp {
    * @param o The operand to add.
    */
   public void addOperand(ZExp o) {
-    if(operands_ == null) operands_ = new Vector();
+    if(operands_ == null) operands_ = new Vector<ZExp>();
     operands_.addElement(o);
   }
 

@@ -17,8 +17,6 @@
 
 package anders.akita.parser;
 
-import java.io.*;
-import java.util.*;
 
 /**
  * ZDelete: an SQL DELETE statement.<br>

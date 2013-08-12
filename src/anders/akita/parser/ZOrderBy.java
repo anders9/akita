@@ -20,7 +20,7 @@ package anders.akita.parser;
 /**
  * An SQL query ORDER BY clause.
  */
-public class ZOrderBy implements java.io.Serializable {
+public class ZOrderBy {
   ZExp col_;
   boolean asc_ = true;
 

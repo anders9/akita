@@ -4,7 +4,7 @@ import java.util.*;
 
 public class ZFromClause {
 
-	Vector items;
+	Vector<ZFromItemEx> items;
 	ZExp join_cond;
 	int join_type;
 	public static final int INNER_JOIN = 1;
@@ -16,7 +16,7 @@ public class ZFromClause {
 	public ZFromItemEx getItem(int idx){
 		return (ZFromItemEx)items.get(idx);
 	}
-	public ZFromClause(int join_type, Vector items, ZExp join_cond){
+	public ZFromClause(int join_type, Vector<ZFromItemEx> items, ZExp join_cond){
 		this.join_cond = join_cond;
 		this.join_type = join_type;
 		this.items = items;

@@ -17,22 +17,22 @@
 
 package anders.akita.parser;
 
-import java.io.*;
+
 import java.util.*;
 
 /**
  * ZGroupBy: an SQL GROUP BY...HAVING clause
  */
-public class ZGroupBy implements java.io.Serializable {
+public class ZGroupBy {
 
-  Vector groupby_;
+  Vector<ZExp> groupby_;
   ZExp having_ = null;
 
   /**
    * Create a GROUP BY given a set of Expressions
    * @param exps A vector of SQL Expressions (ZExp objects).
    */
-  public ZGroupBy(Vector exps) { groupby_ = exps; }
+  public ZGroupBy(Vector<ZExp> exps) { groupby_ = exps; }
 
   /**
    * Initiallize the HAVING part of the GROUP BY
@@ -44,7 +44,7 @@ public class ZGroupBy implements java.io.Serializable {
    * Get the GROUP BY expressions
    * @return A vector of SQL Expressions (ZExp objects)
    */
-  public Vector getGroupBy() { return groupby_; }
+  public Vector<ZExp> getGroupBy() { return groupby_; }
 
   /**
    * Get the HAVING clause

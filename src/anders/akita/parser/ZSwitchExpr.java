@@ -4,21 +4,21 @@ import java.util.*;
 
 public class ZSwitchExpr implements ZExp {
 
-	Vector cond, result;
+	Vector<ZExp> cond, result;
 	ZExp cmpVal, else_result;
 
-	public ZSwitchExpr(Vector cond, Vector result, ZExp cmpVal, ZExp else_result) {
+	public ZSwitchExpr(Vector<ZExp> cond, Vector<ZExp> result, ZExp cmpVal, ZExp else_result) {
 		this.cmpVal = cmpVal;
 		this.else_result = else_result;
 		this.cond = cond;
 		this.result = result;
 	}
 
-	public Vector getCond() {
+	public Vector<ZExp> getCond() {
 		return cond;
 	}
 
-	public Vector getResult() {
+	public Vector<ZExp> getResult() {
 		return result;
 	}
 
