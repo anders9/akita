@@ -1,5 +1,6 @@
 MySQL-jdbc url: rewriteBatchedStatements (addBatch)
 Socket.setOsTimeOut(5000);
+MyISAM: ALTER TABLE cdb_posts MAX_ROWS=1000000000 AVG_ROW_LENGTH=15000; 
 ---------
 所以使用DBCP连接池放必须注意构造GenericObjectPool对象时
 

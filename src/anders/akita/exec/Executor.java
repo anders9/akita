@@ -59,18 +59,35 @@ public class Executor {
 
 	void buildQueryTree(ZQuery q){
 		
-		int fN = q.getFrom().getItemN();
+		q.tabList = new HashMap<String, ZFromItemEx>();
 		
-		//for(Object o)
-		
-		for(int i = 0; i < fN; ++i){
-			ZFromItemEx item = (ZFromItemEx)q.getFrom().getItem(i);
+		//construct from tab list: tab-alias=>FromItem(table or subQuery)
+		for(ZFromItemEx item: q.getFrom().items){
 			if(item.isSubQuery()){
+				if(item.alias == null)
+					throw new ExecException("subQuery must has an alias: " + item.toString());
 				ZQuery subQ = item.getSubQuery();
 				subQ.parent = q;
 				buildQueryTree(subQ);
 			}
+			
+			String alias = item.alias;
+			if(alias == null)alias = item.table;
+			if(q.tabList.get(alias) != null)
+				throw new ExecException("alias/table name duplicate: " + alias);
+			q.tabList.put(alias, item);
 		}
+		
+		q.fieldList = new HashMap<String, ZSelectItem>();
+		Vector<ZSelectItem> slist = q.getSelect();
+		
+		for(int i = 0; i < slist.size(); ++i){
+			ZSelectItem item = slist.get(i);
+			if(item.type == ZSelectItem.STAR){
+				
+			}
+		}
+
 	}
 	
 	//fill table/alias in FromClause->FromItem-Vector
@@ -97,14 +114,21 @@ public class Executor {
 		void handleColRef(ZColRef colRef);
 		void handleSubQuery(ZQuery subQ);
 	}
+	
+	void exprListIter(Collection<ZExp> exprList, ExprIterCallback callback){
+		for(ZExp e: exprList){
+			exprIter(e, callback);
+		}
+	}
+	
 	//iterator of Columne in Expr
-	void colInExprIter(ZExp expr, ExprIterCallback callback){
+	void exprIter(ZExp expr, ExprIterCallback callback){
 		if(expr == null)
 			return;
 		if(expr instanceof ZExpression){
 			ZExpression e = (ZExpression)expr;
-			for(int i = 0; i < e.nbOperands(); ++i){
-				colInExprIter(e.getOperand(i), callback);
+			for(ZExp sube: e.getOperands()){
+				exprIter(sube, callback);
 			}
 		}
 		else if(expr instanceof ZColRef){
@@ -113,20 +137,20 @@ public class Executor {
 		}
 		else if(expr instanceof ZInterval){
 			ZInterval i = (ZInterval)expr;
-			colInExprIter(i.getExpr(), callback);		
+			exprIter(i.getExpr(), callback);		
 		}
 		else if(expr instanceof ZSwitchExpr){
 			ZSwitchExpr s = (ZSwitchExpr)expr;
-			for(Object sube: s.getCond()){
-				colInExprIter((ZExp)sube, callback);
+			for(ZExp sube: s.getCond()){
+				exprIter(sube, callback);
 			}
-			for(Object sube: s.getResult()){
-				colInExprIter((ZExp)sube, callback);
+			for(ZExp sube: s.getResult()){
+				exprIter(sube, callback);
 			}
 			if(s.getCmpVal() != null)
-				colInExprIter((ZExp)s.getCmpVal(), callback);
+				exprIter(s.getCmpVal(), callback);
 			if(s.getElseResult() != null)
-				colInExprIter((ZExp)s.getElseResult(), callback);		
+				exprIter(s.getElseResult(), callback);		
 		}
 		else if(expr instanceof ZQuery){
 			callback.handleSubQuery((ZQuery)expr);

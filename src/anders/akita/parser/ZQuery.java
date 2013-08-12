@@ -29,6 +29,9 @@ public class ZQuery implements ZStatement, ZExp {
 	public ZQuery parent;
 	public ZQuery outer;
 	
+	public HashMap<String, ZFromItemEx> tabList;
+	public HashMap<String, ZSelectItem> fieldList;
+	
 	static class InnerQuery{
 		ZExp cond;
 		ZQuery query;

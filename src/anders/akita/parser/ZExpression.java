@@ -137,7 +137,7 @@ public class ZExpression implements ZExp {
    */
   public ZExp getOperand(int pos) {
     if(operands_ == null || pos >= operands_.size()) return null;
-    return (ZExp)operands_.elementAt(pos);
+    return operands_.elementAt(pos);
   }
 
   /**
