@@ -57,7 +57,7 @@ public class Executor {
 	}
 	
 
-	void buildQueryTree(ZQuery q){
+	void buildQueryTree(final ZQuery q){
 		
 		q.tabList = new HashMap<String, ZFromItemEx>();
 		
@@ -78,15 +78,95 @@ public class Executor {
 			q.tabList.put(alias, item);
 		}
 		
-		q.fieldList = new HashMap<String, ZSelectItem>();
-		Vector<ZSelectItem> slist = q.getSelect();
+		Vector<ZSelectItem> newlist = new Vector<ZSelectItem>();		
 		
-		for(int i = 0; i < slist.size(); ++i){
-			ZSelectItem item = slist.get(i);
+		
+		for(ZSelectItem item: q.getSelect()){
 			if(item.type == ZSelectItem.STAR){
+				for(String key: q.tabList.keySet()){
+					ZFromItemEx tab = q.tabList.get(key);
+					for(String field: tab.getFieldList()){
+						ZColRef cr = new ZColRef(key, field);
+						newlist.add(new ZSelectItem(cr, null));
+					}
+				}
+			}
+			else if(item.type == ZSelectItem.TAB_DOT_STAR){
+				if(q.tabList.get(item.table) == null)
+					throw new ExecException("Illegal select item: " + item.table + ".*");
+				for(String field: q.tabList.get(item.table).getFieldList()){
+					ZColRef cr = new ZColRef(item.table, field);
+					newlist.add(new ZSelectItem(cr, null));					
+				}
+			}
+			else newlist.add(item);
+		}
+		q.setSelect(newlist);
+		
+		ExprCallback exprCb = new ExprCallback(){
+			public void handleColRef(ZColRef colRef, boolean useAlias){
 				
+				colRef.query = q;
+				
+				if(colRef.table != null){
+					ZFromItemEx tab = q.tabList.get(colRef.table);
+					if(tab == null || !tab.existField(colRef.col))
+						throw new ExecException("Illegal select item: " + colRef.toString());
+				}
+				else{
+					//alias check first!!
+					boolean findAlias = false;
+					if(useAlias){
+						if(q.fieldList.containsKey(colRef.col))
+							findAlias = true;
+					}
+					if(!findAlias){
+						for(String key: q.tabList.keySet()){
+							ZFromItemEx tab = q.tabList.get(key);
+							if(tab.existField(colRef.col)){
+								if(colRef.table == null)
+									colRef.table = key;
+								else
+									throw new ExecException("Illegal select item: " + colRef.toString());
+							}
+						}
+					}
+				}
+
+			}
+
+		};
+		
+		InnerQueryCallback innerQNotAllowCb = new InnerQueryCallback(){
+			public void handleInnerQuery(ZQuery innerQ){
+				throw new ExecException("Illegal inner sub-query: " + innerQ.toString());
+			}			
+		};
+		
+		InnerQueryCallback innerQAllowCb = new InnerQueryCallback(){
+			public void handleInnerQuery(ZQuery innerQ){
+				innerQ.outer = q;
+			}			
+		};
+		//check tab column ref & subQuery in select list
+		for(ZSelectItem item: q.getSelect()){
+			exprIter(item.expr, false, exprCb, innerQNotAllowCb);
+		}
+		//construct query's field list
+		q.fieldList = new HashMap<String, ZSelectItem>();
+		for(ZSelectItem item: q.getSelect()){
+			String alias = item.alias;
+			if(alias == null && item.expr instanceof ZColRef){
+				alias = ((ZColRef)item.expr).col;
+			}
+			if(alias != null){
+				if(q.fieldList.get(alias) != null)
+					throw new ExecException("duplicated select column/alias: " + alias);
+				q.fieldList.put(alias, item);
 			}
 		}
+		
+		
 
 	}
 	
@@ -110,50 +190,52 @@ public class Executor {
 		}
 	}
 	
-	interface ExprIterCallback{
-		void handleColRef(ZColRef colRef);
-		void handleSubQuery(ZQuery subQ);
+	interface ExprCallback{
+		public void handleColRef(ZColRef colRef, boolean useAlias);
+	}
+	interface InnerQueryCallback{
+		public void handleInnerQuery(ZQuery innerQ);		
 	}
 	
-	void exprListIter(Collection<ZExp> exprList, ExprIterCallback callback){
+	void exprListIter(Collection<ZExp> exprList, boolean useAlias, ExprCallback exprCb, InnerQueryCallback subQueryCb){
 		for(ZExp e: exprList){
-			exprIter(e, callback);
+			exprIter(e, useAlias, exprCb, subQueryCb);
 		}
 	}
 	
 	//iterator of Columne in Expr
-	void exprIter(ZExp expr, ExprIterCallback callback){
+	void exprIter(ZExp expr, boolean useAlias, ExprCallback exprCb, InnerQueryCallback subQueryCb){
 		if(expr == null)
 			return;
 		if(expr instanceof ZExpression){
 			ZExpression e = (ZExpression)expr;
 			for(ZExp sube: e.getOperands()){
-				exprIter(sube, callback);
+				exprIter(sube, useAlias, exprCb, subQueryCb);
 			}
 		}
 		else if(expr instanceof ZColRef){
 			ZColRef c = (ZColRef)expr;
-			callback.handleColRef(c);
+			if(exprCb != null)exprCb.handleColRef(c, useAlias);
 		}
 		else if(expr instanceof ZInterval){
 			ZInterval i = (ZInterval)expr;
-			exprIter(i.getExpr(), callback);		
+			exprIter(i.getExpr(), useAlias, exprCb, subQueryCb);		
 		}
 		else if(expr instanceof ZSwitchExpr){
 			ZSwitchExpr s = (ZSwitchExpr)expr;
 			for(ZExp sube: s.getCond()){
-				exprIter(sube, callback);
+				exprIter(sube, useAlias, exprCb, subQueryCb);
 			}
 			for(ZExp sube: s.getResult()){
-				exprIter(sube, callback);
+				exprIter(sube, useAlias, exprCb, subQueryCb);
 			}
 			if(s.getCmpVal() != null)
-				exprIter(s.getCmpVal(), callback);
+				exprIter(s.getCmpVal(), useAlias, exprCb, subQueryCb);
 			if(s.getElseResult() != null)
-				exprIter(s.getElseResult(), callback);		
+				exprIter(s.getElseResult(), useAlias, exprCb, subQueryCb);		
 		}
 		else if(expr instanceof ZQuery){
-			callback.handleSubQuery((ZQuery)expr);
+			if(subQueryCb != null)subQueryCb.handleInnerQuery((ZQuery)expr);
 		}
 		else if(expr instanceof ZConstant){
 			//do nothing
@@ -161,10 +243,6 @@ public class Executor {
 		else throw new ExecException("Parse error #colInExprIter");
 	}
 	
-	
-	void pass2_fillColRefTab(ZQuery q){
-		
-	}
 	
 	ArrayList<Row> exec(){
 		
