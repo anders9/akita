@@ -138,13 +138,13 @@ public class Executor {
 		};
 		
 		InnerQueryCallback innerQNotAllowCb = new InnerQueryCallback(){
-			public void handleInnerQuery(ZQuery innerQ){
+			public void handleInnerQuery(ZQuery innerQ, ExprType type){
 				throw new ExecException("Illegal inner sub-query: " + innerQ.toString());
 			}			
 		};
 		
 		InnerQueryCallback innerQAllowCb = new InnerQueryCallback(){
-			public void handleInnerQuery(ZQuery innerQ){
+			public void handleInnerQuery(ZQuery innerQ, ExprType type){
 				innerQ.outer = q;
 			}			
 		};
@@ -189,53 +189,54 @@ public class Executor {
 			}
 		}
 	}
+	static public enum ExprType { SELECT, WHERE, GROUPBY, HAVING, ORDERBY };
 	
 	interface ExprCallback{
-		public void handleColRef(ZColRef colRef, boolean useAlias);
+		public void handleColRef(ZColRef colRef, ExprType type);
 	}
 	interface InnerQueryCallback{
-		public void handleInnerQuery(ZQuery innerQ);		
+		public void handleInnerQuery(ZQuery innerQ, ExprType type);		
 	}
 	
-	void exprListIter(Collection<ZExp> exprList, boolean useAlias, ExprCallback exprCb, InnerQueryCallback subQueryCb){
+	void exprListIter(Collection<ZExp> exprList, ExprType type, ExprCallback exprCb, InnerQueryCallback subQueryCb){
 		for(ZExp e: exprList){
-			exprIter(e, useAlias, exprCb, subQueryCb);
+			exprIter(e, type, exprCb, subQueryCb);
 		}
 	}
 	
 	//iterator of Columne in Expr
-	void exprIter(ZExp expr, boolean useAlias, ExprCallback exprCb, InnerQueryCallback subQueryCb){
+	void exprIter(ZExp expr, ExprType type, ExprCallback exprCb, InnerQueryCallback subQueryCb){
 		if(expr == null)
 			return;
 		if(expr instanceof ZExpression){
 			ZExpression e = (ZExpression)expr;
 			for(ZExp sube: e.getOperands()){
-				exprIter(sube, useAlias, exprCb, subQueryCb);
+				exprIter(sube, type, exprCb, subQueryCb);
 			}
 		}
 		else if(expr instanceof ZColRef){
 			ZColRef c = (ZColRef)expr;
-			if(exprCb != null)exprCb.handleColRef(c, useAlias);
+			if(exprCb != null)exprCb.handleColRef(c, type);
 		}
 		else if(expr instanceof ZInterval){
 			ZInterval i = (ZInterval)expr;
-			exprIter(i.getExpr(), useAlias, exprCb, subQueryCb);		
+			exprIter(i.getExpr(), type, exprCb, subQueryCb);		
 		}
 		else if(expr instanceof ZSwitchExpr){
 			ZSwitchExpr s = (ZSwitchExpr)expr;
 			for(ZExp sube: s.getCond()){
-				exprIter(sube, useAlias, exprCb, subQueryCb);
+				exprIter(sube, type, exprCb, subQueryCb);
 			}
 			for(ZExp sube: s.getResult()){
-				exprIter(sube, useAlias, exprCb, subQueryCb);
+				exprIter(sube, type, exprCb, subQueryCb);
 			}
 			if(s.getCmpVal() != null)
-				exprIter(s.getCmpVal(), useAlias, exprCb, subQueryCb);
+				exprIter(s.getCmpVal(), type, exprCb, subQueryCb);
 			if(s.getElseResult() != null)
-				exprIter(s.getElseResult(), useAlias, exprCb, subQueryCb);		
+				exprIter(s.getElseResult(), type, exprCb, subQueryCb);		
 		}
 		else if(expr instanceof ZQuery){
-			if(subQueryCb != null)subQueryCb.handleInnerQuery((ZQuery)expr);
+			if(subQueryCb != null)subQueryCb.handleInnerQuery((ZQuery)expr, type);
 		}
 		else if(expr instanceof ZConstant){
 			//do nothing
