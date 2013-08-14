@@ -1,7 +1,7 @@
 package anders.akita.parser;
 
 
-public class ZColRef implements ZExp {
+public class ZColRef extends ZExp {
 	
 	public String table;
 	public String col;

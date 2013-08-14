@@ -2,7 +2,7 @@ package anders.akita.parser;
 
 import java.util.*;
 
-public class ZSwitchExpr implements ZExp {
+public class ZSwitchExpr extends ZExp {
 
 	Vector<ZExp> cond, result;
 	ZExp cmpVal, else_result;

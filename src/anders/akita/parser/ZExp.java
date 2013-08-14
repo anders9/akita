@@ -22,11 +22,14 @@ package anders.akita.parser;
  * A common interface for all SQL Expressions (ZQueries, ZExpressions and
  * ZConstants, ZSwitchExpr, ZInterval are ZExps).
  */
-public interface ZExp {
+public abstract class ZExp {
 	
 	public static final int SELECT_EXPR = 1;
 	public static final int WHERE_EXPR = 2;
 	public static final int HAVING_EXPR = 3;	
 	public static final int FROM_EXPR = 4;
+	
+	
+	public ZExp parentExp;
 };
 

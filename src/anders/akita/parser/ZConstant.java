@@ -21,7 +21,7 @@ package anders.akita.parser;
 /**
  * ZConstant: a representation of SQL constants
  */
-public class ZConstant implements ZExp {
+public class ZConstant extends ZExp {
 
   /**
    * ZConstant types

@@ -104,7 +104,24 @@ public class Executor {
 		q.setSelect(newlist);
 		
 		ExprCallback exprCb = new ExprCallback(){
-			public void handleColRef(ZColRef colRef, boolean useAlias){
+			
+			public void handleAggr(ZQuery q, ZExpression aggr, int depth, ExprType type){
+				String errStr = "Illegal use aggreation function: " + aggr.toString();
+				switch(type){
+				case SELECT:
+				case HAVING:
+				case ORDERBY:
+					if(depth > 0)
+						throw new ExecException(errStr);
+					break;
+				case WHERE:
+				case GROUPBY:
+					throw new ExecException(errStr);
+					break;
+				}
+			}
+			
+			public void handleColRef(ZQuery q, ZColRef colRef, ExprType type){
 				
 				colRef.query = q;
 				
@@ -136,7 +153,7 @@ public class Executor {
 			}
 
 		};
-		
+		/*
 		InnerQueryCallback innerQNotAllowCb = new InnerQueryCallback(){
 			public void handleInnerQuery(ZQuery innerQ, ExprType type){
 				throw new ExecException("Illegal inner sub-query: " + innerQ.toString());
@@ -147,7 +164,7 @@ public class Executor {
 			public void handleInnerQuery(ZQuery innerQ, ExprType type){
 				innerQ.outer = q;
 			}			
-		};
+		};*/
 		//check tab column ref & subQuery in select list
 		for(ZSelectItem item: q.getSelect()){
 			exprIter(item.expr, false, exprCb, innerQNotAllowCb);
@@ -192,48 +209,65 @@ public class Executor {
 	static public enum ExprType { SELECT, WHERE, GROUPBY, HAVING, ORDERBY };
 	
 	interface ExprCallback{
-		public void handleColRef(ZColRef colRef, ExprType type);
+		public void handleColRef(ZQuery q, ZColRef colRef, ExprType type);
+		public void handleAggr(ZQuery q, ZExpression aggr, int depth, ExprType type);
 	}
 	interface InnerQueryCallback{
 		public void handleInnerQuery(ZQuery innerQ, ExprType type);		
 	}
 	
-	void exprListIter(Collection<ZExp> exprList, ExprType type, ExprCallback exprCb, InnerQueryCallback subQueryCb){
+	void exprListIter(ZQuery q, Collection<ZExp> exprList, ExprType type, ExprCallback exprCb, InnerQueryCallback subQueryCb){
 		for(ZExp e: exprList){
-			exprIter(e, type, exprCb, subQueryCb);
+			exprIter(q, e, type, exprCb, subQueryCb);
 		}
 	}
 	
 	//iterator of Columne in Expr
-	void exprIter(ZExp expr, ExprType type, ExprCallback exprCb, InnerQueryCallback subQueryCb){
+	void exprIter(ZQuery q, ZExp expr, ExprType type, ExprCallback exprCb, InnerQueryCallback subQueryCb){
+		exprIter(q, expr, type, 0, exprCb, subQueryCb);
+	}
+	void exprIter(ZQuery q, ZExp expr, ExprType type, int aggrDepth, ExprCallback exprCb, InnerQueryCallback subQueryCb){
 		if(expr == null)
 			return;
 		if(expr instanceof ZExpression){
 			ZExpression e = (ZExpression)expr;
+			if(e.isFunction() && e.aggr_modifier_ != ZExpression.NOT_AGGR){
+				//it is an aggregation function
+				exprCb.handleAggr(q, e, aggrDepth, type);
+				++aggrDepth;
+			}
 			for(ZExp sube: e.getOperands()){
-				exprIter(sube, type, exprCb, subQueryCb);
+				sube.parentExp = expr;
+				exprIter(q, sube, type, aggrDepth, exprCb, subQueryCb);
 			}
 		}
 		else if(expr instanceof ZColRef){
 			ZColRef c = (ZColRef)expr;
-			if(exprCb != null)exprCb.handleColRef(c, type);
+			if(exprCb != null)exprCb.handleColRef(q, c, type);
 		}
 		else if(expr instanceof ZInterval){
 			ZInterval i = (ZInterval)expr;
-			exprIter(i.getExpr(), type, exprCb, subQueryCb);		
+			i.getExpr().parentExp = expr;
+			exprIter(q, i.getExpr(), type, aggrDepth, exprCb, subQueryCb);		
 		}
 		else if(expr instanceof ZSwitchExpr){
 			ZSwitchExpr s = (ZSwitchExpr)expr;
 			for(ZExp sube: s.getCond()){
-				exprIter(sube, type, exprCb, subQueryCb);
+				sube.parentExp = expr;
+				exprIter(q, sube, type, aggrDepth, exprCb, subQueryCb);
 			}
 			for(ZExp sube: s.getResult()){
-				exprIter(sube, type, exprCb, subQueryCb);
+				sube.parentExp = expr;
+				exprIter(q, sube, type, aggrDepth, exprCb, subQueryCb);
 			}
-			if(s.getCmpVal() != null)
-				exprIter(s.getCmpVal(), type, exprCb, subQueryCb);
-			if(s.getElseResult() != null)
-				exprIter(s.getElseResult(), type, exprCb, subQueryCb);		
+			if(s.getCmpVal() != null){
+				s.getCmpVal().parentExp = expr;
+				exprIter(q, s.getCmpVal(), type, aggrDepth, exprCb, subQueryCb);
+			}
+			if(s.getElseResult() != null){
+				s.getElseResult().parentExp = expr;
+				exprIter(q, s.getElseResult(), type, aggrDepth, exprCb, subQueryCb);
+			}
 		}
 		else if(expr instanceof ZQuery){
 			if(subQueryCb != null)subQueryCb.handleInnerQuery((ZQuery)expr, type);

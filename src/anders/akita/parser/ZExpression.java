@@ -24,7 +24,7 @@ import java.util.* ;
  * An SQL expression is an operator and one or more operands 
  * Example: a AND b AND c -> operator = AND, operands = (a, b, c)
  */
-public class ZExpression implements ZExp {
+public class ZExpression extends ZExp {
 
 	public final static int AGGR_ALL = 1;
 	public final static int AGGR_DISTINCT = 2;
@@ -34,7 +34,7 @@ public class ZExpression implements ZExp {
   boolean is_funciton_ = false;
   String op_ = null;
   Vector<ZExp> operands_ = null;
-  int aggr_modifier_ = NOT_AGGR;
+  public int aggr_modifier_ = NOT_AGGR;
   /**
    * Create an SQL Expression given the operator
    * @param op The operator

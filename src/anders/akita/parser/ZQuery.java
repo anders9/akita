@@ -24,7 +24,7 @@ import java.util.* ;
  * ZQuery: an SQL SELECT statement
  */
 
-public class ZQuery implements ZStatement, ZExp {
+public class ZQuery extends ZExp implements ZStatement {
 	
 	public ZQuery parent;
 	public ZQuery outer;

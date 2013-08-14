@@ -1,6 +1,6 @@
 package anders.akita.parser;
 
-public class ZInterval implements ZExp {
+public class ZInterval extends ZExp {
 	
 	String type;
 	ZExp exp;
