@@ -24,7 +24,7 @@ public final class MySQLFunc {
 		{"HEX",		1},
 		{"INSTR",	2},
 		{"LCASE",	1},
-		{"LEFT",	1},  //
+		{"LEFT",	2},  //
 		{"LENGTH",		1},
 		{"LOCATE",		3},
 		{"LOWER",		1},

@@ -164,6 +164,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_QUIT:"QUIT">
 |   <K_READ:"READ">
 |   <K_REAL:"REAL">
+|	<K_RIGHT:"RIGHT">
 |   <K_REGEXP:"REGEXP">
 |   <K_ROLLBACK:"ROLLBACK">
 |   <K_ROW:"ROW">
@@ -608,7 +609,7 @@ ZFromClause FromClause():
 {
 	"FROM"
 	(
-		LOOKAHEAD(FromItemEx() "LEFT") fc = LeftOuterJoinClause() | 
+		LOOKAHEAD(FromItemEx() ("LEFT"|"RIGHT") ) fc = LeftOuterJoinClause() | 
 		fc = InnerJoinClause()
 	)
 	{return fc;}
@@ -630,15 +631,18 @@ ZFromClause LeftOuterJoinClause():
 	ZFromClause f;
 	ZFromItemEx il, ir;
 	ZExp cond = null;
+	int join_type;
 }
 {
-	il = FromItemEx() "LEFT" ["OUTER"] "JOIN" ir = FromItemEx() 
+	il = FromItemEx() 
+	("LEFT" {join_type = ZFromClause.LEFT_JOIN;}|"RIGHT" {join_type = ZFromClause.RIGHT_JOIN;})
+	 ["OUTER"] "JOIN" ir = FromItemEx() 
 	[ "ON" cond = SQLExpression() ]
 	{
 		Vector v = new Vector(2);
 		v.addElement(il);
 		v.addElement(ir);
-		return new ZFromClause(ZFromClause.LEFT_JOIN, v, cond);
+		return new ZFromClause(join_type, v, cond);
 	}
 }
 // FromItemEx ::= ( FromItem | "(" SelectStatement ")" ) [ "AS" alias ]
@@ -1105,7 +1109,7 @@ ZExp SQLPrimaryExpression():
   ZColRef col;
   Token t;
   String s, s2;
-  int modifier = -1;
+  int func_type = -1;
   ZExp e = null;
   int nparm;
   Vector parm = null;
@@ -1128,7 +1132,7 @@ ZExp SQLPrimaryExpression():
 	      "("
 	           (
 		           LOOKAHEAD("ALL"|"DISTINCT") (
-		           		("ALL" { modifier = ZExpression.AGGR_ALL; } | "DISTINCT" { modifier = ZExpression.AGGR_DISTINCT; }) 
+		           		("ALL" { func_type = ZExpression.AGGR_ALL; } | "DISTINCT" { func_type = ZExpression.AGGR_DISTINCT; }) 
 		           		 e = SQLExpression()
 		           )
 		           |
@@ -1139,24 +1143,24 @@ ZExp SQLPrimaryExpression():
 	      ")" )
 	 {
 	    if( ZUtils.isAggregate(s) || ZUtils.isCustomAggregate(s) ){
-	    	if(modifier == -1){
-	    		modifier = ZExpression.AGGR_ALL;
+	    	if(func_type == -1){
+	    		func_type = ZExpression.AGGR_ALL;
 	    		if(parm.size() != 1)
 	    			throw new ParseException("Aggregate " + s + " should have 1 parameter");
 	    		e = (ZExp)parm.get(0);
 	    	}
-	    	return new ZExpression(s, e, modifier);
+	    	return new ZExpression(s, e, func_type);
 	    }
 		
 	  else if( (nparm = ZUtils.isCustomFunction(s)) >= 0 ){
-	  	if(modifier != -1)
+	  	if(func_type != -1)
 	  		throw new ParseException("Function " + s + " should not have modifier ALL/DISTINCT");
 	    
 	    if( nparm != ZExpression.VAR_PARAM && nparm != parm.size() ) {
 	      throw new ParseException("Function " + s + " should have "
 	         + nparm + " parameter(s)");
 	    }
-	    return new ZExpression(s, parm);
+	    return new ZExpression(s, parm, func_type);
 	  }
 	  else throw new ParseException("Undefined function/aggreation: " + s);
    }  
@@ -1190,6 +1194,7 @@ String FunctionOrAggregateName():
 | t = "MIN"
 | t = "COUNT"
 | t = "LEFT"
+| t = "RIGHT"
 | t = "MOD"
 | t = "DATE"
 | t = "DAY"

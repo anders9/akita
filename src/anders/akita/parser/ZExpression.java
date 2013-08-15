@@ -26,15 +26,17 @@ import java.util.* ;
  */
 public class ZExpression extends ZExp {
 
-	public final static int AGGR_ALL = 1;
-	public final static int AGGR_DISTINCT = 2;
-	public final static int NOT_AGGR = 0;
+	public final static int OPERATOR = 0;
+	public final static int FUCTION = 1;
+	public final static int AGGR_ALL = 2;
+	public final static int AGGR_DISTINCT = 3;
+	//public final static int NOT_AGGR = 0;
 	public final static int VAR_PARAM = 1000000;
 	
-  boolean is_funciton_ = false;
+  //boolean is_funciton_ = false;
   String op_ = null;
   Vector<ZExp> operands_ = null;
-  public int aggr_modifier_ = NOT_AGGR;
+  public int type = OPERATOR;
   /**
    * Create an SQL Expression given the operator
    * @param op The operator
@@ -61,20 +63,31 @@ public class ZExpression extends ZExp {
   public ZExpression(String op, Vector<ZExp> v) {
     op_ = op.toUpperCase();
     operands_ = v;
-    this.is_funciton_ = true;
+    //this.is_funciton_ = true;
   }
   
   
   /**
-   * Create an SQL Expression given the operator and 1st operand and aggregation modifier
+   * construct normal function expression
+   * @param op function-name
+   * @param v params
+   * @param type must be FUNCTION
+   */
+  public ZExpression(String op, Vector<ZExp> v, int type) {
+	 this(op.toUpperCase(), v);
+	 this.type = type;
+	 //this.is_funciton_ = true;
+  }
+  /**
+   * construct aggregation function expression
    * @param op The operator
    * @param o1 The 1st operand
-   * @param aggr_modifier
+   * @param type must be AGGR_ALL or AGGR_DISTINCT
    */
-  public ZExpression(String op, ZExp o1, int aggr_modifier) {
+  public ZExpression(String op, ZExp o1, int type) {
     this(op.toUpperCase(), o1);
-    this.aggr_modifier_ = aggr_modifier;
-    this.is_funciton_ = true;
+    this.type = type;
+    //this.is_funciton_ = true;
   }
   
   
@@ -170,15 +183,15 @@ public class ZExpression extends ZExp {
     return buf.toString();
   }
 
-  public boolean isFunction(){
-	  return is_funciton_;
-  }
+  //public boolean isFunction(){
+	//  return is_funciton_;
+  //}
   
   public String toString() {
 
     if(op_.equals("?")) return op_; // For prepared columns ("?")
 
-    if(isFunction())
+    if(type != OPERATOR)
       return formatFunction();
 
     StringBuffer buf = new StringBuffer();
@@ -254,9 +267,9 @@ public class ZExpression extends ZExp {
   private String formatFunction() {
     StringBuffer b = new StringBuffer(op_ + "(");
     if(!(op_.equalsIgnoreCase("COUNT") && nbOperands() == 1 && getOperand(0).toString().equals("*"))){
-	    if(aggr_modifier_ == AGGR_ALL)
+	    if(type == AGGR_ALL)
 	    	b.append("ALL ");
-	    else if(aggr_modifier_ == AGGR_DISTINCT)
+	    else if(type == AGGR_DISTINCT)
 	    	b.append("DISTINCT ");
     }
     int nb = nbOperands();

@@ -28,6 +28,9 @@ public class ZGroupBy {
   Vector<ZExp> groupby_;
   ZExp having_ = null;
 
+  public ArrayList<ZExp> havingList = new ArrayList<ZExp>();
+
+  
   /**
    * Create a GROUP BY given a set of Expressions
    * @param exps A vector of SQL Expressions (ZExp objects).
@@ -58,9 +61,9 @@ public class ZGroupBy {
 	    buf.append("GROUP BY ");
 	
 	    //buf.append(groupby_.toString());
-	    buf.append(groupby_.elementAt(0).toString());
+	    buf.append(groupby_.get(0).toString());
 	    for(int i=1; i<groupby_.size(); i++) {
-	      buf.append(", " + groupby_.elementAt(i).toString());
+	      buf.append(", " + groupby_.get(i).toString());
 	    }
 	  }
 	  if(groupby_ != null && having_ != null)

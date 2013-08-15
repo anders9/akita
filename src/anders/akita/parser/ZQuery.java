@@ -29,16 +29,31 @@ public class ZQuery extends ZExp implements ZStatement {
 	public ZQuery parent;
 	public ZQuery outer;
 	
-	public HashMap<String, ZFromItemEx> tabList;
-	public HashMap<String, ZSelectItem> fieldList;
+	//Only use for inner-query, 
+	//if exist in the where clause of outer-query, set it true, otherwise (exist in having clause) false
+	public boolean innerQinWhere;
+	
+	/*
+	 * Only use for inner-Query:
+	 * 	ALL/any/exist/not exist inner-query not need return unique row
+	 *  other inner-Query need return unique row
+	 */
+	public enum InnerQType {NORMAL, EXISTS, NOT_EXISTS, ANY, ALL};
+	public InnerQType innerQType;
+	
+	public ArrayList<ZQuery> innerQinWhereList = new ArrayList<ZQuery>();
+	public ArrayList<ZQuery> innerQinHavingList = new ArrayList<ZQuery>();
+	
+	public HashMap<String, ZFromItemEx> tabList = new HashMap<String, ZFromItemEx>();
+	public HashMap<String, ZSelectItem> fieldList = new HashMap<String, ZSelectItem>();
+	
+	public ArrayList<ZExp> whereList = new ArrayList<ZExp>();
+	public ArrayList<ZExp> groupByKey = new ArrayList<ZExp>();
 	
 	static class InnerQuery{
 		ZExp cond;
 		ZQuery query;
 	}
-	
-	public ArrayList<InnerQuery> innerQueryInWhere = new ArrayList<InnerQuery>();
-	public ArrayList<InnerQuery> innerQueryInHaving = new ArrayList<InnerQuery>();
 	
   Vector<ZSelectItem> select_;
   boolean distinct_ = false;
@@ -151,24 +166,7 @@ public class ZQuery extends ZExp implements ZStatement {
 
     //buf.append(" from " + from_.toString());
     if(from_ != null){
-	    buf.append(" from ");
-	    if(from_.join_type == ZFromClause.INNER_JOIN){
-	    	Vector<ZFromItemEx> from_ = this.from_.items;
-		    
-		    buf.append(from_.elementAt(0).toString());
-		    for(i=1; i<from_.size(); i++) {
-		      buf.append(", " + from_.elementAt(i).toString());
-		    }
-	    }
-	    else if(from_.join_type == ZFromClause.LEFT_JOIN){
-	    	buf.append(this.from_.items.elementAt(0).toString())
-	    	.append(" LEFT JOIN ")
-	    	.append(this.from_.items.elementAt(1).toString());
-	    	if(from_.join_cond != null){
-	    		buf.append(" ON ")
-	    		.append(from_.join_cond.toString());
-	    	}
-	    }
+    	buf.append(" " + from_.toString());
     }
 
     if(where_ != null) {

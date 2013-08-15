@@ -56,10 +56,166 @@ public class Executor {
 		//syntax check
 	}
 	
+	static public enum ExprType { SELECT, WHERE, GROUPBY, HAVING, ORDERBY, SELECT_INNER, WHERE_INNER,  };
+	
+	interface ExprCallback{
+		public void handleColRef(ZQuery q, ZColRef colRef, ExprType type);
+		public void handleAggr(ZQuery q, ZExpression aggr, int depth, ExprType type);
+	}
+	interface InnerQueryCallback{
+		public void handleInnerQuery(ZQuery q, ZQuery innerQ, ExprType type);		
+	}
+		
+	void splitExprByAND(ZExp exp, ArrayList<ZExp> list){
+		if(
+			exp instanceof ZExpression
+			&& ((ZExpression)exp).type == ZExpression.OPERATOR
+			&& ((ZExpression)exp).getOperator().equalsIgnoreCase("AND")
+		
+		){
+			for(ZExp sube: ((ZExpression)exp).getOperands()){
+				splitExprByAND(sube, list);
+			}
+		}
+		else{
+			list.add(exp);
+		}
+	}
 
+	static final ExprCallback exprCb = new ExprCallback(){
+		
+		public void handleAggr(ZQuery q, ZExpression aggr, int depth, ExprType type){
+			String errStr = "Illegal use aggreation function: " + aggr.toString() + " in query: " + q.toString();
+			switch(type){
+			case SELECT:
+			case HAVING:
+			case ORDERBY:
+				if(depth > 0)
+					throw new ExecException(errStr);
+				break;
+			case WHERE:
+			case GROUPBY:
+				throw new ExecException(errStr);
+				break;
+			}
+		}
+		
+		public void handleColRef(ZQuery q, ZColRef colRef, ExprType type){
+			
+			colRef.query = q;
+			
+			if(colRef.table != null){
+				ZFromItemEx tab = q.tabList.get(colRef.table);
+				if(tab == null || !tab.existField(colRef.col))
+					throw new ExecException("Illegal select item: " + colRef.toString());
+			}
+			else{
+				//alias check first!!
+				boolean findAlias = false;
+				if(useAlias){
+					if(q.fieldList.containsKey(colRef.col))
+						findAlias = true;
+				}
+				if(!findAlias){
+					for(String key: q.tabList.keySet()){
+						ZFromItemEx tab = q.tabList.get(key);
+						if(tab.existField(colRef.col)){
+							if(colRef.table == null)
+								colRef.table = key;
+							else
+								throw new ExecException("Illegal select item: " + colRef.toString());
+						}
+					}
+				}
+			}
+
+		}
+
+	};
+	
+	
+	static final InnerQueryCallback innerQCb = new InnerQueryCallback(){
+		
+		public void handleInnerQuery(ZQuery q, ZQuery innerQ, ExprType type){
+			
+			innerQ.outer = q;
+			switch(type){
+			case WHERE:
+				innerQ.innerQinWhere = true;
+				q.innerQinWhereList.add(innerQ);
+				break;
+			case HAVING:
+				innerQ.innerQinWhere = false;
+				q.innerQinHavingList.add(innerQ);
+				break;
+			default:
+				throw new ExecException("Illegal use of inner sub-Query: " + innerQ.toString());
+			}
+			
+			//check syntax for inner-Query
+			
+			//1. check select list
+			if(innerQ.getSelect().size() != 1)
+				throw new ExecException("inner sub-Query must return only 1 column: " + innerQ.toString());
+			ZExp ret = innerQ.getSelect().get(0).expr;
+			if(ret == null)
+				throw new ExecException("The select list of inner sub-Query must be an expression or a column: " + innerQ.toString());
+			
+			//2. check & build from item list of inner-query
+			if(q.getFrom().join_type != ZFromClause.INNER_JOIN)
+				throw new ExecException("inner sub-Query not support OUTER-JOIN: " + innerQ.toString());
+			
+			for(ZFromItemEx item: innerQ.getFrom().items){
+				if(item.isSubQuery())
+					throw new ExecException("For inner query, sub-query in from clause is not supported: " + item.toString());
+				
+				String alias = item.alias;
+				if(alias == null)alias = item.table;
+				if(innerQ.tabList.get(alias) != null)
+					throw new ExecException("alias/table name duplicate: " + alias);
+				innerQ.tabList.put(alias, item);
+			}
+			
+			//3. check group-by/having clause and order-by clause
+			if(innerQ.getGroupBy() != null)
+				throw new ExecException("inner sub-Query not support group-by clause: " + innerQ.toString());
+			if(innerQ.getOrderBy() != null)
+				throw new ExecException("inner sub-Query not support order-by clause: " + innerQ.toString());
+			
+			//4. check the type of inner-query & fill $uniqueRow member
+			innerQ.innerQType = ZQuery.InnerQType.NORMAL;
+			
+			if(innerQ.parentExp != null && innerQ.parentExp instanceof ZExpression){
+				String op = ((ZExpression)innerQ.parentExp).getOperator();
+				if(op.equalsIgnoreCase("EXISTS"))
+					innerQ.innerQType = ZQuery.InnerQType.EXISTS;
+				else if(op.equalsIgnoreCase("NOT EXISTS"))
+					innerQ.innerQType = ZQuery.InnerQType.NOT_EXISTS;
+				else if(op.equalsIgnoreCase("ANY"))
+					innerQ.innerQType = ZQuery.InnerQType.ANY;
+				else if(op.equalsIgnoreCase("ALL"))
+					innerQ.innerQType = ZQuery.InnerQType.ALL;
+			}
+			
+			
+		}
+	};
+	
+	
+	
 	void buildQueryTree(final ZQuery q){
 		
-		q.tabList = new HashMap<String, ZFromItemEx>();
+
+		if(q.getGroupBy() != null){
+			q.groupByKey.addAll(q.getGroupBy().getGroupBy());
+		}
+
+		//check where, group-by, having, order by, split AND operator
+		
+		if(q.getWhere() != null)
+			splitExprByAND(q.getWhere(), q.whereList);
+		if(q.getGroupBy() != null && q.getGroupBy().getHaving() != null)
+			splitExprByAND(q.getGroupBy().getHaving(), q.getGroupBy().havingList);
 		
 		//construct from tab list: tab-alias=>FromItem(table or subQuery)
 		for(ZFromItemEx item: q.getFrom().items){
@@ -78,8 +234,10 @@ public class Executor {
 			q.tabList.put(alias, item);
 		}
 		
-		Vector<ZSelectItem> newlist = new Vector<ZSelectItem>();		
+		//check select list and construct field list for the query
 		
+		//1. expand * and TAB_NAME.* into ZColRef struct
+		Vector<ZSelectItem> newlist = new Vector<ZSelectItem>();
 		
 		for(ZSelectItem item: q.getSelect()){
 			if(item.type == ZSelectItem.STAR){
@@ -103,74 +261,16 @@ public class Executor {
 		}
 		q.setSelect(newlist);
 		
-		ExprCallback exprCb = new ExprCallback(){
-			
-			public void handleAggr(ZQuery q, ZExpression aggr, int depth, ExprType type){
-				String errStr = "Illegal use aggreation function: " + aggr.toString();
-				switch(type){
-				case SELECT:
-				case HAVING:
-				case ORDERBY:
-					if(depth > 0)
-						throw new ExecException(errStr);
-					break;
-				case WHERE:
-				case GROUPBY:
-					throw new ExecException(errStr);
-					break;
-				}
-			}
-			
-			public void handleColRef(ZQuery q, ZColRef colRef, ExprType type){
-				
-				colRef.query = q;
-				
-				if(colRef.table != null){
-					ZFromItemEx tab = q.tabList.get(colRef.table);
-					if(tab == null || !tab.existField(colRef.col))
-						throw new ExecException("Illegal select item: " + colRef.toString());
-				}
-				else{
-					//alias check first!!
-					boolean findAlias = false;
-					if(useAlias){
-						if(q.fieldList.containsKey(colRef.col))
-							findAlias = true;
-					}
-					if(!findAlias){
-						for(String key: q.tabList.keySet()){
-							ZFromItemEx tab = q.tabList.get(key);
-							if(tab.existField(colRef.col)){
-								if(colRef.table == null)
-									colRef.table = key;
-								else
-									throw new ExecException("Illegal select item: " + colRef.toString());
-							}
-						}
-					}
-				}
-
-			}
-
-		};
-		/*
-		InnerQueryCallback innerQNotAllowCb = new InnerQueryCallback(){
-			public void handleInnerQuery(ZQuery innerQ, ExprType type){
-				throw new ExecException("Illegal inner sub-query: " + innerQ.toString());
-			}			
-		};
 		
-		InnerQueryCallback innerQAllowCb = new InnerQueryCallback(){
-			public void handleInnerQuery(ZQuery innerQ, ExprType type){
-				innerQ.outer = q;
-			}			
-		};*/
-		//check tab column ref & subQuery in select list
+		
+		
+		// 2. check tab column ref & subQuery in select list
 		for(ZSelectItem item: q.getSelect()){
-			exprIter(item.expr, false, exprCb, innerQNotAllowCb);
+			exprIter(q, item.expr, ExprType.SELECT, exprCb, innerQCb);
 		}
-		//construct query's field list
-		q.fieldList = new HashMap<String, ZSelectItem>();
+		
+		// 3. construct query's field list
+		
 		for(ZSelectItem item: q.getSelect()){
 			String alias = item.alias;
 			if(alias == null && item.expr instanceof ZColRef){
@@ -206,16 +306,7 @@ public class Executor {
 			}
 		}
 	}
-	static public enum ExprType { SELECT, WHERE, GROUPBY, HAVING, ORDERBY };
-	
-	interface ExprCallback{
-		public void handleColRef(ZQuery q, ZColRef colRef, ExprType type);
-		public void handleAggr(ZQuery q, ZExpression aggr, int depth, ExprType type);
-	}
-	interface InnerQueryCallback{
-		public void handleInnerQuery(ZQuery innerQ, ExprType type);		
-	}
-	
+
 	void exprListIter(ZQuery q, Collection<ZExp> exprList, ExprType type, ExprCallback exprCb, InnerQueryCallback subQueryCb){
 		for(ZExp e: exprList){
 			exprIter(q, e, type, exprCb, subQueryCb);
@@ -231,15 +322,16 @@ public class Executor {
 			return;
 		if(expr instanceof ZExpression){
 			ZExpression e = (ZExpression)expr;
-			if(e.isFunction() && e.aggr_modifier_ != ZExpression.NOT_AGGR){
+			int ad = aggrDepth;
+			if(e.type == ZExpression.AGGR_ALL || e.type == ZExpression.AGGR_DISTINCT){
 				//it is an aggregation function
-				exprCb.handleAggr(q, e, aggrDepth, type);
-				++aggrDepth;
+				++ad;
 			}
 			for(ZExp sube: e.getOperands()){
 				sube.parentExp = expr;
-				exprIter(q, sube, type, aggrDepth, exprCb, subQueryCb);
+				exprIter(q, sube, type, ad, exprCb, subQueryCb);
 			}
+			exprCb.handleAggr(q, e, aggrDepth, type);
 		}
 		else if(expr instanceof ZColRef){
 			ZColRef c = (ZColRef)expr;
@@ -270,7 +362,7 @@ public class Executor {
 			}
 		}
 		else if(expr instanceof ZQuery){
-			if(subQueryCb != null)subQueryCb.handleInnerQuery((ZQuery)expr, type);
+			if(subQueryCb != null)subQueryCb.handleInnerQuery(q, (ZQuery)expr, type);
 		}
 		else if(expr instanceof ZConstant){
 			//do nothing
