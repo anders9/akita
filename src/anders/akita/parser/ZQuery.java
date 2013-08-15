@@ -26,12 +26,12 @@ import java.util.* ;
 
 public class ZQuery extends ZExp implements ZStatement {
 	
-	public ZQuery parent;
-	public ZQuery outer;
+	public ZQuery parentQuery;
+	public ZQuery outerQuery;
 	
 	//Only use for inner-query, 
 	//if exist in the where clause of outer-query, set it true, otherwise (exist in having clause) false
-	public boolean innerQinWhere;
+	public boolean inWhereClause;
 	
 	/*
 	 * Only use for inner-Query:
@@ -48,7 +48,7 @@ public class ZQuery extends ZExp implements ZStatement {
 	public HashMap<String, ZSelectItem> fieldList = new HashMap<String, ZSelectItem>();
 	
 	public ArrayList<ZExp> whereList = new ArrayList<ZExp>();
-	public ArrayList<ZExp> groupByKey = new ArrayList<ZExp>();
+	public ArrayList<ZExp> groupByKey = null;
 	
 	static class InnerQuery{
 		ZExp cond;

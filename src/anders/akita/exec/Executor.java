@@ -65,7 +65,13 @@ public class Executor {
 	interface InnerQueryCallback{
 		public void handleInnerQuery(ZQuery q, ZQuery innerQ, ExprType type);		
 	}
-		
+	
+	ZExp expRoot(ZExp e){
+		while(e.parentExp != null)
+			e = e.parentExp;
+		return e;
+	}
+	
 	void splitExprByAND(ZExp exp, ArrayList<ZExp> list){
 		if(
 			exp instanceof ZExpression
@@ -96,6 +102,9 @@ public class Executor {
 			case WHERE:
 			case GROUPBY:
 				throw new ExecException(errStr);
+			case SELECT_INNER:
+				break;
+			case WHERE_INNER:
 				break;
 			}
 		}
@@ -112,10 +121,10 @@ public class Executor {
 			else{
 				//alias check first!!
 				boolean findAlias = false;
-				if(useAlias){
+				//if(useAlias){
 					if(q.fieldList.containsKey(colRef.col))
 						findAlias = true;
-				}
+				//}
 				if(!findAlias){
 					for(String key: q.tabList.keySet()){
 						ZFromItemEx tab = q.tabList.get(key);
@@ -138,14 +147,14 @@ public class Executor {
 		
 		public void handleInnerQuery(ZQuery q, ZQuery innerQ, ExprType type){
 			
-			innerQ.outer = q;
+			innerQ.outerQuery = q;
 			switch(type){
 			case WHERE:
-				innerQ.innerQinWhere = true;
+				innerQ.inWhereClause = true;
 				q.innerQinWhereList.add(innerQ);
 				break;
 			case HAVING:
-				innerQ.innerQinWhere = false;
+				innerQ.inWhereClause = false;
 				q.innerQinHavingList.add(innerQ);
 				break;
 			default:
@@ -204,11 +213,17 @@ public class Executor {
 	
 	
 	void buildQueryTree(final ZQuery q){
+		//!!!!
+		//!!!
+		/*
+		 * now order by must ref only field list
+		 * & group by, having can't ref alias
+		 */
 		
 
-		if(q.getGroupBy() != null){
-			q.groupByKey.addAll(q.getGroupBy().getGroupBy());
-		}
+		//if(q.getGroupBy() != null){
+		//	q.groupByKey.addAll(q.getGroupBy().getGroupBy());
+		//}
 
 		//check where, group-by, having, order by, split AND operator
 		
@@ -223,7 +238,7 @@ public class Executor {
 				if(item.alias == null)
 					throw new ExecException("subQuery must has an alias: " + item.toString());
 				ZQuery subQ = item.getSubQuery();
-				subQ.parent = q;
+				subQ.parentQuery = q;
 				buildQueryTree(subQ);
 			}
 			
@@ -260,8 +275,6 @@ public class Executor {
 			else newlist.add(item);
 		}
 		q.setSelect(newlist);
-		
-		
 		
 		
 		// 2. check tab column ref & subQuery in select list
