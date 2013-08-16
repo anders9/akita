@@ -102,7 +102,20 @@ public class ZExpression extends ZExp {
     addOperand(o1);
     addOperand(o2);
   }
-
+  /**
+   * Create an SQL Expression given the operator, 1st, 2nd and 3rd operands
+   * @param op The operator
+   * @param o1 The 1st operand
+   * @param o2 The 2nd operand
+   * @param o3 the 3rd operand
+   */
+  public ZExpression(String op, ZExp o1, ZExp o2, ZExp o3) {
+	op_ = new String(op);
+	addOperand(o1);
+	addOperand(o2);
+	addOperand(o3);
+  }
+  
   /**
    * Get this expression's operator.
    * @return the operator.

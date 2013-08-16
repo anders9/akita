@@ -74,41 +74,42 @@ public interface ZqlJJParserConstants {
   int K_REAL = 72;
   int K_RIGHT = 73;
   int K_REGEXP = 74;
-  int K_ROLLBACK = 75;
-  int K_ROW = 76;
-  int K_SECOND = 77;
-  int K_SELECT = 78;
-  int K_SET = 79;
-  int K_SHARE = 80;
-  int K_SMALLINT = 81;
-  int K_START = 82;
-  int K_SUM = 83;
-  int K_TABLE = 84;
-  int K_THEN = 85;
-  int K_TRANSACTION = 86;
-  int K_TRUE = 87;
-  int K_UNION = 88;
-  int K_UPDATE = 89;
-  int K_VALUES = 90;
-  int K_VARCHAR2 = 91;
-  int K_VARCHAR = 92;
-  int K_WEEK = 93;
-  int K_WHEN = 94;
-  int K_WHERE = 95;
-  int K_WITH = 96;
-  int K_WORK = 97;
-  int K_WRITE = 98;
-  int K_YEAR = 99;
-  int S_NUMBER = 100;
-  int FLOAT = 101;
-  int INTEGER = 102;
-  int DIGIT = 103;
-  int LINE_COMMENT = 104;
-  int MULTI_LINE_COMMENT = 105;
-  int S_IDENTIFIER = 106;
-  int LETTER = 107;
-  int SPECIAL_CHARS = 108;
-  int S_CHAR_LITERAL = 109;
+  int K_RLIKE = 75;
+  int K_ROLLBACK = 76;
+  int K_ROW = 77;
+  int K_SECOND = 78;
+  int K_SELECT = 79;
+  int K_SET = 80;
+  int K_SHARE = 81;
+  int K_SMALLINT = 82;
+  int K_START = 83;
+  int K_SUM = 84;
+  int K_TABLE = 85;
+  int K_THEN = 86;
+  int K_TRANSACTION = 87;
+  int K_TRUE = 88;
+  int K_UNION = 89;
+  int K_UPDATE = 90;
+  int K_VALUES = 91;
+  int K_VARCHAR2 = 92;
+  int K_VARCHAR = 93;
+  int K_WEEK = 94;
+  int K_WHEN = 95;
+  int K_WHERE = 96;
+  int K_WITH = 97;
+  int K_WORK = 98;
+  int K_WRITE = 99;
+  int K_YEAR = 100;
+  int S_NUMBER = 101;
+  int FLOAT = 102;
+  int INTEGER = 103;
+  int DIGIT = 104;
+  int LINE_COMMENT = 105;
+  int MULTI_LINE_COMMENT = 106;
+  int S_IDENTIFIER = 107;
+  int LETTER = 108;
+  int SPECIAL_CHARS = 109;
+  int S_CHAR_LITERAL = 110;
 
   int DEFAULT = 0;
 
@@ -188,6 +189,7 @@ public interface ZqlJJParserConstants {
     "\"REAL\"",
     "\"RIGHT\"",
     "\"REGEXP\"",
+    "\"RLIKE\"",
     "\"ROLLBACK\"",
     "\"ROW\"",
     "\"SECOND\"",
@@ -229,6 +231,12 @@ public interface ZqlJJParserConstants {
     "\";\"",
     "\"=\"",
     "\".\"",
+    "\"+\"",
+    "\"-\"",
+    "\"*\"",
+    "\".*\"",
+    "\"||\"",
+    "\"&&\"",
     "\"!=\"",
     "\"<=>\"",
     "\"<>\"",
@@ -236,12 +244,6 @@ public interface ZqlJJParserConstants {
     "\">=\"",
     "\"<\"",
     "\"<=\"",
-    "\"+\"",
-    "\"-\"",
-    "\"*\"",
-    "\".*\"",
-    "\"||\"",
-    "\"&&\"",
     "\"?\"",
     "\"/\"",
     "\"%\"",
