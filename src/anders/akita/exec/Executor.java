@@ -227,6 +227,27 @@ public class Executor {
 
 		//check where, group-by, having, order by, split AND operator
 		
+		q.needAggr = false;
+		
+		if(q.getGroupBy() != null){
+			q.needAggr = true;
+			q.groupByKey = new ArrayList<ZExp>(q.getGroupBy().getGroupBy());
+			q.groupByKey.a
+		}
+		//check select list to find it whether exist AGGREGATION-function
+		if(!q.needAggr){
+			for(ZSelectItem item: q.getSelect()){
+				if(item.type == ZSelectItem.EXPR){
+					exprIter(q, item.expr, ExprType.SELECT, new ExprCallback(){
+						public void handleAggr(ZQuery q, ZExpression aggr, int depth, ExprType type){
+							q.needAggr = true;
+						}
+						public void handleColRef(ZQuery q, ZColRef colRef, ExprType type){}
+					}, null);
+				}
+			}
+		}
+		
 		if(q.getWhere() != null)
 			splitExprByAND(q.getWhere(), q.whereList);
 		if(q.getGroupBy() != null && q.getGroupBy().getHaving() != null)

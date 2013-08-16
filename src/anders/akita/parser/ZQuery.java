@@ -32,7 +32,7 @@ public class ZQuery extends ZExp implements ZStatement {
 	//Only use for inner-query, 
 	//if exist in the where clause of outer-query, set it true, otherwise (exist in having clause) false
 	public boolean inWhereClause;
-	
+	public boolean needAggr;
 	/*
 	 * Only use for inner-Query:
 	 * 	ALL/any/exist/not exist inner-query not need return unique row
@@ -49,6 +49,8 @@ public class ZQuery extends ZExp implements ZStatement {
 	
 	public ArrayList<ZExp> whereList = new ArrayList<ZExp>();
 	public ArrayList<ZExp> groupByKey = null;
+	public ArrayList<ZExp> havingList = null;
+	
 	
 	static class InnerQuery{
 		ZExp cond;
