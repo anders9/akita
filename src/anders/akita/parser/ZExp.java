@@ -31,5 +31,10 @@ public abstract class ZExp {
 	
 	
 	public ZExp parentExp;
+	
+	public abstract Iterable<ZExp> subExpSet();
+	
+	public abstract boolean replaceSubExp(ZExp oldExp, ZExp newExp);
+	
 };
 

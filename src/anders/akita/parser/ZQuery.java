@@ -26,6 +26,8 @@ import java.util.* ;
 
 public class ZQuery extends ZExp implements ZStatement {
 	
+	boolean isInnerQuery = false;
+	
 	public ZQuery parentQuery;
 	public ZQuery outerQuery;
 	
@@ -38,7 +40,7 @@ public class ZQuery extends ZExp implements ZStatement {
 	 * 	ALL/any/exist/not exist inner-query not need return unique row
 	 *  other inner-Query need return unique row
 	 */
-	public enum InnerQType {NORMAL, EXISTS, NOT_EXISTS, ANY, ALL};
+	public enum InnerQType {NORMAL, EXISTS, IN, ANY, ALL};
 	public InnerQType innerQType;
 	
 	public ArrayList<ZQuery> innerQinWhereList = new ArrayList<ZQuery>();
@@ -156,7 +158,13 @@ public class ZQuery extends ZExp implements ZStatement {
 
 
   public String toString() {
-    StringBuffer buf = new StringBuffer("select ");
+	  
+	  
+    StringBuffer buf = new StringBuffer();
+	  if(isInnerQuery)
+		  buf.append("(");
+    buf.append("select ");
+
     if(distinct_) buf.append("distinct ");
 
     //buf.append(select_.toString());
@@ -189,9 +197,19 @@ public class ZQuery extends ZExp implements ZStatement {
       }
     }
     //if(forupdate_) buf.append(" for update");
-
+	  if(isInnerQuery)
+		  buf.append(")");
+	  
     return buf.toString();
   }
 
+	public Iterable<ZExp> subExpSet(){
+		return new ArrayList<ZExp>();
+	}
+	
+	public boolean replaceSubExp(ZExp oldExp, ZExp newExp){
+		return false;
+	}  
+  
 };
 

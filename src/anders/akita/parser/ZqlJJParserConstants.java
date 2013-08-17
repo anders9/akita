@@ -104,12 +104,10 @@ public interface ZqlJJParserConstants {
   int FLOAT = 102;
   int INTEGER = 103;
   int DIGIT = 104;
-  int LINE_COMMENT = 105;
-  int MULTI_LINE_COMMENT = 106;
-  int S_IDENTIFIER = 107;
-  int LETTER = 108;
-  int SPECIAL_CHARS = 109;
-  int S_CHAR_LITERAL = 110;
+  int S_IDENTIFIER = 105;
+  int LETTER = 106;
+  int SPECIAL_CHARS = 107;
+  int S_CHAR_LITERAL = 108;
 
   int DEFAULT = 0;
 
@@ -219,8 +217,6 @@ public interface ZqlJJParserConstants {
     "<FLOAT>",
     "<INTEGER>",
     "<DIGIT>",
-    "<LINE_COMMENT>",
-    "<MULTI_LINE_COMMENT>",
     "<S_IDENTIFIER>",
     "<LETTER>",
     "\"_\"",

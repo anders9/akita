@@ -1,5 +1,6 @@
 package anders.akita.parser;
 
+import java.util.*;
 
 public class ZColRef extends ZExp {
 	
@@ -16,5 +17,13 @@ public class ZColRef extends ZExp {
 	public String toString(){
 		if(table == null)return col;
 		return table + "." + col;
+	}
+	
+	public Iterable<ZExp> subExpSet(){
+		return new ArrayList<ZExp>();
+	}
+	
+	public boolean replaceSubExp(ZExp oldExp, ZExp newExp){
+		return false;
 	}
 }

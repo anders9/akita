@@ -17,6 +17,8 @@
 
 package anders.akita.parser;
 
+import java.util.ArrayList;
+
 
 /**
  * ZConstant: a representation of SQL constants
@@ -27,15 +29,16 @@ public class ZConstant extends ZExp {
    * ZConstant types
    */
 	
-  public static final int STAR = -2;
-  public static final int UNKNOWN = -1;
+  //public static final int STAR = -2;
+  //public static final int UNKNOWN = -1;
   //public static final int COLUMNNAME = 0;
+  public static final int PREPARED_COL = 0;
   public static final int NULL = 1;
   public static final int NUMBER = 2;
   public static final int STRING = 3;
   public static final int BOOL = 4;
 
-  int type_ = ZConstant.UNKNOWN;
+  int type_;
   String val_ = null;
 
   /**
@@ -57,8 +60,19 @@ public class ZConstant extends ZExp {
   public int getType() { return type_; }
 
   public String toString() {
-    if(type_ == STRING) return  val_ ;
-    else return val_;
+    //if( type_ == STAR) return  "*" ;
+	  if(type_ == PREPARED_COL)
+		  return "?";
+    return val_;
   }
+  
+	public Iterable<ZExp> subExpSet(){
+		return new ArrayList<ZExp>();
+	}
+	
+	public boolean replaceSubExp(ZExp oldExp, ZExp newExp){
+		return false;
+	}
+  
 };
 

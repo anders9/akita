@@ -1,5 +1,7 @@
 package anders.akita.parser;
 
+import java.util.ArrayList;
+
 public class ZInterval extends ZExp {
 	
 	String type;
@@ -15,6 +17,20 @@ public class ZInterval extends ZExp {
 	}
 	public String toString(){
 		return "Interval " + exp.toString() + " " + type;
+	}
+	
+	public Iterable<ZExp> subExpSet(){
+		ArrayList<ZExp> list = new ArrayList<ZExp>(1);
+		list.add(exp);
+		return list;
+	}
+	
+	public boolean replaceSubExp(ZExp oldExp, ZExp newExp){
+		if(exp == oldExp){
+			exp = newExp;
+			return true;
+		}
+		return false;
 	}
 	
 }

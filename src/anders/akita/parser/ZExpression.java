@@ -17,12 +17,11 @@
 
 package anders.akita.parser;
 
-import java.util.* ;
+import java.util.*;
 
 /**
- * ZExpression: an SQL Expression
- * An SQL expression is an operator and one or more operands 
- * Example: a AND b AND c -> operator = AND, operands = (a, b, c)
+ * ZExpression: an SQL Expression An SQL expression is an operator and one or
+ * more operands Example: a AND b AND c -> operator = AND, operands = (a, b, c)
  */
 public class ZExpression extends ZExp {
 
@@ -30,267 +29,297 @@ public class ZExpression extends ZExp {
 	public final static int FUCTION = 1;
 	public final static int AGGR_ALL = 2;
 	public final static int AGGR_DISTINCT = 3;
-	//public final static int NOT_AGGR = 0;
+	// public final static int NOT_AGGR = 0;
 	public final static int VAR_PARAM = 1000000;
+
+	// boolean is_funciton_ = false;
+	Operator op_ = null;
+	public String funcOrAggrName;
+	Vector<ZExp> operands_ = null;
+	public int type = OPERATOR;
+
+	/**
+	 * Create an SQL Expression given the operator
+	 * 
+	 * @param op
+	 *            The operator
+	 */
+	public ZExpression(Operator op) {
+		op_ = op;
+	}
+
+	/**
+	 * Create an SQL Expression given the operator and 1st operand
+	 * 
+	 * @param op
+	 *            The operator
+	 * @param o1
+	 *            The 1st operand
+	 */
+	public ZExpression(Operator op, ZExp o1) {
+		op_ = op;
+		addOperand(o1);
+	}
+
+	/**
+	 * Create an SQL Expression given the operator and operands array
+	 * 
+	 * @param op
+	 *            The operator
+	 * @param v
+	 *            The operands array
+	 */
+	public ZExpression(Operator op, Vector<ZExp> v) {
+		op_ = op;
+		operands_ = v;
+		// this.is_funciton_ = true;
+	}
+
+	/**
+	 * construct normal function expression
+	 * 
+	 * @param op
+	 *            function-name
+	 * @param v
+	 *            params
+	 * @param type
+	 *            must be FUNCTION
+	 */
+	public ZExpression(String funcName, Vector<ZExp> v) {
+		this.funcOrAggrName = funcName;
+		this.type = ZExpression.FUCTION;
+		this.operands_ = v;
+	}
+
+	/**
+	 * construct aggregation function expression
+	 * 
+	 * @param op
+	 *            The operator
+	 * @param o1
+	 *            The 1st operand
+	 * @param type
+	 *            must be AGGR_ALL or AGGR_DISTINCT
+	 */
+	public ZExpression(String aggrName, ZExp o1, boolean distinct) {
+		this.funcOrAggrName = aggrName;
+		this.type = distinct ? ZExpression.AGGR_DISTINCT : ZExpression.AGGR_ALL;
+		addOperand(o1);
+	}
+
+	/**
+	 * Create an SQL Expression given the operator, 1st and 2nd operands
+	 * 
+	 * @param op
+	 *            The operator
+	 * @param o1
+	 *            The 1st operand
+	 * @param o2
+	 *            The 2nd operand
+	 */
+	public ZExpression(Operator op, ZExp o1, ZExp o2) {
+		op_ = op;
+		addOperand(o1);
+		addOperand(o2);
+	}
+
+	/**
+	 * Create an SQL Expression given the operator, 1st, 2nd and 3rd operands
+	 * 
+	 * @param op
+	 *            The operator
+	 * @param o1
+	 *            The 1st operand
+	 * @param o2
+	 *            The 2nd operand
+	 * @param o3
+	 *            the 3rd operand
+	 */
+	public ZExpression(Operator op, ZExp o1, ZExp o2, ZExp o3) {
+		op_ = op;
+		addOperand(o1);
+		addOperand(o2);
+		addOperand(o3);
+	}
+
+	/**
+	 * Get this expression's operator.
+	 * 
+	 * @return the operator.
+	 */
+	public Operator getOperator() {
+		return op_;
+	}
+
+	/**
+	 * Set the operands list
+	 * 
+	 * @param v
+	 *            A vector that contains all operands (ZExp objects).
+	 */
+	public void setOperands(Vector<ZExp> v) {
+		operands_ = v;
+	}
+
+	/**
+	 * Get this expression's operands.
+	 * 
+	 * @return the operands (as a Vector of ZExp objects).
+	 */
+
+	public Vector<ZExp> getOperands() {
+		return operands_;
+	}
+
+	/**
+	 * Add an operand to the current expression.
+	 * 
+	 * @param o
+	 *            The operand to add.
+	 */
+	public void addOperand(ZExp o) {
+		if (operands_ == null)
+			operands_ = new Vector<ZExp>();
+		operands_.addElement(o);
+	}
+
+	// add by wyn 2013.06.28
+	public boolean setOperand(ZExp o, int index) {
+		if (index < 0 || index > operands_.size())
+			return false;
+		operands_.set(index, o);
+		return true;
+	}
+
+	/**
+	 * Get an operand according to its index (position).
+	 * 
+	 * @param pos
+	 *            The operand index, starting at 0.
+	 * @return The operand at the specified index, null if out of bounds.
+	 */
+	public ZExp getOperand(int pos) {
+		if (operands_ == null || pos >= operands_.size())
+			return null;
+		return operands_.elementAt(pos);
+	}
+
+	/**
+	 * Get the number of operands
+	 * 
+	 * @return The number of operands
+	 */
+	public int nbOperands() {
+		if (operands_ == null)
+			return 0;
+		return operands_.size();
+	}
+
+	/**
+	 * String form of the current expression (reverse polish notation). Example:
+	 * a > 1 AND b = 2 -> (AND (> a 1) (= b 2))
+	 * 
+	 * @return The current expression in reverse polish notation (a String)
+	 */
+	public String toReversePolish() {
+		StringBuffer buf = new StringBuffer("(");
+		buf.append(op_.toString());
+		for (int i = 0; i < nbOperands(); i++) {
+			ZExp opr = getOperand(i);
+			if (opr instanceof ZExpression)
+				buf.append(" " + ((ZExpression) opr).toReversePolish()); 
+			else
+				buf.append(" " + opr.toString());
+		}
+		buf.append(")");
+		return buf.toString();
+	}
+
+	// public boolean isFunction(){
+	// return is_funciton_;
+	// }
+
+	public String toString() {
+
+		// if(op_.equals("?")) return op_; // For prepared columns ("?")
+
+		if (type != OPERATOR)
+			return formatFunction();
+
+		StringBuffer buf = new StringBuffer();
+		buf.append("(");
+		ZExp operand;
+		if(nbOperands() == 1) {
+			operand = getOperand(0);
+			if(op_ == Operator.IS_NULL || op_ == Operator.IS_NOT_NULL)
+				buf.append(operand.toString() + " " + op_.op());
+			else
+				buf.append(op_.op() + " " + operand.toString());
+		}
+		else if (op_ == Operator.BETWEEN || op_ == Operator.NOT_BETWEEN) {
+				buf.append(
+						getOperand(0).toString() +  " " + op_.op() + " " 
+						+ getOperand(1).toString() + " AND "
+						+ getOperand(2).toString());
+		}
+		else{
+			int nb = nbOperands();
+			for (int i = 0; i < nb; i++) {
+
+				operand = getOperand(i);
+				buf.append(operand.toString());
+				
+				if (i < nb - 1) {
+					buf.append(" " + op_.op() + " ");
+				}
+			}
+		}
+		buf.append(")");
+		return buf.toString();
+	}
+
+	private String formatFunction() {
+
+		StringBuffer b = new StringBuffer();
+		if(this.type == ZExpression.AGGR_ALL || this.type == ZExpression.AGGR_DISTINCT){
+			
+			if(this.funcOrAggrName.equalsIgnoreCase("COUNT")
+				&& getOperand(0) == null)
+					b.append("COUNT(*)");
+			else{
+				b.append(this.funcOrAggrName + "(");
+				if(this.type == ZExpression.AGGR_DISTINCT)
+					b.append(" DISTINCT ");
+				b.append(getOperand(0).toString());
+				b.append(")");
+			}
+		}
+		else{
+			b.append(this.funcOrAggrName + "(");
+			int nb = nbOperands();
+			for (int i = 0; i < nb; i++) {
+				b.append(getOperand(i).toString() + (i < nb - 1 ? "," : ""));
+			}
+			b.append(")");
+		}
+		return b.toString();
+	}
 	
-  //boolean is_funciton_ = false;
-  String op_ = null;
-  Vector<ZExp> operands_ = null;
-  public int type = OPERATOR;
-  /**
-   * Create an SQL Expression given the operator
-   * @param op The operator
-   */
-  public ZExpression(String op) {
-    op_ = new String(op);
-  }
-
-  /**
-   * Create an SQL Expression given the operator and 1st operand
-   * @param op The operator
-   * @param o1 The 1st operand
-   */
-  public ZExpression(String op, ZExp o1) {
-    op_ = new String(op);
-    addOperand(o1);
-  }
-
-  /**
-   * Create an SQL Expression given the operator and operands array
-   * @param op The operator
-   * @param v  The operands array
-   */
-  public ZExpression(String op, Vector<ZExp> v) {
-    op_ = op.toUpperCase();
-    operands_ = v;
-    //this.is_funciton_ = true;
-  }
-  
-  
-  /**
-   * construct normal function expression
-   * @param op function-name
-   * @param v params
-   * @param type must be FUNCTION
-   */
-  public ZExpression(String op, Vector<ZExp> v, int type) {
-	 this(op.toUpperCase(), v);
-	 this.type = type;
-	 //this.is_funciton_ = true;
-  }
-  /**
-   * construct aggregation function expression
-   * @param op The operator
-   * @param o1 The 1st operand
-   * @param type must be AGGR_ALL or AGGR_DISTINCT
-   */
-  public ZExpression(String op, ZExp o1, int type) {
-    this(op.toUpperCase(), o1);
-    this.type = type;
-    //this.is_funciton_ = true;
-  }
-  
-  
-  /**
-   * Create an SQL Expression given the operator, 1st and 2nd operands
-   * @param op The operator
-   * @param o1 The 1st operand
-   * @param o2 The 2nd operand
-   */
-  public ZExpression(String op, ZExp o1, ZExp o2) {
-    op_ = new String(op);
-    addOperand(o1);
-    addOperand(o2);
-  }
-  /**
-   * Create an SQL Expression given the operator, 1st, 2nd and 3rd operands
-   * @param op The operator
-   * @param o1 The 1st operand
-   * @param o2 The 2nd operand
-   * @param o3 the 3rd operand
-   */
-  public ZExpression(String op, ZExp o1, ZExp o2, ZExp o3) {
-	op_ = new String(op);
-	addOperand(o1);
-	addOperand(o2);
-	addOperand(o3);
-  }
-  
-  /**
-   * Get this expression's operator.
-   * @return the operator.
-   */
-  public String getOperator() { return op_; }
-
-  /**
-   * Set the operands list
-   * @param v A vector that contains all operands (ZExp objects).
-   */
-  public void setOperands(Vector<ZExp> v) {
-    operands_ = v;
-  }
-
-  /**
-   * Get this expression's operands.
-   * @return the operands (as a Vector of ZExp objects).
-   */
-  
-  public Vector<ZExp> getOperands() {
-    return operands_;
-  }
-	
-  /**
-   * Add an operand to the current expression.
-   * @param o The operand to add.
-   */
-  public void addOperand(ZExp o) {
-    if(operands_ == null) operands_ = new Vector<ZExp>();
-    operands_.addElement(o);
-  }
-
-  //add by wyn 2013.06.28
-  public boolean setOperand(ZExp o,int index){
-	  if(index < 0 || index > operands_.size())
-		  return false;
-	  operands_.remove(index);
-	  operands_.add(index, o);
-	  return true;
-  }
-  /**
-   * Get an operand according to its index (position).
-   * @param pos The operand index, starting at 0.
-   * @return The operand at the specified index, null if out of bounds.
-   */
-  public ZExp getOperand(int pos) {
-    if(operands_ == null || pos >= operands_.size()) return null;
-    return operands_.elementAt(pos);
-  }
-
-  /**
-   * Get the number of operands
-   * @return The number of operands
-   */
-  public int nbOperands() {
-    if(operands_ == null) return 0;
-    return operands_.size();
-  }
-
-  /**
-   * String form of the current expression (reverse polish notation).
-   * Example: a > 1 AND b = 2 -> (AND (> a 1) (= b 2))
-   * @return The current expression in reverse polish notation (a String)
-   */
-  public String toReversePolish() {
-    StringBuffer buf = new StringBuffer("(");
-    buf.append(op_);
-    for(int i = 0; i < nbOperands(); i++) {
-      ZExp opr = getOperand(i);
-      if(opr instanceof ZExpression)
-        buf.append(" " + ((ZExpression)opr).toReversePolish()); // Warning recursive call
-      else if(opr instanceof ZQuery)
-        buf.append(" (" + opr.toString() + ")");
-      else
-        buf.append(" " + opr.toString());
-    }
-    buf.append(")");
-    return buf.toString();
-  }
-
-  //public boolean isFunction(){
-	//  return is_funciton_;
-  //}
-  
-  public String toString() {
-
-    if(op_.equals("?")) return op_; // For prepared columns ("?")
-
-    if(type != OPERATOR)
-      return formatFunction();
-
-    StringBuffer buf = new StringBuffer();
-    if(needPar(op_)) buf.append("(");
-
-    ZExp operand;
-    switch(nbOperands()) {
-
-      case 1:
-        operand = getOperand(0);
-        if(operand instanceof ZConstant) {
-          // Operator may be an aggregate function (MAX, SUM...)
-          if(ZUtils.isAggregate(op_))
-           buf.append(op_ + "(" + operand.toString() + ")");
-          else if(op_.equals("IS NULL") || op_.equals("IS NOT NULL"))
-           buf.append(operand.toString() + " " + op_);
-          // "," = list of values, here just one single value
-          else if(op_.equals(",")) buf.append(operand.toString());
-          else buf.append(op_ + " " + operand.toString());
-        } else if(operand instanceof ZQuery) {
-          buf.append(op_ + " (" + operand.toString() + ")");
-        } else {
-          if(op_.equals("IS NULL") || op_.equals("IS NOT NULL"))
-           buf.append(operand.toString() + " " + op_);
-          // "," = list of values, here just one single value
-          else if(op_.equals(",")) buf.append(operand.toString());
-          else buf.append(op_ + " " + operand.toString());
-        }
-        break;
-
-      case 3:
-        if(op_.toUpperCase().endsWith("BETWEEN")) {
-          buf.append(getOperand(0).toString() + " " + op_ + " "
-           + getOperand(1).toString()
-           + " AND " + getOperand(2).toString()); 
-          break;
-        }
-
-      default:
-
-        boolean in_op = op_.equals("IN") || op_.equals("NOT IN");
-
-        int nb = nbOperands();
-        for(int i = 0; i < nb; i++) {
-
-          if(in_op && i==1) buf.append(" " + op_ + " (");
-
-          operand = getOperand(i);
-          if(operand instanceof ZQuery && !in_op) {
-            buf.append("(" + operand.toString() + ")");
-          } else {
-            buf.append(operand.toString());
-          }
-          if(i < nb-1) {
-            if(op_.equals(",") || (in_op && i>0)) buf.append(", ");
-            else if(!in_op) buf.append(" " + op_ + " ");
-          }
-        }
-        if(in_op) buf.append(")");
-        break;
-    }
-
-    if(needPar(op_)) buf.append(")");
-    return buf.toString();
-  }
-
-  private boolean needPar(String op) {
-    String tmp = op.toUpperCase();
-    return ! (tmp.equals("ANY") || tmp.equals("ALL")
-     || tmp.equals("UNION") || ZUtils.isAggregate(tmp));
-  }
-
-  private String formatFunction() {
-    StringBuffer b = new StringBuffer(op_ + "(");
-    if(!(op_.equalsIgnoreCase("COUNT") && nbOperands() == 1 && getOperand(0).toString().equals("*"))){
-	    if(type == AGGR_ALL)
-	    	b.append("ALL ");
-	    else if(type == AGGR_DISTINCT)
-	    	b.append("DISTINCT ");
-    }
-    int nb = nbOperands();
-    for(int i = 0; i < nb; i++) {
-      b.append(getOperand(i).toString() + (i < nb-1 ? "," : ""));
-    }
-    b.append(")");
-    return b.toString();
-  }
+	public Iterable<ZExp> subExpSet(){
+		ArrayList<ZExp> set = new ArrayList<ZExp>();
+		if ( !(this.type == ZExpression.AGGR_ALL && this.getOperand(0) == null) )
+			set.addAll(getOperands());
+		return set;
+	}
+	public boolean replaceSubExp(ZExp oldExp, ZExp newExp){
+		if ( !(this.type == ZExpression.AGGR_ALL && this.getOperand(0) == null) ){
+			for(int i = 0; i < this.nbOperands(); ++i){
+				if(this.getOperand(i) == oldExp){
+					this.setOperand(newExp, i);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 };
-

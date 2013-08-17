@@ -26,7 +26,7 @@ public class ZInsert implements ZStatement {
 
   String table_;
   Vector columns_ = null;
-  ZExp valueSpec_ = null;
+  Vector valueSpec_ = null;
 
   /**
    * Create an INSERT statement on a given table
@@ -55,7 +55,7 @@ public class ZInsert implements ZStatement {
    * Specify which columns to insert
    * @param c A vector of column names (Strings)
    */
-  public void addColumns(Vector c) { columns_ = c; }
+  public void setColumns(Vector c) { columns_ = c; }
 
   /**
    * Specify the VALUES part or SQL sub-query of the INSERT statement
@@ -65,7 +65,7 @@ public class ZInsert implements ZStatement {
    * the list.
    * If it is a SELECT statement, e should be a ZQuery object.
    */
-  public void addValueSpec(ZExp e) { valueSpec_ = e; }
+  public void setValueSpec(Vector e) { valueSpec_ = e; }
 
   /**
    * Get the VALUES part of the INSERT statement
@@ -73,20 +73,7 @@ public class ZInsert implements ZStatement {
    * If there's no VALUES but a subquery, returns null (use getQuery() method).
    */
   public Vector getValues() {
-    if(! (valueSpec_ instanceof ZExpression)) return null;
-    return ((ZExpression)valueSpec_).getOperands();
-  }
-
-  /**
-   * Get the sub-query (ex. in INSERT INTO table1 SELECT * FROM table2;, the
-   * sub-query is SELECT * FROM table2;)
-   * @return A ZQuery object (A SELECT statement), or null if there's no
-   * sub-query (in that case, use the getValues() method to get the VALUES
-   * part).
-   */
-  public ZQuery getQuery() {
-    if(! (valueSpec_ instanceof ZQuery)) return null;
-    return (ZQuery)valueSpec_;
+	  return valueSpec_;
   }
 
   public String toString() {
@@ -100,13 +87,18 @@ public class ZInsert implements ZStatement {
       buf.append(")");
     }
 
-    String vlist = valueSpec_.toString();
     buf.append(" ");
     if(getValues() != null)
       buf.append("values ");
-    if(vlist.startsWith("(")) buf.append(vlist);
-    else buf.append(" (" + vlist + ")");
-
+    
+    buf.append("(");
+    for(int i = 0; i < valueSpec_.size(); ++i){
+    	buf.append(valueSpec_.get(i));
+    	if( i < valueSpec_.size() - 1)
+    		buf.append(",");
+    }
+    buf.append(")");
+    
     return buf.toString();
   }
 };

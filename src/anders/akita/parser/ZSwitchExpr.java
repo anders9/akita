@@ -47,4 +47,42 @@ public class ZSwitchExpr extends ZExp {
 		sb.append("END");
 		return sb.toString();
 	}
+	
+	public Iterable<ZExp> subExpSet(){
+		ArrayList<ZExp> list = new ArrayList<ZExp>();
+		if(this.cmpVal != null)
+			list.add(this.cmpVal);
+		list.addAll(this.cond);
+		list.addAll(this.result);
+		if(this.else_result != null)
+			list.add(this.else_result);
+		return list;
+	}
+	
+	public boolean replaceSubExp(ZExp oldExp, ZExp newExp){
+		if(this.cmpVal != null && this.cmpVal == oldExp){
+			this.cmpVal = newExp;
+			return true;
+		}
+		for(int i = 0; i < this.cond.size(); ++i){
+			if(this.cond.get(i) == oldExp){
+				this.cond.set(i, newExp);
+				return true;
+			}
+		}
+		
+		for(int i = 0; i < this.result.size(); ++i){
+			if(this.result.get(i) == oldExp){
+				this.result.set(i, newExp);
+				return true;
+			}
+		}
+		if(this.else_result != null && this.else_result == oldExp){
+			this.else_result = newExp;
+			return true;
+		}
+		
+		return false;
+	}	
+	
 }
