@@ -82,32 +82,33 @@ public interface ZqlJJParserConstants {
   int K_SET = 80;
   int K_SHARE = 81;
   int K_SMALLINT = 82;
-  int K_START = 83;
-  int K_SUM = 84;
-  int K_TABLE = 85;
-  int K_THEN = 86;
-  int K_TRANSACTION = 87;
-  int K_TRUE = 88;
-  int K_UNION = 89;
-  int K_UPDATE = 90;
-  int K_VALUES = 91;
-  int K_VARCHAR2 = 92;
-  int K_VARCHAR = 93;
-  int K_WEEK = 94;
-  int K_WHEN = 95;
-  int K_WHERE = 96;
-  int K_WITH = 97;
-  int K_WORK = 98;
-  int K_WRITE = 99;
-  int K_YEAR = 100;
-  int S_NUMBER = 101;
-  int FLOAT = 102;
-  int INTEGER = 103;
-  int DIGIT = 104;
-  int S_IDENTIFIER = 105;
-  int LETTER = 106;
-  int SPECIAL_CHARS = 107;
-  int S_CHAR_LITERAL = 108;
+  int K_SOME = 83;
+  int K_START = 84;
+  int K_SUM = 85;
+  int K_TABLE = 86;
+  int K_THEN = 87;
+  int K_TRANSACTION = 88;
+  int K_TRUE = 89;
+  int K_UNION = 90;
+  int K_UPDATE = 91;
+  int K_VALUES = 92;
+  int K_VARCHAR2 = 93;
+  int K_VARCHAR = 94;
+  int K_WEEK = 95;
+  int K_WHEN = 96;
+  int K_WHERE = 97;
+  int K_WITH = 98;
+  int K_WORK = 99;
+  int K_WRITE = 100;
+  int K_YEAR = 101;
+  int S_NUMBER = 102;
+  int FLOAT = 103;
+  int INTEGER = 104;
+  int DIGIT = 105;
+  int S_IDENTIFIER = 106;
+  int LETTER = 107;
+  int SPECIAL_CHARS = 108;
+  int S_CHAR_LITERAL = 109;
 
   int DEFAULT = 0;
 
@@ -195,6 +196,7 @@ public interface ZqlJJParserConstants {
     "\"SET\"",
     "\"SHARE\"",
     "\"SMALLINT\"",
+    "\"SOME\"",
     "\"START\"",
     "\"SUM\"",
     "\"TABLE\"",

@@ -31,6 +31,7 @@ public abstract class ZExp {
 	
 	
 	public ZExp parentExp;
+	public RootExp root;
 	
 	public abstract Iterable<ZExp> subExpSet();
 	

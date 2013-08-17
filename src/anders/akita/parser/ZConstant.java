@@ -67,7 +67,7 @@ public class ZConstant extends ZExp {
   }
   
 	public Iterable<ZExp> subExpSet(){
-		return new ArrayList<ZExp>();
+		return null;
 	}
 	
 	public boolean replaceSubExp(ZExp oldExp, ZExp newExp){

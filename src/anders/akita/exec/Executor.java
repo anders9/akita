@@ -76,7 +76,7 @@ public class Executor {
 		if(
 			exp instanceof ZExpression
 			&& ((ZExpression)exp).type == ZExpression.OPERATOR
-			&& ((ZExpression)exp).getOperator().equalsIgnoreCase("AND")
+			&& ((ZExpression)exp).getOperator() == Operator.AND
 		
 		){
 			for(ZExp sube: ((ZExpression)exp).getOperands()){
@@ -146,7 +146,8 @@ public class Executor {
 	static final InnerQueryCallback innerQCb = new InnerQueryCallback(){
 		
 		public void handleInnerQuery(ZQuery q, ZQuery innerQ, ExprType type){
-			
+			if(type == ExprType.WHERE_INNER || type == ExprType.SELECT_INNER)
+				throw new ExecException("Inner-Query cannot be nested: " + q.toString());
 			innerQ.outerQuery = q;
 			switch(type){
 			case WHERE:
@@ -163,14 +164,7 @@ public class Executor {
 			
 			//check syntax for inner-Query
 			
-			//1. check select list
-			if(innerQ.getSelect().size() != 1)
-				throw new ExecException("inner sub-Query must return only 1 column: " + innerQ.toString());
-			ZExp ret = innerQ.getSelect().get(0).expr;
-			if(ret == null)
-				throw new ExecException("The select list of inner sub-Query must be an expression or a column: " + innerQ.toString());
-			
-			//2. check & build from item list of inner-query
+			//1. check & build from item list of inner-query
 			if(q.getFrom().join_type != ZFromClause.INNER_JOIN)
 				throw new ExecException("inner sub-Query not support OUTER-JOIN: " + innerQ.toString());
 			
@@ -184,28 +178,10 @@ public class Executor {
 					throw new ExecException("alias/table name duplicate: " + alias);
 				innerQ.tabList.put(alias, item);
 			}
+			//2. iterate select expr
+			exprIter(q, q.getSelect().get(0).expr, ExprType.SELECT_INNER, exprCb, innerQCb);
 			
-			//3. check group-by/having clause and order-by clause
-			if(innerQ.getGroupBy() != null)
-				throw new ExecException("inner sub-Query not support group-by clause: " + innerQ.toString());
-			if(innerQ.getOrderBy() != null)
-				throw new ExecException("inner sub-Query not support order-by clause: " + innerQ.toString());
-			
-			//4. check the type of inner-query & fill $uniqueRow member
-			innerQ.innerQType = ZQuery.InnerQType.NORMAL;
-			
-			if(innerQ.parentExp != null && innerQ.parentExp instanceof ZExpression){
-				String op = ((ZExpression)innerQ.parentExp).getOperator();
-				if(op.equalsIgnoreCase("EXISTS"))
-					innerQ.innerQType = ZQuery.InnerQType.EXISTS;
-				else if(op.equalsIgnoreCase("NOT EXISTS"))
-					innerQ.innerQType = ZQuery.InnerQType.NOT_EXISTS;
-				else if(op.equalsIgnoreCase("ANY"))
-					innerQ.innerQType = ZQuery.InnerQType.ANY;
-				else if(op.equalsIgnoreCase("ALL"))
-					innerQ.innerQType = ZQuery.InnerQType.ALL;
-			}
-			
+			//3. iterate where expr
 			
 		}
 	};
@@ -348,12 +324,13 @@ public class Executor {
 	}
 	
 	//iterator of Columne in Expr
-	void exprIter(ZQuery q, ZExp expr, ExprType type, ExprCallback exprCb, InnerQueryCallback subQueryCb){
+	static void exprIter(ZQuery q, ZExp expr, ExprType type, ExprCallback exprCb, InnerQueryCallback subQueryCb){
 		exprIter(q, expr, type, 0, exprCb, subQueryCb);
 	}
-	void exprIter(ZQuery q, ZExp expr, ExprType type, int aggrDepth, ExprCallback exprCb, InnerQueryCallback subQueryCb){
+	static void exprIter(ZQuery q, ZExp expr, ExprType type, int aggrDepth, ExprCallback exprCb, InnerQueryCallback subQueryCb){
 		if(expr == null)
-			return;
+			throw new ExecException("Internal error #exprIter");
+		
 		if(expr instanceof ZExpression){
 			ZExpression e = (ZExpression)expr;
 			int ad = aggrDepth;
@@ -361,7 +338,7 @@ public class Executor {
 				//it is an aggregation function
 				++ad;
 			}
-			for(ZExp sube: e.getOperands()){
+			for(ZExp sube: e.subExpSet()){
 				sube.parentExp = expr;
 				exprIter(q, sube, type, ad, exprCb, subQueryCb);
 			}
@@ -371,37 +348,15 @@ public class Executor {
 			ZColRef c = (ZColRef)expr;
 			if(exprCb != null)exprCb.handleColRef(q, c, type);
 		}
-		else if(expr instanceof ZInterval){
-			ZInterval i = (ZInterval)expr;
-			i.getExpr().parentExp = expr;
-			exprIter(q, i.getExpr(), type, aggrDepth, exprCb, subQueryCb);		
-		}
-		else if(expr instanceof ZSwitchExpr){
-			ZSwitchExpr s = (ZSwitchExpr)expr;
-			for(ZExp sube: s.getCond()){
-				sube.parentExp = expr;
-				exprIter(q, sube, type, aggrDepth, exprCb, subQueryCb);
-			}
-			for(ZExp sube: s.getResult()){
-				sube.parentExp = expr;
-				exprIter(q, sube, type, aggrDepth, exprCb, subQueryCb);
-			}
-			if(s.getCmpVal() != null){
-				s.getCmpVal().parentExp = expr;
-				exprIter(q, s.getCmpVal(), type, aggrDepth, exprCb, subQueryCb);
-			}
-			if(s.getElseResult() != null){
-				s.getElseResult().parentExp = expr;
-				exprIter(q, s.getElseResult(), type, aggrDepth, exprCb, subQueryCb);
-			}
-		}
 		else if(expr instanceof ZQuery){
 			if(subQueryCb != null)subQueryCb.handleInnerQuery(q, (ZQuery)expr, type);
 		}
-		else if(expr instanceof ZConstant){
-			//do nothing
+		else{
+			for(ZExp sube: expr.subExpSet()){
+				sube.parentExp = expr;
+				exprIter(q, sube, type, aggrDepth, exprCb, subQueryCb);
+			}
 		}
-		else throw new ExecException("Parse error #colInExprIter");
 	}
 	
 	

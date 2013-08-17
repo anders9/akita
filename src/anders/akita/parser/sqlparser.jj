@@ -175,6 +175,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SET:"SET">
 |   <K_SHARE:"SHARE">
 |   <K_SMALLINT:"SMALLINT">
+|	<K_SOME:"SOME">
 |   <K_START:"START">
 |   <K_SUM:"SUM">
 |   <K_TABLE:"TABLE">
@@ -779,6 +780,7 @@ ZExp ExistsClause():
 }
 {
     ["NOT" { not = true; } ] "EXISTS"  q = SQLInnerQuery()  {
+      q.innerQType = ZQuery.InnerQType.EXISTS;
       return new ZExpression(not ? Operator.NOT_EXISTS : Operator.EXISTS, q);
     }
 }
@@ -846,7 +848,7 @@ ZExp SQLConditionL2Expression():
 }
 {
 	(
-	LOOKAHEAD(SQLSimpleExpression() Relop() ("ALL"|"ANY"))  e = SQLAllAnySubquery()
+	LOOKAHEAD(SQLSimpleExpression() Relop() ("ALL"|"ANY"|"SOME"))  e = SQLAllAnySubquery()
 |	LOOKAHEAD(SQLSimpleExpression() ["NOT"] "IN")  e = SQLInSubquery() 
 |   LOOKAHEAD(SQLSimpleExpression() Relop() ) e = SQLRelationalExpression()
 |	LOOKAHEAD(SQLSimpleExpression() "IS") e = SQLIsNullExpression()
@@ -865,7 +867,7 @@ ZExp SQLAllAnySubquery():
 }
 {
 	e1 = SQLSimpleExpression() op = Relop()  
-	("ALL"{ isAll = true; }| "ANY"{ isAll = false; }) 
+	("ALL"{ isAll = true; }| ("ANY"|"SOME") { isAll = false; }) 
 	e2 = SQLInnerQuery()
 	
 	{	
@@ -1274,13 +1276,26 @@ String OuterJoinExpression():
 */
 ZQuery SQLInnerQuery():
 {
-  ZQuery q;
+  ZQuery q = new ZQuery();
+  Vector select = new Vector(1);
+  ZExp exp;
+  ZFromClause from;
+  ZExp where = null;
 }
 {
-   "(" q = SelectWithoutOrder() ")" 
+   "(" 
+     "SELECT" [ "ALL" | "DISTINCT" { q.distinct_ = true; } ]
+  exp = SQLExpression() { select.add(new ZSelectItem(exp, null)); }
+  from = FromClause()
+  [ where = WhereClause() ]
+	")"
+
   {
-  	q.isInnerQuery = true; 	
-	return q; 
+    q.setSelect(select);
+    q.setFrom(from);
+    q.setWhere(where);
+	q.innerQType = ZQuery.InnerQType.NORMAL;
+  	return q; 
   }
 }
 
