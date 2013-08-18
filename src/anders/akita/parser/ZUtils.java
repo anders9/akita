@@ -22,7 +22,19 @@ import java.util.*;
 public class ZUtils {
 
 	public static class AggrDef{
+		private boolean canDistrAggr;
+		private String mergeAggr;
+		private boolean canUseDistinct;
 		
+		public AggrDef(boolean canUseDistinct, boolean canDistrAggr, String mergeAggr){
+			this.canUseDistinct = canUseDistinct;
+			this.canDistrAggr = canDistrAggr;
+			this.mergeAggr = mergeAggr;
+		}
+		
+		public boolean canDistrAggr(){return canDistrAggr;}
+		public String mergeAggr(){return mergeAggr;} 
+		public boolean canUseDistinct(){return canUseDistinct;}
 	}
 	
   private static HashMap<String, Integer> fcts_ = new HashMap<String, Integer>();
@@ -33,7 +45,15 @@ public class ZUtils {
 		  fcts_.put((String)a[0], (Integer)a[1]);
 	  }
 	  for(Object[] s: MySQLFunc.aggr){
-		  aggrs_.put((String)s[0], (AggrDef)s[1]);
+		  String mergeAggr = null;
+		  boolean canDistr = (Boolean)s[2];
+		  if(canDistr){
+			  if(s.length == 4)
+				  mergeAggr = (String)s[3];
+			  else
+				  mergeAggr = (String)s[0];
+		  }
+		  aggrs_.put((String)s[0], new AggrDef((Boolean)s[1], canDistr, mergeAggr));
 	  }
   }
   

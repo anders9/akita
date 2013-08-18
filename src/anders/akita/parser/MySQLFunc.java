@@ -1,6 +1,5 @@
 package anders.akita.parser;
 
-import anders.akita.parser.ZUtils.AggrDef;
 
 public final class MySQLFunc {
 	public static final Object[][] func = {
@@ -157,16 +156,23 @@ public final class MySQLFunc {
 		
 	};
 	public static final Object[][] aggr = {
-		{"BIT_AND",		 new AggrDef()},
-		{"BIT_OR",		 new AggrDef()},
-		{"BIT_XOR",		 new AggrDef()},
-		{"GROUP_CONCAT", new AggrDef()},
-		{"STD",			 new AggrDef()},
-		{"STDDEV",		 new AggrDef()},
-		{"STDDEV_POP",	 new AggrDef()},
-		{"STDDEV_SAMP",	 new AggrDef()},
-		{"VAR_POP",		 new AggrDef()},
-		{"VAR_SAMP",	 new AggrDef()},
-		{"VARIANCE",	 new AggrDef()},
+		
+	//	Aggr-Name,canUseDistinctFlag,canDistrAggr,mergAggr
+		{"AVG",		true,	false},
+		{"COUNT",	true,	true,	"SUM"},
+		{"MAX",		true,	true},
+		{"MIN",		true,	true},
+		{"SUM",		true,	true},
+		{"BIT_AND",	false,	true},
+		{"BIT_OR",	false,	true},
+		{"BIT_XOR",	false,	true},
+		{"GROUP_CONCAT",true,true},
+		{"STD",		false,	false},
+		{"STDDEV",	false,	false},
+		{"STDDEV_POP",false,false},
+		{"STDDEV_SAMP",false,false},
+		{"VAR_POP",	false,	false},
+		{"VAR_SAMP",false,	false},
+		{"VARIANCE",false,	false},
 	};
 }

@@ -25,6 +25,13 @@ public enum Operator {
 	NOT_RLIKE("NOT RLIKE"),
 	IN("IN"),
 	NOT_IN("NOT IN"),
+	
+	BIT_OR("|"),
+	BIT_AND("&"),
+	BIT_SHL("<<"),
+	BIT_SHR(">>"),
+	
+	
 	ADD("+"),
 	SUB("-"),
 	MUL("*"),
@@ -32,7 +39,9 @@ public enum Operator {
 	MOD("%"),
 	BIT_XOR("^"),
 	NEG("-"),
-	NOT_HIGH_PRIO("!"),
+	INV("~"),
+	
+	NOT_HIGH_PREC("!"),
 	;
 	
 	private String op;

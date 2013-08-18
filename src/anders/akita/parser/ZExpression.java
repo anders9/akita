@@ -94,8 +94,8 @@ public class ZExpression extends ZExp {
 	/**
 	 * construct aggregation function expression
 	 * 
-	 * @param op
-	 *            The operator
+	 * @param aggrName
+	 *            Aggregation function name
 	 * @param o1
 	 *            The 1st operand
 	 * @param type
@@ -107,6 +107,29 @@ public class ZExpression extends ZExp {
 		addOperand(o1);
 	}
 
+	/**
+	 * construct aggregation function expression
+	 * 	
+	 * 	only used in:
+	 * 		COUNT(*)
+	 * 		COUNT(DISTINCT exp1 [, exp2, ... ] )
+	 * 
+	 * @param aggrName
+	 *            Aggregation function name
+	 *            
+	 * @param operands
+	 *            The operands
+	 * @param type
+	 *            must be AGGR_ALL or AGGR_DISTINCT
+	 */
+	@SuppressWarnings("unchecked")
+	public ZExpression(String aggrName, Vector<ZExp> operands, boolean distinct) {
+		this.funcOrAggrName = aggrName;
+		this.type = distinct ? ZExpression.AGGR_DISTINCT : ZExpression.AGGR_ALL;
+		this.operands_ = (Vector<ZExp>)operands.clone();
+	}
+	
+	
 	/**
 	 * Create an SQL Expression given the operator, 1st and 2nd operands
 	 * 
@@ -291,6 +314,10 @@ public class ZExpression extends ZExp {
 				if(this.type == ZExpression.AGGR_DISTINCT)
 					b.append(" DISTINCT ");
 				b.append(getOperand(0).toString());
+				if(this.funcOrAggrName.equalsIgnoreCase("COUNT")){
+					for(int i = 1; i < this.operands_.size(); ++i)
+						b.append("," + this.operands_.get(i));
+				}
 				b.append(")");
 			}
 		}

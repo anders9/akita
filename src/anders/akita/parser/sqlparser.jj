@@ -804,12 +804,12 @@ ZExp SQLSwitchClause():
 	Vector cond = new Vector(), result = new Vector() ;
 }
 {
-	"CASE" [cmpVal = SQLConditionL2Expression() ]
+	("CASE" [cmpVal = SQLConditionL2Expression() ]
 	("WHEN" ce = SQLConditionL2Expression()
 	 "THEN" re = SQLConditionL2Expression()
 	  {cond.addElement(ce); result.addElement(re);})+
 	["ELSE" else_result = SQLConditionL2Expression() ]
-	"END"
+	"END")
 	{return new ZSwitchExpr(cond, result, cmpVal, else_result); }
 }
 
@@ -965,12 +965,63 @@ ZExpression SQLRegexpExpression():
   }
 }
 
+ZExp SQLSimpleExpression():
+{
+  Token op;
+  ZExp e1, e2;
+  ZExpression e = null;
+  boolean single = true;
+}
+{
+    e1 = SQLBitAndExpression()
+    ( op = "|" e2 = SQLBitAndExpression() {
+      if(single) e = new ZExpression( Operator.BIT_OR, e1);
+      single = false;
+      e.addOperand(e2);
+    } )*
+    { return (single ? e1 : e); }
+}
+ZExp SQLBitAndExpression():
+{
+  Token op;
+  ZExp e1, e2;
+  ZExpression e = null;
+  boolean single = true;
+}
+{
+    e1 = SQLBitShiftExpression()
+    ( op = "&" e2 = SQLBitShiftExpression() {
+      if(single) e = new ZExpression( Operator.BIT_AND, e1);
+      single = false;
+      e.addOperand(e2);
+    } )*
+    { return (single ? e1 : e); }
+}
 
+ZExp SQLBitShiftExpression():
+{
+  Operator op;
+  ZExp e1, e2;
+  ZExpression e = null;
+}
+{
+    e1 = SQLAddSubExpression()
+    ( 
+    	( "<<" { op = Operator.BIT_SHL; } | ">>" { op = Operator.BIT_SHR; } ) 
+    	e2 = SQLAddSubExpression() 
+    	{
+      		e = new ZExpression(op, e1);
+     		e.addOperand(e2);
+      		e1 = e;
+    	} 
+    )*
+    { return e1; }
+}
 
 // SQLSimpleExpression
 //    ::= SQLMultiplicativeExpression (OP SQLMultiplicativeExpression)*
 // OP ::= + | - 
-ZExp SQLSimpleExpression():
+ZExp SQLAddSubExpression():
 {
   Operator op;
   ZExp e1, e2;
@@ -1001,10 +1052,10 @@ ZExp SQLMultiplicativeExpression():
   ZExpression e = null;
 }
 {
-    e1 = SQLUnaryExpression()
+    e1 = SQLBitXORExpression()
     (	
     	( "*" { op = Operator.MUL; } | "/" { op = Operator.DIV; } | "%" { op = Operator.MOD; } | "DIV" { op = Operator.DIV; } | "MOD" { op = Operator.MOD; } ) 
-    	e2 = SQLUnaryExpression() 
+    	e2 = SQLBitXORExpression() 
     	{
       		e = new ZExpression(op, e1);
       		e.addOperand(e2); 
@@ -1046,22 +1097,27 @@ ZConstant SQLNumber():
 // SQLUnaryExpression ::= [+|-] SQLInversionExpression
 ZExp SQLUnaryExpression():
 {
-  ZExp e1, e;
+  ZExp e1;
   boolean neg = false;
+  boolean inv = false;
 }
 {
 //	LOOKAHEAD( ("+"|"-") <S_NUMBER> ) e = SQLNumber() {return e; }
 //|
-   [ "+" |  "-" { neg = true; } ] e1 = SQLInversionExpression() { 
-    return neg ?
-     (( e1 instanceof ZConstant && ((ZConstant)e1).getType() == ZConstant.NUMBER )? 
+   [ "+" |  "-" { neg = true; } | "~" { inv = true; } ] e1 = SQLNotHighPrecExpression() 
+   { 
+    if (neg){
+      return (( e1 instanceof ZConstant && ((ZConstant)e1).getType() == ZConstant.NUMBER )? 
      	new ZConstant("-" + ((ZConstant)e1).getValue() ,  ZConstant.NUMBER )
-     	: new ZExpression(Operator.NEG, e1))
-      : e1;
+     	: new ZExpression(Operator.NEG, e1));
+    }else if (inv){
+        return new ZExpression(Operator.INV, e1);
+     }
+     else return e1;
   }
 }
 
-ZExp SQLInversionExpression():
+ZExp SQLNotHighPrecExpression():
 {
   Token op = null;
   ZExp e;
@@ -1069,7 +1125,7 @@ ZExp SQLInversionExpression():
 {
   [ op = "!" ] e = SQLPrimaryExpression() { 
     if(op == null ) return e;
-    else return new ZExpression(Operator.NOT_HIGH_PRIO, e);
+    else return new ZExpression(Operator.NOT_HIGH_PREC, e);
   }
 }
 
@@ -1103,9 +1159,19 @@ ZExp SQLPrimaryExpression():
      //return new ZExpression("_NOT_SUPPORTED"); //TBD
    }
 */
-|  LOOKAHEAD( "COUNT" "(" "*" ")" ) "COUNT" "(" "*" ")" {
-     return new ZExpression("COUNT", null, false);
+|  LOOKAHEAD( "COUNT" "(" ["ALL"] ("*"|SQLExpression()) ")" ) 
+	"COUNT" "(" ["ALL"]("*"|e = SQLExpression()) ")" 
+	{
+	parm = new Vector(1);
+	if(e != null)parm.add(e);
+     return new ZExpression("COUNT", parm, false);
    }
+|  LOOKAHEAD( "COUNT" "(" "DISTINCT" )
+	"COUNT" "(" "DISTINCT" 
+	 e = SQLExpression() { parm=new Vector(); parm.addElement(e); }
+    ("," e = SQLExpression() { parm.addElement(e); } )*
+    ")"
+    {return new ZExpression("COUNT", parm, true); }
 |  
    LOOKAHEAD( FunctionOrAggregateName() "(") //function/aggreation
 	      (s = FunctionOrAggregateName() 
@@ -1162,7 +1228,7 @@ String FunctionOrAggregateName():
 | t = "AVG" 
 | t = "MAX" 
 | t = "MIN"
-| t = "COUNT"
+//| t = "COUNT"
 | t = "LEFT"
 | t = "RIGHT"
 | t = "MOD"
