@@ -1,15 +1,30 @@
+/**
+ * 
+ * @author anders8@qq.com
+ * 
+ * Operator used, 
+ * 
+ * except for:
+ * 	CASE...WHEN... THEN...[ELSE...] END ==>ZSwitchExpr
+ * 	INTERVAL ==>ZInterval
+ *
+ */
+
 package anders.akita.parser;
 
-public enum Operator {
-
+public enum Operator {	
+	
 	OR("OR"),
 	AND("AND"),
+	XOR("XOR"),
 	NOT("NOT"),
+	
 	EXISTS("EXISTS"),
 	NOT_EXISTS("NOT EXISTS"),
-	//SWITCH("SWITCH"),
+
 	BETWEEN("BETWEEN"),
 	NOT_BETWEEN("NOT BETWEEN"),
+
 	LESS("<"),
 	MORE(">"),
 	LESS_EQ("<="),
@@ -17,6 +32,7 @@ public enum Operator {
 	EQ("="),
 	NOT_EQ("!="),
 	SAFE_EQ("<=>"),
+	
 	IS_NULL("IS NULL"),
 	IS_NOT_NULL("IS NOT NULL"),
 	LIKE("LIKE"),
@@ -30,7 +46,6 @@ public enum Operator {
 	BIT_AND("&"),
 	BIT_SHL("<<"),
 	BIT_SHR(">>"),
-	
 	
 	ADD("+"),
 	SUB("-"),

@@ -19,7 +19,7 @@ package anders.akita.parser;
 
 import java.util.*;
 
-public class ZUtils {
+public class FunctionMgr {
 
 	public static class AggrDef{
 		private boolean canDistrAggr;
@@ -102,7 +102,7 @@ public class ZUtils {
     int pos = c.indexOf('(');
     if(pos <= 0) return null;
     String call = c.substring(0,pos);
-    if(ZUtils.isAggregate(call)) return call.trim();
+    if(FunctionMgr.isAggregate(call)) return call.trim();
     else return null;
   }
 

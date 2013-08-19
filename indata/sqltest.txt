@@ -7,8 +7,10 @@ select count(distinct c1, c2) from t1;
 select count(distinct c1, c2, c3) from t1;
 
 
-select a && a1 & a2 << 33 >> ~!aa1 << aa2 & a3 | b1 & b2 | c1 && c from t1;
+/* /* test bit operator  */ select a && a1 & a2 << 33 >> ~!aa1 << aa2 & a3 | b1 & b2 | c1 && c from t1;
 select -1, a + - 3.3e-100,- c1, a+-b from t1;
 
+
+select a xor/**test XOR  **/ /* */ b or c || d xor e and f xor g and h or i from t1;
 
 exit;

@@ -15,6 +15,31 @@
  * along with Zql.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+/**
+
+	mysql operator precedenct
+
+	INTERVAL
+	BINARY, COLLATE
+	!
+	- (unary minus), ~ (unary bit inversion)
+	^
+	*, /, DIV, %, MOD
+	-, +
+	<<, >>
+	&
+	|
+	= (comparison), <=>, >=, >, <=, <, <>, !=, IS, LIKE, REGEXP, IN
+	BETWEEN, CASE, WHEN, THEN, ELSE
+	NOT
+	&&, AND
+	XOR
+	||, OR
+	= (assignment), :=
+	
+*/
+
 options{
 	JDK_VERSION = "1.6";
     IGNORE_CASE=true;
@@ -193,6 +218,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_WITH:"WITH">
 |   <K_WORK:"WORK">
 |   <K_WRITE:"WRITE">
+|	<K_XOR:"XOR">
 |	<K_YEAR:"YEAR">
 }
 
@@ -207,11 +233,25 @@ TOKEN : /* Numeric Constants */
   | 	< #DIGIT: ["0" - "9"] >
 }
 
-//SPECIAL_TOKEN:
-//{
-//   <LINE_COMMENT: "--"(~["\r","\n"])*>
-//|  <MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
-//}
+SKIP :
+{
+  "/*" : WithinComment
+}
+
+<WithinComment> SKIP :
+{
+  "*/" : DEFAULT
+}
+
+<WithinComment> MORE :
+{
+  <~[]>
+}
+
+SPECIAL_TOKEN:
+{
+   <LINE_COMMENT: "//"(~["\r","\n"])* ("\r"|"\n")>
+}
 
 
 TOKEN:
@@ -263,29 +303,35 @@ Vector SQLStatements():
     { return v; }
 }
 
+
+
 ZStatement SQLStatement():
 {
   ZStatement s = null;
 }
 {
-    s = CommitStatement() { return s; }
-    |
-    s = DeleteStatement() { return s; }
-    |
-    s = InsertStatement() { return s; }
-    |
-    s = LockTableStatement() { return s; }
-    |
-    s = RollbackStatement() { return s; }
-    |
     s = QueryStatement() { return s; }
-    |
-    s = SetTransactionStatement() { return s; }
-    |
-    s = UpdateStatement() { return s; }
-    |
-    ( "EXIT" | "QUIT" ) ";" { return null; }
+|   ( "EXIT" | "QUIT" ) ";" { return null; }
 }
+
+ZUdf SQLUdf():
+{
+	Token tk;
+	ZUdf udf;
+	ArrayList<String> parm = new ArrayList<String>();
+	String funcName;
+	ZExp exp;
+}
+{
+	 tk = <S_IDENTIFIER> { funcName = tk.toString(); }
+	 "(" [ tk = <S_IDENTIFIER> { parm.add(tk.toString()); }
+	 	 ( "," tk =<S_IDENTIFIER> { parm.add(tk.toString()); } )* ] ")"
+	 ":"
+	 exp = SQLExpression()
+	 ";"
+	 {return new ZUdf( funcName, parm, exp );}
+}
+
 
 // CommitStatement ::= COMMIT [WORK] [COMMENT <comment>];
 ZTransactStmt CommitStatement():
@@ -732,14 +778,31 @@ ZExp SQLExpression():
   boolean single = true;
 }
 {
-    e1 = SQLAndExpression()
-    ( ("OR"|"||") e2 = SQLAndExpression() {
+    e1 = SQLXORExpression()
+    ( ("OR"|"||") e2 = SQLXORExpression() {
       if(single) { e = new ZExpression(Operator.OR, e1); }
       single=false;
       e.addOperand(e2);
     } )*
     { return (single ? e1 : e); }
 }
+
+ZExp SQLXORExpression():
+{
+  ZExp e1, e2;
+  ZExpression e = null;
+  boolean single = true;
+}
+{
+    e1 = SQLAndExpression()
+    ( ("XOR") e2 = SQLAndExpression() {
+      if(single) { e = new ZExpression(Operator.XOR, e1); }
+      single=false;
+      e.addOperand(e2);
+    } )*
+    { return (single ? e1 : e); }
+}
+
 
 ZExp SQLAndExpression():
 {

@@ -100,17 +100,20 @@ public interface ZqlJJParserConstants {
   int K_WITH = 98;
   int K_WORK = 99;
   int K_WRITE = 100;
-  int K_YEAR = 101;
-  int S_NUMBER = 102;
-  int FLOAT = 103;
-  int INTEGER = 104;
-  int DIGIT = 105;
-  int S_IDENTIFIER = 106;
-  int LETTER = 107;
-  int SPECIAL_CHARS = 108;
-  int S_CHAR_LITERAL = 109;
+  int K_XOR = 101;
+  int K_YEAR = 102;
+  int S_NUMBER = 103;
+  int FLOAT = 104;
+  int INTEGER = 105;
+  int DIGIT = 106;
+  int LINE_COMMENT = 110;
+  int S_IDENTIFIER = 111;
+  int LETTER = 112;
+  int SPECIAL_CHARS = 113;
+  int S_CHAR_LITERAL = 114;
 
   int DEFAULT = 0;
+  int WithinComment = 1;
 
   String[] tokenImage = {
     "<EOF>",
@@ -214,11 +217,16 @@ public interface ZqlJJParserConstants {
     "\"WITH\"",
     "\"WORK\"",
     "\"WRITE\"",
+    "\"XOR\"",
     "\"YEAR\"",
     "<S_NUMBER>",
     "<FLOAT>",
     "<INTEGER>",
     "<DIGIT>",
+    "\"/*\"",
+    "\"*/\"",
+    "<token of kind 109>",
+    "<LINE_COMMENT>",
     "<S_IDENTIFIER>",
     "<LETTER>",
     "\"_\"",
@@ -227,6 +235,7 @@ public interface ZqlJJParserConstants {
     "\",\"",
     "\")\"",
     "\";\"",
+    "\":\"",
     "\"=\"",
     "\".\"",
     "\"+\"",
