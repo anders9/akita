@@ -2251,7 +2251,7 @@ ZConstant SQLNumber():
           }
         }
         jj_consume_token(117);
-            if( ZUtils.isAggregate(s) || ZUtils.isCustomAggregate(s) ){
+            if( FunctionMgr.isAggregate(s) ){
                 if(func_type == -1){
                         func_type = ZExpression.AGGR_ALL;
                         if(parm.size() != 1)
@@ -2261,7 +2261,7 @@ ZConstant SQLNumber():
                 {if (true) return new ZExpression(s, e, func_type == ZExpression.AGGR_DISTINCT);}
             }
 
-          else if( (nparm = ZUtils.isCustomFunction(s)) >= 0 ){
+          else if( (nparm = FunctionMgr.isFunction(s)) >= 0 ){
                 if(func_type != -1)
                         {if (true) throw new ParseException("Function " + s + " should not have modifier ALL/DISTINCT");}
 

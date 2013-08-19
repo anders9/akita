@@ -62,7 +62,7 @@ public class ZSelectItem {
 				s += (" AS " + alias);
 			return s;
 		default:
-			throw new ExecException("Parse error#ZSelectItem");
+			throw new RuntimeException("Parse error#ZSelectItem");
 		}
 	}
 };

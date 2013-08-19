@@ -1,0 +1,10 @@
+//This file configure for the UDF in mysql
+//as the following format:
+//each UDF per line,
+//each line four element split by space
+//function-name parameter-number 
+
+
+my_func1 3
+my_func2 4
+

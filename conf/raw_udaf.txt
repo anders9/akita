@@ -1,0 +1,9 @@
+//This file configure for the UDAF in mysql
+//as the following format:
+//each UDAF per line,
+//each line four element split by space
+//aggregation-name can-use-distinct-flag can-be-partly-merge 
+
+my_aggr1 1 1
+my_aggr2 1 0
+my_aggr3 0 1

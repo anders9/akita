@@ -6,6 +6,10 @@ public class RootExp extends ZExp {
 
 	ZExp exp;
 	
+	public RootExp(ZExp exp){
+		this.exp = exp;
+	}
+	
 	public Iterable<ZExp> subExpSet() {
 		ArrayList<ZExp> list = new ArrayList<ZExp>(1);
 		list.add(exp);
@@ -20,9 +24,11 @@ public class RootExp extends ZExp {
 		return false;
 	}
 
-	private void traverse(ZExp node, NodeVisitor v){
+	private void traverse(ZExp node, NodeVisitor v)
+			throws ExecException
+	{
 		
-		node.root = this;
+		//node.root = this;
 		
 		Iterable<ZExp> iter = node.subExpSet();
 		if(iter != null){
@@ -35,8 +41,14 @@ public class RootExp extends ZExp {
 		v.visit(node, this);
 	}
 	
-	public void traverse(NodeVisitor visitor){
+	public void traverse(NodeVisitor visitor)
+			throws ExecException
+	{
 		exp.parentExp = this;
 		traverse(exp, visitor);
+	}
+	
+	public String toString(){
+		return exp.toString();
 	}
 }

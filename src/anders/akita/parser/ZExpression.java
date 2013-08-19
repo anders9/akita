@@ -37,6 +37,10 @@ public class ZExpression extends ZExp {
 	public String funcOrAggrName;
 	Vector<ZExp> operands_ = null;
 	public int type = OPERATOR;
+	
+	public boolean isAggr(){
+		return type == ZExpression.AGGR_ALL || type == ZExpression.AGGR_DISTINCT;
+	}
 
 	/**
 	 * Create an SQL Expression given the operator
@@ -334,19 +338,27 @@ public class ZExpression extends ZExp {
 	
 	public Iterable<ZExp> subExpSet(){
 		ArrayList<ZExp> set = new ArrayList<ZExp>();
-		if ( !(this.type == ZExpression.AGGR_ALL && this.getOperand(0) == null) )
-			set.addAll(getOperands());
+		set.addAll(getOperands());
 		return set;
 	}
-	public boolean replaceSubExp(ZExp oldExp, ZExp newExp){
-		if ( !(this.type == ZExpression.AGGR_ALL && this.getOperand(0) == null) ){
-			for(int i = 0; i < this.nbOperands(); ++i){
-				if(this.getOperand(i) == oldExp){
-					this.setOperand(newExp, i);
-					return true;
-				}
+
+	/**
+	 * replace sub-expression of an exp-node, 
+	 * if there are several sub-expression being the same object
+	 *  (it is possible when the parser or optimizer
+	 *   do some internal replacement for UDF or other cases), 
+	 * all of them are replaced.
+	 */
+	public boolean replaceSubExp(ZExp oldExp, ZExp newExp) {
+
+		boolean r = false;
+		for (int i = 0; i < this.nbOperands(); ++i) {
+			if (this.getOperand(i) == oldExp) {
+				this.setOperand(newExp, i);
+				r = true;
 			}
 		}
-		return false;
+
+		return r;
 	}
 };

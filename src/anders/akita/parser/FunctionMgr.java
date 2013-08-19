@@ -18,9 +18,14 @@
 package anders.akita.parser;
 
 import java.util.*;
+import java.io.*;
+
+import org.apache.log4j.Logger;
 
 public class FunctionMgr {
-
+	
+	final static private Logger logger = Logger.getLogger(FunctionMgr.class);
+	
 	public static class AggrDef{
 		private boolean canDistrAggr;
 		private String mergeAggr;
@@ -40,10 +45,38 @@ public class FunctionMgr {
   private static HashMap<String, Integer> fcts_ = new HashMap<String, Integer>();
   private static HashMap<String, AggrDef> aggrs_ = new HashMap<String, AggrDef>();
   
+  
+  
+  
+  static boolean checkFuncName(String name){
+	  return name.matches("[a-zA-Z_][a-zA-Z_0-9]*");
+  }
+  
   static{
 	  for(Object[] a: MySQLFunc.func){
 		  fcts_.put((String)a[0], (Integer)a[1]);
 	  }
+	  Scanner sc = null;
+	  try{
+		  sc = new Scanner(new FileInputStream("conf/raw_udf.txt"));
+		  String line;
+		  while( (line = sc.nextLine()) != null){ 
+			  line = line.trim();
+			  if(!line.equals("") && !line.startsWith("//")){
+				  String[] r = line.split(" ");
+				  if(r.length != 2 || !checkFuncName(r[0]) || !r[1].matches("[0-9]+") )
+					  throw new ParseException("Illegal line in raw_UDF config file: " + line);
+				  fcts_.put(r[0], Integer.parseInt(r[1]));
+			  }
+		  }
+	  }catch(Exception e){
+		  logger.warn("error when handling raw_UDF config file: " + e.toString());
+	  }
+	  finally{
+		  if(sc != null)sc.close();
+	  }
+
+	  
 	  for(Object[] s: MySQLFunc.aggr){
 		  String mergeAggr = null;
 		  boolean canDistr = (Boolean)s[2];
@@ -55,11 +88,33 @@ public class FunctionMgr {
 		  }
 		  aggrs_.put((String)s[0], new AggrDef((Boolean)s[1], canDistr, mergeAggr));
 	  }
+	  
+	  sc = null;
+	  try{
+		  sc = new Scanner(new FileInputStream("conf/raw_udaf.txt"));
+		  String line;
+		  while( (line = sc.nextLine()) != null){ 
+			  line = line.trim();
+			  if(!line.equals("") && !line.startsWith("//")){
+				  String[] r = line.split(" ");
+				  if(r.length != 3 || !checkFuncName(r[0]) || !r[1].matches("[01]") || !r[2].matches("[01]") )
+					  throw new ParseException("Illegal line in raw_UDAF config file: " + line);
+				  aggrs_.put(r[0], new AggrDef(r[1].equals("1"),
+						  r[2].equals("1"), r[2].equals("1")?r[0]:null));
+			  }
+		  }
+	  }catch(Exception e){
+		  logger.warn("error when handling raw_UDAF config file: " + e.toString());
+	  }
+	  finally{
+		  if(sc != null)sc.close();
+	  }
+	  
   }
   
   
   //public static final int VARIABLE_PLIST = 10000;
-
+/*
   public static void addCustomFunction(String fct, int nparm) {
     if(nparm < 0) nparm = 1;
     fcts_.put(fct.toUpperCase(), new Integer(nparm));
@@ -68,9 +123,9 @@ public class FunctionMgr {
   public static void addCustomAggregation(String aggr) {
 	 aggrs_.put(aggr.toUpperCase(), null);
   }
+*/  
   
-  
-  public static int isCustomFunction(String fct) {
+  public static int isFunction(String fct) {
     Integer nparm;
     if(fct == null || fct.length()<1 || fcts_ == null
       || (nparm = (Integer)fcts_.get(fct.toUpperCase())) == null)
@@ -78,33 +133,11 @@ public class FunctionMgr {
     return nparm.intValue();
   }
 
-  public static boolean isAggregate(String op) {
-    String tmp = op.toUpperCase().trim();
-    return tmp.equals("SUM") || tmp.equals("AVG")
-        || tmp.equals("MAX") || tmp.equals("MIN")
-        || tmp.equals("COUNT");
-  }
-  public static boolean isCustomAggregate(String op) {
-	  if(op == null)return false;
-	  return aggrs_.containsKey(op.toUpperCase().trim());
+  public static boolean isAggregate(String aggrName) {
+	  if(aggrName == null)return false;
+	  return aggrs_.containsKey(aggrName.toUpperCase().trim());
   }
   
-  
-//add by wyn 2013.06.28
-  public static boolean isJudge(String op){
-	String tmp = op.trim();
-	return tmp.equals(">") || tmp.equals(">=") 
-		|| tmp.equals("<") || tmp.equals("<=")
-		|| tmp.endsWith("=") || tmp.equals("!=");
-  }
-  
-  public static String getAggregateCall(String c) {
-    int pos = c.indexOf('(');
-    if(pos <= 0) return null;
-    String call = c.substring(0,pos);
-    if(FunctionMgr.isAggregate(call)) return call.trim();
-    else return null;
-  }
 
 };
 
