@@ -1,5 +1,7 @@
 package anders.util;
 
+import org.apache.log4j.PropertyConfigurator;
+
 public final class Util {
 
 	public static int findStr(String name, String[] array){
@@ -12,4 +14,7 @@ public final class Util {
 		return -1;
 	}
 	
+	public static void initLog4j(){
+		PropertyConfigurator.configure("conf/log4j.properties");
+	}
 }

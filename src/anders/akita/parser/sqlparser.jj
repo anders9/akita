@@ -259,13 +259,13 @@ TOKEN:
 	< S_IDENTIFIER: ( <LETTER> )+ ( <DIGIT> | <LETTER> |<SPECIAL_CHARS>)* >
 | 	< #LETTER: ["a"-"z", "A"-"Z"] >
 |   < #SPECIAL_CHARS:  "_">
-//|   < S_BIND: ":" <S_IDENTIFIER> ("." <S_IDENTIFIER>)? >
+
 |   < S_CHAR_LITERAL: 
 		 ("'"( ( (~["'","\\"]) | ("\\"( ["n","t","b","r","0","\\","'","\"", "Z", "%", "_"])) )* )"'")
 		 |
 		 ("\""( ( (~["\"","\\"]) | ("\\"( ["n","t","b","r","0","\\","'","\"", "Z", "%", "_"])) )* )"\"")
 	>
-//|   < S_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
+
 }
 
 
@@ -314,22 +314,35 @@ ZStatement SQLStatement():
 |   ( "EXIT" | "QUIT" ) ";" { return null; }
 }
 
-ZUdf SQLUdf():
+String identifier():
 {
 	Token tk;
+}
+{
+	tk = <S_IDENTIFIER>
+	{return tk.toString().toUpperCase();}
+}
+
+ZUdf SQLUdf():
+{
+	String s;
 	ZUdf udf;
 	ArrayList<String> parm = new ArrayList<String>();
 	String funcName;
 	ZExp exp;
 }
 {
-	 tk = <S_IDENTIFIER> { funcName = tk.toString(); }
-	 "(" [ tk = <S_IDENTIFIER> { parm.add(tk.toString()); }
-	 	 ( "," tk =<S_IDENTIFIER> { parm.add(tk.toString()); } )* ] ")"
-	 ":"
-	 exp = SQLExpression()
-	 ";"
-	 {return new ZUdf( funcName, parm, exp );}
+	LOOKAHEAD(<EOF>){return null;}
+	|
+	(
+		  funcName = identifier()
+		 "(" [ s = identifier() { parm.add(s); }
+		 	 ( "," s = identifier() { parm.add(s); } )* ] ")"
+		 ":"
+		 exp = SQLExpression()
+		 ";"
+		 {return new ZUdf( funcName, parm, exp );}
+	 )
 }
 
 
@@ -415,7 +428,7 @@ ZUpdate UpdateStatement():
 }
 {
   "UPDATE" s = TableReference() { u = new ZUpdate(s); }
-  [ tk = <S_IDENTIFIER> { u.setAlias(tk.toString()); } ]  /* Alias Name */
+  [ s = identifier() { u.setAlias(s); } ]  /* Alias Name */
   "SET" ColumnValues(u) { }
   [ "WHERE" e = SQLExpression() { u.addWhere(e); } ] ";"
   { return u; }
@@ -499,18 +512,10 @@ ZColRef TableColumn():
   String t = null, c;
 }
 {
-	(LOOKAHEAD(2) t = OracleObjectName() "." c = OracleObjectName()
+	(LOOKAHEAD(2) t = identifier() "." c = identifier()
 	|
-	c = OracleObjectName())
+	c = identifier())
     { return new ZColRef(t, c); }
-}
-
-String OracleObjectName():
-{
-  Token t;
-}
-{
-    t = <S_IDENTIFIER> { return t.toString(); }
 }
 
 
@@ -520,19 +525,9 @@ String TableReference():
   String s;
 }
 {
-    s = OracleObjectName() { return s; }
+    s = identifier() { return s; }
 }
 
-void NumOrID():
-{}
-{
-    <S_IDENTIFIER> | (["+" | "-"] <S_NUMBER>)
-}
-
-
-/* --------------- General Productions ends here --------------- */
-
-/* ----------- SQL productions start here ----------------- */
 
 ZQuery SelectStatement():
 {
@@ -615,21 +610,11 @@ ZSelectItem SelectItem():
 {
 	LOOKAHEAD(1) ("*" {return new ZSelectItem();})
 |
-	LOOKAHEAD(2)(s = OracleObjectName()".*" { return new ZSelectItem(s); } )// table.*
+	LOOKAHEAD(2)(s = identifier()".*" { return new ZSelectItem(s); } )// table.*
 |   
 	(e = SQLExpression() // Column or Expression
-    [s = SelectAlias()  ] // Column Alias
+    [["AS"]  s = identifier()  ] // Column Alias
     { return new ZSelectItem(e, s); })
-}
-
-// SelectAlias ::= (<S_IDENTIFIER>)+
-String SelectAlias():
-{
-  Token tk;
-}
-{
-   ["AS"] 
-   tk = <S_IDENTIFIER> {return tk.toString(); }
 }
 
 ZFromClause FromClause():
@@ -682,32 +667,17 @@ ZFromItemEx FromItemEx():
 	ZQuery subq = null;
 	ZFromItem tab_item = null;
 	String tab = null;
-	Token tk = null;
+	String s = null;
 }
 {
 	( tab =  TableReference() { tab_item = new ZFromItem(tab); f = new ZFromItemEx(tab_item); }
 	 |  "(" subq = SelectStatement() ")" { f = new ZFromItemEx(subq); }
 	)
-	 [ ["AS"] tk = <S_IDENTIFIER> {
-	 	 f.alias = tk.toString();
+	 [ ["AS"] s = identifier() {
+	 	 f.alias = s;
 	  } ]  /* Alias Name */
 	{return f; }
 }
-
-
-
-// FromItem ::= TableReference [as alias]
-//ZFromItem FromItem():
-//{
-//  ZFromItem f;
-//  String s;
-//  Token tk;
-//}
-//{
-//  s = TableReference() { f = new ZFromItem(s); }
-//  [ "AS" tk = <S_IDENTIFIER> { f.setAlias(tk.toString()); } ]  /* Alias Name */
-//  { return f; }
-//}
 
 
 ZExp WhereClause():
@@ -1192,18 +1162,6 @@ ZExp SQLNotHighPrecExpression():
   }
 }
 
-
-// 01/07/00 PY.Gibello - Added COUNT(*) to SQLPrimaryExpression
-// TBD should be ZConstant("COUNT(*)", ZConstant.STRING))
-// instead of ZConstant("*", ZConstant.COLUMNNAME) ??
-// 01/06/02 PY.Gibello - Added ALL | DISTINCT (then the column name
-// starts with "all " or "distinct " when required, which may not be the
-// fairest solution...)
-
-// SQLPrimaryExpression ::= NULL | OuterJoinExpression
-//   | AggregateFunc ( [ ALL | DISTINCT ] SQLSimpleExpression ) | TableColumn
-//   | COUNT(*)
-//   | <NUMBER> | <STRING> | <BIND>
 ZExp SQLPrimaryExpression():
 {
   ZColRef col;
@@ -1216,12 +1174,6 @@ ZExp SQLPrimaryExpression():
 }
 {
   "NULL" { return new ZConstant("NULL", ZConstant.NULL); }
-/*
-|  LOOKAHEAD(OuterJoinExpression()) s = OuterJoinExpression() {
-     return new ZConstant(s, ZConstant.COLUMNNAME);
-     //return new ZExpression("_NOT_SUPPORTED"); //TBD
-   }
-*/
 |  LOOKAHEAD( "COUNT" "(" ["ALL"] ("*"|SQLExpression()) ")" ) 
 	"COUNT" "(" ["ALL"]("*"|e = SQLExpression()) ")" 
 	{
@@ -1258,6 +1210,9 @@ ZExp SQLPrimaryExpression():
 	    			throw new ParseException("Aggregate " + s + " should have 1 parameter");
 	    		e = (ZExp)parm.get(0);
 	    	}
+	    	//add distinct judgement here 
+	    	if( func_type == ZExpression.AGGR_DISTINCT && !FunctionMgr.canUseDistinct(s) )
+	    		throw new ParseException("Cannot use DISTINCT on aggregation: " + s);
 	    	return new ZExpression(s, e, func_type == ZExpression.AGGR_DISTINCT);
 	    }
 		
@@ -1271,7 +1226,17 @@ ZExp SQLPrimaryExpression():
 	    }
 	    return new ZExpression(s, parm);
 	  }
-	  else throw new ParseException("Undefined function/aggreation: " + s);
+	  
+	  else if ( FunctionMgr.isUdf(s) ){
+	  	if(func_type != -1)
+	  		throw new ParseException("UDF " + s + " should not have modifier ALL/DISTINCT");
+	  	nparm = FunctionMgr.getUdfParmN(s);
+	  	if( parm.size() != nparm )
+	  		throw new ParseException("Function " + s + " should have "
+	        	 + nparm + " parameter(s)");
+	    return new ZExpression(s, parm, ZExpression.UDF);
+	  }
+	  else throw new ParseException("Undefined function/aggreation/UDF: " + s);
    }  
 | LOOKAHEAD	("(" "SELECT") e = SQLInnerQuery() {return e;}
 | LOOKAHEAD ("(") "(" e = SQLExpression() ")" { return e; }   
@@ -1337,72 +1302,7 @@ String IntervalType():
 	{return t.toString();}
 }
 
-// AggregateFunc ::= SUM | AVG | MAX | MIN | COUNT
-// 01/07/00 PY.Gibello - Added COUNT
-/*
-String AggregateFunc():
-{
-  Token t;
-  String s;
-}
-{
-  t = "SUM" { return t.toString(); }
-| t = "AVG" { return t.toString(); }
-| t = "MAX" { return t.toString(); }
-| t = "MIN" { return t.toString(); }
-| t = "COUNT" { return t.toString(); }
-| t = <S_IDENTIFIER> {
-	 s = t.toString();
-	 if( ZUtils.isCustomAggregate(s) )
-	 	 return s;
-	 else return null; 
-  }
-}
 
-ZExpression FunctionCall():
-{
-  Token t;
-  String s;
-  ZExpression e;
-  Vector parm = null;
-}
-{
-  (t = <S_IDENTIFIER> { s = t.toString(); }) "("
-  [ parm = SQLExpressionList() ] ")" {
-
-    int nparm = ZUtils.isCustomFunction(s);
-    //if(nparm < 0) nparm = (ZUtils.isAggregate(s) ? 1 : -1);
-    if(nparm < 0)
-      throw new ParseException("Undefined function: " + s);
-    if(nparm > 0) {
-      if(parm == null || parm.size() != nparm)
-        throw new ParseException("Function " + s + " should have "
-         + nparm + " parameter(s)");
-    }
-
-    e = new ZExpression(s);
-    e.setOperands(parm);
-    return e;
-  }
-}
-*/
-/*
-String OuterJoinExpression():
-{
-  String s = null;
-  String c = "";
-}
-{
-    // user.table.col
-    s = OracleObjectName()
-     [ "." c = OracleObjectName() { s += "." + c; }
-     ["."  c = OracleObjectName() { s += "." + c; } ]]
-    "(" "+" ")"
-    {
-      return s + "(+)";
-    }
-}
-*/
 ZQuery SQLInnerQuery():
 {
   ZQuery q = new ZQuery();

@@ -2,6 +2,8 @@ package anders.akita.test;
 
 import org.apache.log4j.*;
 import anders.akita.parser.*;
+import anders.util.Util;
+
 import java.io.*;
 import java.util.*;
 
@@ -22,11 +24,12 @@ public class SQLParserTest {
 			PrintStream os = new PrintStream("outdata/sqltest.txt");
 			
 			
-			while (true) {
+			while (sc.hasNextLine()) {
 				ZqlJJParser parser = null;
 				try {
-					String line = sc.nextLine();
-					if(line.trim().equals(""))
+					String line = sc.nextLine().trim();
+
+					if(line.equals("") || line.startsWith("//") )
 						continue;
 					
 					os.println("READ: " + line);
@@ -55,7 +58,7 @@ public class SQLParserTest {
 			os.close();
 		}
 		catch(Exception e){
-			System.out.println("error: " + e.getMessage());
+			logger.error("error: " + e.getMessage());
 			result = false;
 		}
 		return result;
@@ -64,8 +67,8 @@ public class SQLParserTest {
 	public static void main(String[] args)
 		throws IOException
 	{
-		PropertyConfigurator.configure("conf/log4j.properties");
-		System.out.println( "result: " + test());
+		Util.initLog4j();
+		logger.info( "result: " + test());
 	}
 
 }

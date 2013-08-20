@@ -161,7 +161,7 @@ public class ZQuery extends ZExp implements ZStatement {
 	  
 	  
     StringBuffer buf = new StringBuffer();
-	  if(this.innerQType != null){
+	if(this.innerQType != null){
 		  if(this.innerQType == InnerQType.ALL)
 			  buf.append("ALL ");
 		  else if(this.innerQType == InnerQType.ANY)
@@ -190,9 +190,7 @@ public class ZQuery extends ZExp implements ZStatement {
     if(groupby_ != null) {
       buf.append(" " + groupby_.toString());
     }
-    //if(setclause_ != null) {
-    //  buf.append(" " + setclause_.toString());
-    //}
+
     if(orderby_ != null) {
       buf.append(" order by ");
       //buf.append(orderby_.toString());
@@ -201,9 +199,8 @@ public class ZQuery extends ZExp implements ZStatement {
         buf.append(", " + orderby_.elementAt(i).toString());
       }
     }
-    //if(forupdate_) buf.append(" for update");
-	  if(this.innerQType != null)
-		  buf.append(")");
+    if(this.innerQType != null)
+    	buf.append(")");
 	  
     return buf.toString();
   }

@@ -16,7 +16,7 @@ public class ZInterval extends ZExp {
 		return exp;
 	}
 	public String toString(){
-		return "Interval " + exp.toString() + " " + type;
+		return "( INTERVAL " + exp.toString() + " " + type + " )";
 	}
 	
 	public Iterable<ZExp> subExpSet(){

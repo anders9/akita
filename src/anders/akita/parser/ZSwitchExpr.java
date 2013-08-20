@@ -32,7 +32,7 @@ public class ZSwitchExpr extends ZExp {
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("CASE ");
+		sb.append("( CASE ");
 		if (cmpVal != null)
 			sb.append(cmpVal.toString()).append(' ');
 		for (int i = 0; i < cond.size(); ++i) {
@@ -44,7 +44,7 @@ public class ZSwitchExpr extends ZExp {
 		if (else_result != null) {
 			sb.append("ELSE ").append(else_result.toString()).append(' ');
 		}
-		sb.append("END");
+		sb.append("END )");
 		return sb.toString();
 	}
 	

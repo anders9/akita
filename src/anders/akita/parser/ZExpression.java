@@ -29,6 +29,8 @@ public class ZExpression extends ZExp {
 	public final static int FUCTION = 1;
 	public final static int AGGR_ALL = 2;
 	public final static int AGGR_DISTINCT = 3;
+	public final static int UDF = 4;
+	
 	// public final static int NOT_AGGR = 0;
 	public final static int VAR_PARAM = 1000000;
 
@@ -86,15 +88,28 @@ public class ZExpression extends ZExp {
 	 *            function-name
 	 * @param v
 	 *            params
-	 * @param type
-	 *            must be FUNCTION
 	 */
 	public ZExpression(String funcName, Vector<ZExp> v) {
 		this.funcOrAggrName = funcName;
 		this.type = ZExpression.FUCTION;
 		this.operands_ = v;
 	}
-
+	
+	/**
+	 * construct normal function expression
+	 * 
+	 * @param op
+	 *            function-name
+	 * @param v
+	 *            params
+	 * @param type
+	 *            must be UDF/FUNCTION
+	 */	
+	public ZExpression(String funcName, Vector<ZExp> v, int type) {
+		this.funcOrAggrName = funcName;
+		this.type = type;
+		this.operands_ = v;
+	}
 	/**
 	 * construct aggregation function expression
 	 * 
@@ -266,6 +281,23 @@ public class ZExpression extends ZExp {
 	// return is_funciton_;
 	// }
 
+	public String formatSubExp(ZExp e){
+		/*
+		if( e instanceof ZColRef || e instanceof ZConstant ){
+			return e.toString();
+		}
+		String t = "(" + e.toString() + ")";
+		if( e instanceof ZQuery){
+			if( ((ZQuery)e).innerQType == ZQuery.InnerQType.ALL )
+				t = "ALL " + t;
+			else if(( (ZQuery)e).innerQType == ZQuery.InnerQType.ANY )
+				t = "ANY " + t;
+		}
+		*/
+		
+		return e.toString();
+	}
+	
 	public String toString() {
 
 		// if(op_.equals("?")) return op_; // For prepared columns ("?")
@@ -294,7 +326,7 @@ public class ZExpression extends ZExp {
 			for (int i = 0; i < nb; i++) {
 
 				operand = getOperand(i);
-				buf.append(operand.toString());
+				buf.append(formatSubExp(operand));
 				
 				if (i < nb - 1) {
 					buf.append(" " + op_.op() + " ");

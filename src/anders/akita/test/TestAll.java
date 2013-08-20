@@ -1,7 +1,8 @@
 package anders.akita.test;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.*;
+
+import anders.util.Util;
 
 public class TestAll {
 
@@ -9,9 +10,9 @@ public class TestAll {
 	
 	public static void main(String[] args) {
 
-		PropertyConfigurator.configure("conf/log4j.properties");
-		logger.info("SQLParserTest: " + SQLParserTest.test());
-		
+		Util.initLog4j();
+		System.out.println("SQLParserTest: " + SQLParserTest.test());
+		System.out.println("SQLUDFtest: " + SQLUdfTest.test());
 	}
 
 }

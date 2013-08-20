@@ -1,31 +1,39 @@
 READ: select count(*) from t1;
-select COUNT(*) from t1
+select COUNT(*) from T1
 
 READ: select count(all *) from t1;
-select COUNT(*) from t1
+select COUNT(*) from T1
 
 READ: select count(all c1) from t1;
-select COUNT(c1) from t1
+select COUNT(C1) from T1
 
 READ: select count(c1) from t1;
-select COUNT(c1) from t1
+select COUNT(C1) from T1
 
 READ: select count(distinct c1) from t1;
-select COUNT( DISTINCT c1) from t1
+select COUNT( DISTINCT C1) from T1
 
 READ: select count(distinct c1, c2) from t1;
-select COUNT( DISTINCT c1,c2) from t1
+select COUNT( DISTINCT C1,C2) from T1
 
 READ: select count(distinct c1, c2, c3) from t1;
-select COUNT( DISTINCT c1,c2,c3) from t1
+select COUNT( DISTINCT C1,C2,C3) from T1
 
 READ: /* /* test bit operator  */ select a && a1 & a2 << 33 >> ~!aa1 << aa2 & a3 | b1 & b2 | c1 && c from t1;
-select (a AND ((a1 & (((a2 << 33) >> (~ (! aa1))) << aa2) & a3) | (b1 & b2) | c1) AND c) from t1
+select (A AND ((A1 & (((A2 << 33) >> (~ (! AA1))) << AA2) & A3) | (B1 & B2) | C1) AND C) from T1
 
 READ: select -1, a + - 3.3e-100,- c1, a+-b from t1;
-select -1, (a + -3.3e-100), (- c1), (a + (- b)) from t1
+select -1, (A + -3.3e-100), (- C1), (A + (- B)) from T1
 
 READ: select a xor/**test XOR  **/ /* */ b or c || d xor e and f xor g and h or i from t1;
-select ((a XOR b) OR c OR (d XOR (e AND f) XOR (g AND h)) OR i) from t1
+select ((A XOR B) OR C OR (D XOR (E AND F) XOR (G AND H)) OR I) from T1
 
-READ: exit;
+READ: select * from t1, (select * from t2 where a>b) x1 , (select * from t3 right outer join (select * from t4) x5 on t3.c1=x5.c1 ) x2 , t5;
+select * from T1, (select * from T2 where (A > B)) AS X1, (select * from T3 RIGHT JOIN (select * from T4) AS X5 ON (T3.C1 = X5.C1)) AS X2, T5
+
+READ: select * from t1 where case c1 when 1 then c2 when 2+1 then "abc" else (a1 between a2 and a3 + (a4 between 1 and 2)) end;
+select * from T1 where ( CASE C1 WHEN 1 THEN C2 WHEN (2 + 1) THEN "abc" ELSE (A1 BETWEEN A2 AND (A3 + (A4 BETWEEN 1 AND 2))) END )
+
+READ: select * from t1 where c1-c2 > interval 3 day;
+select * from T1 where ((C1 - C2) > ( INTERVAL 3 day ))
+
