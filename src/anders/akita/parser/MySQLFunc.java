@@ -158,8 +158,8 @@ public final class MySQLFunc {
 	public static final Object[][] aggr = {
 		
 	//	Aggr-Name,canUseDistinctFlag,canDistrAggr,mergAggr
-		{"AVG",		true,	false},
-		{"COUNT",	true,	true,	"SUM"},
+		{"avg",		true,	false},
+		{"count",	true,	true,	"sum"},
 		{"MAX",		true,	true},
 		{"MIN",		true,	true},
 		{"SUM",		true,	true},

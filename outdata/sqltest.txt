@@ -37,3 +37,12 @@ select * from T1 where ( CASE C1 WHEN 1 THEN C2 WHEN (2 + 1) THEN "abc" ELSE (A1
 READ: select * from t1 where c1-c2 > interval 3 day;
 select * from T1 where ((C1 - C2) > ( INTERVAL 3 day ))
 
+READ: select my_func1(c1, c1+c2, c2) + my_func2(c1,c2,c3,c4) from t1;
+select (MY_FUNC1(C1,(C1 + C2),C2) + MY_FUNC2(C1,C2,C3,C4)) from T1
+
+READ: select my_aggr1(distinct c1+c2) + my_aggr2(distinct c1) + my_aggr2(c3) from t1;
+select ((MY_AGGR1( DISTINCT (C1 + C2)) + MY_AGGR2( DISTINCT C1)) + MY_AGGR2(C3)) from T1
+
+READ: select UDF_01(c1, c2, c3)  + UDF_02(c1, c2+c3, c3) from t2;
+select (UDF_01(C1,C2,C3) + UDF_02(C1,(C2 + C3),C3)) from T2
+

@@ -1203,7 +1203,7 @@ ZExp SQLPrimaryExpression():
 	           ) 
 	      ")" )
 	 {
-	    if( FunctionMgr.isAggregate(s) ){
+	    if( FunctionMgr.isAggregation(s) ){
 	    	if(func_type == -1){
 	    		func_type = ZExpression.AGGR_ALL;
 	    		if(parm.size() != 1)
@@ -1211,15 +1211,15 @@ ZExp SQLPrimaryExpression():
 	    		e = (ZExp)parm.get(0);
 	    	}
 	    	//add distinct judgement here 
-	    	if( func_type == ZExpression.AGGR_DISTINCT && !FunctionMgr.canUseDistinct(s) )
+	    	if( func_type == ZExpression.AGGR_DISTINCT && !FunctionMgr.aggrCanUseDistinct(s) )
 	    		throw new ParseException("Cannot use DISTINCT on aggregation: " + s);
 	    	return new ZExpression(s, e, func_type == ZExpression.AGGR_DISTINCT);
 	    }
 		
-	  else if( (nparm = FunctionMgr.isFunction(s)) >= 0 ){
+	  else if( FunctionMgr.isFunction(s) ){
 	  	if(func_type != -1)
 	  		throw new ParseException("Function " + s + " should not have modifier ALL/DISTINCT");
-	    
+	    nparm = FunctionMgr.getFuncParmN(s);
 	    if( nparm != ZExpression.VAR_PARAM && nparm != parm.size() ) {
 	      throw new ParseException("Function " + s + " should have "
 	         + nparm + " parameter(s)");
@@ -1236,7 +1236,7 @@ ZExp SQLPrimaryExpression():
 	        	 + nparm + " parameter(s)");
 	    return new ZExpression(s, parm, ZExpression.UDF);
 	  }
-	  else throw new ParseException("Undefined function/aggreation/UDF: " + s);
+	  else throw new ParseException("Undefined function/aggregation/UDF: " + s);
    }  
 | LOOKAHEAD	("(" "SELECT") e = SQLInnerQuery() {return e;}
 | LOOKAHEAD ("(") "(" e = SQLExpression() ")" { return e; }   
@@ -1252,26 +1252,28 @@ String FunctionOrAggregateName():
   String s;
 }
 {
-(  t = "SUM" 
-| t = "AVG" 
-| t = "MAX" 
-| t = "MIN"
-//| t = "COUNT"
-| t = "LEFT"
-| t = "RIGHT"
-| t = "MOD"
-| t = "DATE"
-| t = "DAY"
-| t = "HOUR"
-| t = "MINUTE"
-| t = "MONTH"
-| t = "QUARTER"
-| t = "SECOND"
-| t = "WEEK"
-| t = "YEAR"
-| t = <S_IDENTIFIER> 
-)
-{return t.toString();}
+	(
+		  t = "SUM" 
+		| t = "AVG" 
+		| t = "MAX" 
+		| t = "MIN"
+		//| t = "COUNT"
+		| t = "LEFT"
+		| t = "RIGHT"
+		| t = "MOD"
+		| t = "DATE"
+		| t = "DAY"
+		| t = "HOUR"
+		| t = "MINUTE"
+		| t = "MONTH"
+		| t = "QUARTER"
+		| t = "SECOND"
+		| t = "WEEK"
+		| t = "YEAR"
+	)
+	 {return t.toString().toUpperCase(); }
+	|
+	s = identifier() { return s; }
 }
 ZInterval Interval():
 { 	

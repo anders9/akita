@@ -58,7 +58,7 @@ public class SQLParserTest {
 			os.close();
 		}
 		catch(Exception e){
-			logger.error("error: " + e.getMessage());
+			logger.error("error: " + Util.exceptionStackTrace(e));
 			result = false;
 		}
 		return result;
