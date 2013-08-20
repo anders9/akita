@@ -1,0 +1,12 @@
+select * from t1 where t1>(select * from t2);
+IN/ALL/ANY sub-clause or other inner-query must use 1 expression or 1 colume as select result: (select * from T2)
+
+select * from t1 where exists ( select c1 from t2);
+EXISTS sub-clause must use * as select result: (select C1 from T2)
+
+select * from t1 where t1>any(select * from t2);
+IN/ALL/ANY sub-clause or other inner-query must use 1 expression or 1 colume as select result: ANY (select * from T2)
+
+select * from t1 where t1 in (select * from t2);
+IN/ALL/ANY sub-clause or other inner-query must use 1 expression or 1 colume as select result: (select * from T2)
+

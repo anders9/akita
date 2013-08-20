@@ -48,6 +48,10 @@ public class ZUdf {
 		try {
 			re.traverse(new NodeVisitor() {
 				public void visit(ZExp node, RootExp root) throws ExecException {
+					if (node instanceof ZQuery){
+						throw new ExecException("Cannot use inner-query in UDF: "
+								+ root.toString());
+					}
 					if (node instanceof ZColRef) {
 						ZColRef c = (ZColRef) node;
 						if (c.table != null || c.col == null

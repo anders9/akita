@@ -1,0 +1,10 @@
+
+
+//inner-query
+
+select * from t1 where t1>(select * from t2);
+
+select * from t1 where exists ( select c1 from t2);
+
+select * from t1 where t1>any(select * from t2);
+select * from t1 where t1 in (select * from t2);

@@ -13,9 +13,10 @@ public class SQLUdfTest {
 	
 	public static boolean test()
 	{
-		try{
-		Util.initLog4j();
 		
+		Util.initLog4j();
+		/*
+		try{
 		ZqlJJParser parser = new ZqlJJParser(new FileInputStream("indata/udftest.txt"));
 			while(true){
 				ZUdf udf = parser.SQLUdf();
@@ -36,6 +37,11 @@ public class SQLUdfTest {
 			logger.error(e.toString() + ":" + e.getMessage());
 			return false;
 		}
+		*/
+		try{Class.forName("anders.akita.parser.FunctionMgr");}
+		catch(Exception e){return false;}
+		return true;
+		
 	}
 	public static void main(String[] args){
 		Util.initLog4j();

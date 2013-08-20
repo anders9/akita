@@ -812,8 +812,8 @@ ZExp ExistsClause():
   boolean not = false;
 }
 {
-    ["NOT" { not = true; } ] "EXISTS"  q = SQLInnerQuery()  {
-      q.innerQType = ZQuery.InnerQType.EXISTS;
+    ["NOT" { not = true; } ] "EXISTS"  q = SQLInnerQuery(ZQuery.InnerQType.EXISTS) 
+    {
       return new ZExpression(not ? Operator.NOT_EXISTS : Operator.EXISTS, q);
     }
 }
@@ -896,17 +896,15 @@ ZExp SQLAllAnySubquery():
 	ZExp e1;
 	ZQuery e2;
 	Operator op;
-	boolean isAll;
+	ZQuery.InnerQType type;
 }
 {
 	e1 = SQLSimpleExpression() op = Relop()  
-	("ALL"{ isAll = true; }| ("ANY"|"SOME") { isAll = false; }) 
-	e2 = SQLInnerQuery()
-	
+	("ALL"{ type = ZQuery.InnerQType.ALL; }| ("ANY"|"SOME") { type = ZQuery.InnerQType.ANY; }) 
+	e2 = SQLInnerQuery(type)
 	{	
 		if(op.equals("<=>"))
 			throw new ParseException("Can't use <=> operator in ALL/ANY sub-Query");
-		e2.innerQType = ( isAll? ZQuery.InnerQType.ALL : ZQuery.InnerQType.ANY );
 		return new ZExpression(op, e1, e2); 
 	}
 }
@@ -918,9 +916,9 @@ ZExp SQLInSubquery():
 	boolean not = false;
 }
 {
-	e1 = SQLSimpleExpression() ["NOT" { not = true; }] "IN"  e2 = SQLInnerQuery()
+	e1 = SQLSimpleExpression() ["NOT" { not = true; }] "IN" 
+	 e2 = SQLInnerQuery(ZQuery.InnerQType.IN)
 	{
-		e2.innerQType = ZQuery.InnerQType.IN;
 		return new ZExpression( not? Operator.NOT_IN:Operator.IN, e1, e2); 
 	}
 }
@@ -1203,7 +1201,7 @@ ZExp SQLPrimaryExpression():
 	           ) 
 	      ")" )
 	 {
-	    if( FunctionMgr.isAggregate(s) ){
+	    if( FunctionMgr.isAggregation(s) ){
 	    	if(func_type == -1){
 	    		func_type = ZExpression.AGGR_ALL;
 	    		if(parm.size() != 1)
@@ -1211,15 +1209,15 @@ ZExp SQLPrimaryExpression():
 	    		e = (ZExp)parm.get(0);
 	    	}
 	    	//add distinct judgement here 
-	    	if( func_type == ZExpression.AGGR_DISTINCT && !FunctionMgr.canUseDistinct(s) )
+	    	if( func_type == ZExpression.AGGR_DISTINCT && !FunctionMgr.aggrCanUseDistinct(s) )
 	    		throw new ParseException("Cannot use DISTINCT on aggregation: " + s);
 	    	return new ZExpression(s, e, func_type == ZExpression.AGGR_DISTINCT);
 	    }
 		
-	  else if( (nparm = FunctionMgr.isFunction(s)) >= 0 ){
+	  else if( FunctionMgr.isFunction(s) ){
 	  	if(func_type != -1)
 	  		throw new ParseException("Function " + s + " should not have modifier ALL/DISTINCT");
-	    
+	    nparm = FunctionMgr.getFuncParmN(s);
 	    if( nparm != ZExpression.VAR_PARAM && nparm != parm.size() ) {
 	      throw new ParseException("Function " + s + " should have "
 	         + nparm + " parameter(s)");
@@ -1236,9 +1234,9 @@ ZExp SQLPrimaryExpression():
 	        	 + nparm + " parameter(s)");
 	    return new ZExpression(s, parm, ZExpression.UDF);
 	  }
-	  else throw new ParseException("Undefined function/aggreation/UDF: " + s);
+	  else throw new ParseException("Undefined function/aggregation/UDF: " + s);
    }  
-| LOOKAHEAD	("(" "SELECT") e = SQLInnerQuery() {return e;}
+| LOOKAHEAD	("(" "SELECT") e = SQLInnerQuery(ZQuery.InnerQType.NORMAL) {return e;}
 | LOOKAHEAD ("(") "(" e = SQLExpression() ")" { return e; }   
 |  col = TableColumn() { return col; }
 |  t = <S_NUMBER> { return new ZConstant(t.toString(), ZConstant.NUMBER); }
@@ -1252,26 +1250,28 @@ String FunctionOrAggregateName():
   String s;
 }
 {
-(  t = "SUM" 
-| t = "AVG" 
-| t = "MAX" 
-| t = "MIN"
-//| t = "COUNT"
-| t = "LEFT"
-| t = "RIGHT"
-| t = "MOD"
-| t = "DATE"
-| t = "DAY"
-| t = "HOUR"
-| t = "MINUTE"
-| t = "MONTH"
-| t = "QUARTER"
-| t = "SECOND"
-| t = "WEEK"
-| t = "YEAR"
-| t = <S_IDENTIFIER> 
-)
-{return t.toString();}
+	(
+		  t = "SUM" 
+		| t = "AVG" 
+		| t = "MAX" 
+		| t = "MIN"
+		//| t = "COUNT"
+		| t = "LEFT"
+		| t = "RIGHT"
+		| t = "MOD"
+		| t = "DATE"
+		| t = "DAY"
+		| t = "HOUR"
+		| t = "MINUTE"
+		| t = "MONTH"
+		| t = "QUARTER"
+		| t = "SECOND"
+		| t = "WEEK"
+		| t = "YEAR"
+	)
+	 {return t.toString().toUpperCase(); }
+	|
+	s = identifier() { return s; }
 }
 ZInterval Interval():
 { 	
@@ -1303,27 +1303,39 @@ String IntervalType():
 }
 
 
-ZQuery SQLInnerQuery():
+ZQuery SQLInnerQuery(ZQuery.InnerQType type):
 {
   ZQuery q = new ZQuery();
-  Vector select = new Vector(1);
+  Vector<ZSelectItem> select = new Vector<ZSelectItem>(1);
   ZExp exp;
   ZFromClause from;
   ZExp where = null;
 }
 {
    "(" 
-     "SELECT" [ "ALL" | "DISTINCT" { q.distinct_ = true; } ]
-  exp = SQLExpression() { select.add(new ZSelectItem(exp, null)); }
+     "SELECT"
+   (
+     "*" { select.add(new ZSelectItem()); }
+     |
+      [ "ALL" | "DISTINCT" { q.distinct_ = true; } ]
+  	  exp = SQLExpression() { select.add(new ZSelectItem(exp, null)); }
+  	)
   from = FromClause()
   [ where = WhereClause() ]
 	")"
 
   {
+  	q.innerQType = type;
     q.setSelect(select);
     q.setFrom(from);
     q.setWhere(where);
-	q.innerQType = ZQuery.InnerQType.NORMAL;
+    
+    if(type == ZQuery.InnerQType.EXISTS && select.get(0).type != ZSelectItem.STAR)
+     	throw new ParseException("EXISTS sub-clause must use * as select result: " + q.toString());
+    if(type != ZQuery.InnerQType.EXISTS && select.get(0).type != ZSelectItem.EXPR)
+     	throw new ParseException(
+     	"IN/ALL/ANY sub-clause or other inner-query must use 1 expression or 1 colume as select result: "
+     	 + q.toString());
   	return q; 
   }
 }

@@ -28,32 +28,36 @@ public class FunctionMgr {
 
 	public static class AggrDef {
 		private boolean canDistrAggr;
-		private String mergeAggr;
+		private String merger;
 		private boolean canUseDistinct;
 
 		public AggrDef(boolean canUseDistinct, boolean canDistrAggr,
 				String mergeAggr) {
 			this.canUseDistinct = canUseDistinct;
 			this.canDistrAggr = canDistrAggr;
-			this.mergeAggr = mergeAggr;
+			this.merger = mergeAggr;
 		}
 
 		public boolean canDistrAggr() {
 			return canDistrAggr;
 		}
 
-		public String mergeAggr() {
-			return mergeAggr;
+		public String merger() {
+			return merger;
 		}
 
 		public boolean canUseDistinct() {
 			return canUseDistinct;
 		}
+		
+		public String toString(){
+			return "{" + canUseDistinct + "," + canDistrAggr + "," + merger + "}";
+		}
 	}
 
-	private static HashMap<String, Integer> fcts_ = new HashMap<String, Integer>();
-	private static HashMap<String, AggrDef> aggrs_ = new HashMap<String, AggrDef>();
-	private static HashMap<String, ZUdf> udfs_ = new HashMap<String, ZUdf>();
+	private static HashMap<String, Integer> functions = new HashMap<String, Integer>();
+	private static HashMap<String, AggrDef> aggrs = new HashMap<String, AggrDef>();
+	private static HashMap<String, ZUdf> udfs = new HashMap<String, ZUdf>();
 	
 	static boolean checkFuncName(String name) {
 		return name.matches("[a-zA-Z_][a-zA-Z_0-9]*");
@@ -63,7 +67,7 @@ public class FunctionMgr {
 
 		// load mysql function
 		for (Object[] a : MySQLFunc.func) {
-			fcts_.put((String) a[0], (Integer) a[1]);
+			functions.put( ((String) a[0]).toUpperCase(), (Integer) a[1]);
 		}
 		// load raw UDF for mysql
 		Scanner sc = null;
@@ -77,7 +81,7 @@ public class FunctionMgr {
 							|| !r[1].matches("[0-9]+"))
 						throw new ParseException(
 								"Illegal line in raw_UDF config file: " + line);
-					fcts_.put(r[0], Integer.parseInt(r[1]));
+					functions.put(r[0].toUpperCase(), Integer.parseInt(r[1]));
 				}
 			}
 		} catch (Exception e) {
@@ -90,16 +94,18 @@ public class FunctionMgr {
 
 		// load mysql aggregation function
 		for (Object[] s : MySQLFunc.aggr) {
-			String mergeAggr = null;
+			String merger = null;
 			boolean canDistr = (Boolean) s[2];
 			if (canDistr) {
 				if (s.length == 4)
-					mergeAggr = (String) s[3];
+					merger = (String) s[3];
 				else
-					mergeAggr = (String) s[0];
+					merger = (String) s[0];
 			}
-			aggrs_.put((String) s[0], new AggrDef((Boolean) s[1], canDistr,
-					mergeAggr));
+			if(merger != null)
+				merger = merger.toUpperCase();
+			aggrs.put(((String) s[0]).toUpperCase(), new AggrDef((Boolean) s[1], canDistr,
+					merger));
 		}
 		// load raw UDAF for mysql
 		sc = null;
@@ -114,9 +120,9 @@ public class FunctionMgr {
 							|| !r[1].matches("[01]") || !r[2].matches("[01]"))
 						throw new ParseException(
 								"Illegal line in raw_UDAF config file: " + line);
-					aggrs_.put(r[0],
+					aggrs.put(r[0].toUpperCase(),
 							new AggrDef(r[1].equals("1"), r[2].equals("1"),
-									r[2].equals("1") ? r[0] : null));
+									r[2].equals("1") ? r[0].toUpperCase() : null));
 				}
 			}
 		} catch (Exception e) {
@@ -136,7 +142,7 @@ public class FunctionMgr {
 				ZUdf udf = parser.SQLUdf();
 				if (udf == null)
 					break;
-				udfs_.put(udf.getName(), udf);
+				udfs.put(udf.getName(), udf);
 			}
 
 		} catch (Exception e) {
@@ -155,37 +161,43 @@ public class FunctionMgr {
 	 */
 
 	public static boolean isUdf(String udfName){
-		if (udfName == null)
-			return false;
-		return aggrs_.containsKey(udfName.toUpperCase().trim());
+		return udfs.containsKey(udfName);
 	}
 	
 	public static int getUdfParmN(String udfName){
-		return udfs_.get(udfName).getParmN();
+		return udfs.get(udfName).getParmN();
 	}
 	
-	public static boolean canUseDistinct(String aggrName){
-		return aggrs_.get(aggrName).canUseDistinct;
-	}
-	public static boolean canDistrAggr(String aggrName){
-		return aggrs_.get(aggrName).canDistrAggr;
-	}
-	public static String  getMergeAggr(String aggrName){
-		return aggrs_.get(aggrName).mergeAggr;
+	public static String getUdfExp(String udfName){
+		return udfs.get(udfName).getExp();
 	}
 	
-	public static int isFunction(String fct) {
-		Integer nparm;
-		if (fct == null || fct.length() < 1 || fcts_ == null
-				|| (nparm = (Integer) fcts_.get(fct.toUpperCase())) == null)
-			return -1;
-		return nparm.intValue();
+	public static boolean getUdfParmToAggr(String udfName, int idx){
+		return udfs.get(udfName).getParmAggr(idx);
+	}
+	
+	public static boolean aggrCanUseDistinct(String aggrName){
+		return aggrs.get(aggrName).canUseDistinct;
+	}
+	public static boolean aggrCanDistrAggr(String aggrName){
+		return aggrs.get(aggrName).canDistrAggr;
+	}
+	public static String getAggrMerger(String aggrName){
+		return aggrs.get(aggrName).merger;
+	}
+	
+	public static boolean isFunction(String funcName){
+		return functions.containsKey(funcName);
+	}
+	
+	public static int getFuncParmN(String funcName) {
+		return functions.get(funcName);
 	}
 
-	public static boolean isAggregate(String aggrName) {
+	public static boolean isAggregation(String aggrName) {
 		if (aggrName == null)
 			return false;
-		return aggrs_.containsKey(aggrName.toUpperCase().trim());
+		return aggrs.containsKey(aggrName.toUpperCase().trim());
 	}
 
 };

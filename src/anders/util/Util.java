@@ -1,6 +1,7 @@
 package anders.util;
 
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.*;
+import java.io.*;
 
 public final class Util {
 
@@ -17,4 +18,13 @@ public final class Util {
 	public static void initLog4j(){
 		PropertyConfigurator.configure("conf/log4j.properties");
 	}
+	
+	static public String exceptionStackTrace(Exception e){
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		pw.close();
+		return sw.toString();
+	}
+	
 }

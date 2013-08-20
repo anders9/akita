@@ -32,12 +32,10 @@ public class SQLParserTest {
 					if(line.equals("") || line.startsWith("//") )
 						continue;
 					
-					os.println("READ: " + line);
+					os.println(line);
 					
 					parser = new ZqlJJParser(new StringBufferInputStream(line));
 					ZStatement zq = parser.SQLStatement();
-					if(zq == null)
-						break;
 					os.println(zq.toString());
 					
 					os.println();
@@ -56,9 +54,48 @@ public class SQLParserTest {
 			}
 			sc.close();
 			os.close();
+			
+			//negative test
+			sc = new Scanner(new FileInputStream("indata/sqltest-neg.txt"));
+			os = new PrintStream("outdata/sqltest-neg.txt");
+			
+			
+			while (sc.hasNextLine()) {
+				ZqlJJParser parser = null;
+				try {
+					String line = sc.nextLine().trim();
+
+					if(line.equals("") || line.startsWith("//") )
+						continue;
+					
+					os.println(line);
+					
+					parser = new ZqlJJParser(new StringBufferInputStream(line));
+					ZStatement zq = parser.SQLStatement();
+
+					os.println(zq.toString());
+					
+					os.println("TEST FAIL !!!!");
+					result = false;
+					
+				} catch (ParseException pe) {
+					os.println(pe.getMessage());
+					parser.ReInit(System.in);
+					os.println();
+				} 
+				catch (anders.akita.parser.TokenMgrError te) {
+					os.println(te.getMessage());
+					parser.ReInit(System.in);
+					
+					result = false;
+				} 
+			}
+			sc.close();
+			os.close();
+			
 		}
 		catch(Exception e){
-			logger.error("error: " + e.getMessage());
+			logger.error("error: " + Util.exceptionStackTrace(e));
 			result = false;
 		}
 		return result;
