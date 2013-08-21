@@ -1,3 +1,7 @@
 /bin
 
 /log
+/outdata
+/src/anders/akita/parser/ZqlJJParserConstants.java
+/src/anders/akita/parser/ZqlJJParserTokenManager.java
+/src/anders/akita/parser/ZqlJJParser.java
