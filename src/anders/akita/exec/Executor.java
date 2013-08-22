@@ -39,6 +39,17 @@ col = ANY       col in(..)
 col = ALL       col = max() && col = min()    not exists ( select * where col != icol)  
 col != ANY      exists ( select * where col != icol)
 
+
+Annotation
+
+table:
+@centralize
+@distribute
+
+join:
+
+
+
  */
 
 import anders.akita.parser.*;

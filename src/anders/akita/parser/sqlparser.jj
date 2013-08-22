@@ -623,7 +623,7 @@ ZFromClause FromClause():
 {
 	"FROM"
 	(
-		LOOKAHEAD(FromItemEx() ("LEFT"|"RIGHT") ) fc = LeftOuterJoinClause() | 
+		LOOKAHEAD(FromItemEx() ("LEFT"|"RIGHT") ) fc = OuterJoinClause() | 
 		fc = InnerJoinClause()
 	)
 	{return fc;}
@@ -640,7 +640,7 @@ ZFromClause InnerJoinClause():
     ( "," f = FromItemEx() { v.addElement(f); } )*
     { return new ZFromClause(ZFromClause.INNER_JOIN, v, null); }
 }
-ZFromClause LeftOuterJoinClause():
+ZFromClause OuterJoinClause():
 {
 	ZFromClause f;
 	ZFromItemEx il, ir;
@@ -1319,7 +1319,7 @@ ZQuery SQLInnerQuery(ZQuery.InnerQType type):
       [ "ALL" | "DISTINCT" { q.distinct_ = true; } ]
   	  exp = SQLExpression() { select.add(new ZSelectItem(exp, null)); }
   	)
-  from = FromClause()
+  "FROM" from = InnerJoinClause()
   [ where = WhereClause() ]
 	")"
 

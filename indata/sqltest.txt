@@ -34,4 +34,7 @@ select my_aggr1(distinct c1+c2) + my_aggr2(distinct c1) + my_aggr2(c3) from t1;
 
 select UDF_01(c1, c2, c3)  + UDF_02(c1, c2+c3, c3) from t2;
 
+//inner-query nest sub-query
+
+select * from t1 where c1<( select sum(c1) from (select * from t2 left join t3 on t2.c=t3.c)x1, t3 );
 
