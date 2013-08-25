@@ -42,19 +42,16 @@ col != ANY      exists ( select * where col != icol)
 
 Annotation
 
-table:
-@centralize
-@distribute
-
 join:
-@mapJoin
-@reduceJoin with reducerNumber/reducerProportion reducer
+@map
+@reduce(reducerNumber/reducerProportion)
 
 aggregate:
-@with reducerNumber/reducerProportion reducer
+@hash(reducerNumber/reducerProportion)
 
-@balance to splitNumber/splitProportion part
-@shuffle to reducerNumber/reducerProportion by 
+@balance(splitNumber/splitProportion)
+@hash(reducerNumber/reducerProportion,key-list)
+
 
  */
 
@@ -225,7 +222,7 @@ public class Executor {
 		if(q.getGroupBy() != null){
 			q.needAggr = true;
 			q.groupByKey = new ArrayList<ZExp>(q.getGroupBy().getGroupBy());
-			q.groupByKey.a
+			//q.groupByKey.a
 		}
 		//check select list to find it whether exist AGGREGATION-function
 		if(!q.needAggr){
@@ -378,6 +375,8 @@ public class Executor {
 	
 	
 	ArrayList<Row> exec(){
+		
+		
 		
 		return null;
 	}
