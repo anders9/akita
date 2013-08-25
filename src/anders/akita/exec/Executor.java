@@ -47,8 +47,14 @@ table:
 @distribute
 
 join:
+@mapJoin
+@reduceJoin with reducerNumber/reducerProportion reducer
 
+aggregate:
+@with reducerNumber/reducerProportion reducer
 
+@balance to splitNumber/splitProportion part
+@shuffle to reducerNumber/reducerProportion by 
 
  */
 
