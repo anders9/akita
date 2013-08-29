@@ -5,3 +5,7 @@
 /src/anders/akita/parser/ZqlJJParserConstants.java
 /src/anders/akita/parser/ZqlJJParserTokenManager.java
 /src/anders/akita/parser/ZqlJJParser.java
+/src/anders/akita/parser/Token.java
+/src/anders/akita/parser/TokenMgrError.java
+/src/anders/akita/parser/ParseException.java
+/src/anders/akita/parser/SimpleCharStream.java
