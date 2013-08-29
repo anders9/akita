@@ -16,7 +16,6 @@
  */
 
 /**
-
 	mysql operator precedenct
 
 	INTERVAL
@@ -36,7 +35,6 @@
 	XOR
 	||, OR
 	= (assignment), :=
-	
 */
 
 options{
