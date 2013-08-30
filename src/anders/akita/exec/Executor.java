@@ -373,6 +373,54 @@ public class Executor {
 		}
 	}
 	
+	class MidResult {
+		
+	}
+	
+	
+	MidResult execInnerQuery(MidResult outerTab){
+		
+	}
+	
+	
+	/*
+	 * join + where..
+	 */
+	MidResult execSel(){
+		
+	}
+	
+	MidResult execAggr(){
+		
+		MidResult r = execSel();
+		
+		if(){
+			
+			
+		}
+		
+		return r;
+	}
+	
+	/*
+	 * balance/hash/sort+topK
+	 */
+	MidResult execShuffle(boolean isRootQ){
+		
+		if(isRootQ){
+			//add @balance(1) if needed
+			//set result location
+		}
+		
+		MidResult r = execAggr();
+		
+		//check 
+		if(/**/){
+			
+		}
+		
+		return r;
+	}
 	
 	ArrayList<Row> exec(){
 		
