@@ -403,7 +403,7 @@ public class Executor {
 	}
 	
 	/*
-	 * balance/hash/sort+topK
+	 * balance/hash/sort+topK + [distinct]
 	 */
 	MidResult execShuffle(boolean isRootQ){
 		
