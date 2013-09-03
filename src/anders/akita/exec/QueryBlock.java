@@ -7,7 +7,9 @@ public class QueryBlock {
 
 	boolean distinct;
 	
-	ArrayList<ZExp> selectList;
+	ZExp[] selectList;
+	
+	String[] selectAlias;
 	
 	HashMap<String, ZExp> fieldList;
 	
@@ -19,9 +21,7 @@ public class QueryBlock {
 	
 	ArrayList<RootExp> wherePreds;
 	
-	RootExp[] groupBy;
-	ArrayList<RootExp> havingPreds;
-	int aggrReducerN;
+
 	
 	String[] orderBy;
 	
@@ -30,5 +30,6 @@ public class QueryBlock {
 	int balanceReducerN;
 	String[] hashBy;
 	
-	boolean addID;//used for inner-query
+	boolean generateID;//used for inner-query
+	boolean isRoot;
 }

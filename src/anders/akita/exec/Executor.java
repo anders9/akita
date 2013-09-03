@@ -377,8 +377,7 @@ public class Executor {
 		
 	}
 	
-	
-	MidResult execInnerQuery(MidResult outerTab){
+	MidResult execQB(QueryBlock qb){
 		
 	}
 	
