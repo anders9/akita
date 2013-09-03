@@ -31,4 +31,11 @@ public class JoinItem {
 		}
 	}
 
+	public boolean isDistributed(){
+		if (subQB != null)
+			return true;
+		else
+			return Meta.getTab(table).isDistributed();
+	}
+	
 }

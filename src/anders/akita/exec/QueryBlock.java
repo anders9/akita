@@ -8,7 +8,6 @@ public class QueryBlock {
 	boolean distinct;
 	
 	ZExp[] selectList;
-	
 	String[] selectAlias;
 	
 	HashMap<String, ZExp> fieldList;
@@ -21,7 +20,11 @@ public class QueryBlock {
 	
 	ArrayList<RootExp> wherePreds;
 	
-
+	ZColRef[] colRefs;
+	
+	AggrProc aggrProc;	
+	
+	QueryBlock[] nestedQB;//reference with $$nest1, $$nest2, ...
 	
 	String[] orderBy;
 	

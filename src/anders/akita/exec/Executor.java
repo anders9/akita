@@ -377,6 +377,18 @@ public class Executor {
 		
 	}
 	
+	MidResult execQBFetchOrJoin(QueryBlock qb, int jItemPos){
+		if(jItemPos == qb.joinItems.length - 1 && qb.aggrProc != null){
+			//last condition handle...
+		}
+		
+		int beg = jItemPos;
+		while(qb.joinItems[beg].isDistributed())
+			break;
+		
+		
+	}
+	
 	MidResult execQB(QueryBlock qb){
 		
 	}
