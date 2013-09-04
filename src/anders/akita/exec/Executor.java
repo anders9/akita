@@ -375,6 +375,8 @@ public class Executor {
 	
 	class MidResult {
 		
+		
+		
 	}
 	
 	MidResult execQBFetchOrJoin(QueryBlock qb, int jItemPos){

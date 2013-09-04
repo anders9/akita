@@ -4,7 +4,7 @@ import java.util.*;
 
 import anders.akita.parser.*;
 
-public class AggrProc {
+public class AggrDesc {
 	
 	RootExp[] groupBy; // reference with $gb1, $gb2, ...
 	

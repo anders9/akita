@@ -14,7 +14,9 @@ public class JoinItem {
 	String alias;
 	String table;
 	QueryBlock subQB;
-
+	
+	String[] fields;
+	
 	public boolean existField(String field) {
 		if (subQB != null) {
 			return subQB.fieldList.containsKey(field);

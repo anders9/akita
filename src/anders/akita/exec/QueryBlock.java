@@ -12,17 +12,11 @@ public class QueryBlock {
 	
 	HashMap<String, ZExp> fieldList;
 	
-	int joinType;
-	
-	JoinItem[] joinItems;
-	
-	ArrayList<RootExp> joinConds;
-	
-	ArrayList<RootExp> wherePreds;
+	JoinDesc join;
 	
 	ZColRef[] colRefs;
 	
-	AggrProc aggrProc;	
+	AggrDesc aggrProc;	
 	
 	QueryBlock[] nestedQB;//reference with $$nest1, $$nest2, ...
 	
