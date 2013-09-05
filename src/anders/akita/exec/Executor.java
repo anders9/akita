@@ -375,11 +375,32 @@ public class Executor {
 	
 	class MidResult {
 		
+		String[] schema;
+		
+		QueryBlock postQB;
+		
+		NodeEntry[] entries;
+		
+	}
+	
+	
+	
+	
+	MidResult execAggr(QueryBlock qb){
+		
+		if(qb.aggrProc == null){
+			MidField[] mf = new MidField[qb.selectList.length];
+			for(int i = 0; i < mf.length; ++i){
+				mf[i].name = qb.selectAlias[i];
+				mf[i].exp = qb.selectList[i];
+			}
+			return execQBFetchOrJoin(qb, qb.join.joinItems.length, mf);
+		}
 		
 		
 	}
 	
-	MidResult execQBFetchOrJoin(QueryBlock qb, int jItemPos){
+	MidResult execQBFetchOrJoin(QueryBlock qb, int jiEnd, MidField[] fields){
 		if(jItemPos == qb.joinItems.length - 1 && qb.aggrProc != null){
 			//last condition handle...
 		}

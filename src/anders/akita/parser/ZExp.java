@@ -31,6 +31,9 @@ public abstract class ZExp {
 	
 	
 	public ZExp parentExp;
+	
+	public String midAlias;//used for middle table fields.
+	
 	//public RootExp root;
 	
 	public abstract Iterable<ZExp> subExpSet();

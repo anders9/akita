@@ -7,10 +7,10 @@ public class QueryBlock {
 
 	boolean distinct;
 	
-	ZExp[] selectList;
+	RootExp[] selectList;
 	String[] selectAlias;
 	
-	HashMap<String, ZExp> fieldList;
+	HashMap<String, RootExp> fieldList;
 	
 	JoinDesc join;
 	
