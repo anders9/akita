@@ -10,6 +10,10 @@ public class AggrDesc {
 	
 	RootExp[] aggrExprs; // reference with $ag1, $ag2, ...
 	
+	//RootExp[] exExprs;
+	//String[] exExpr;
+	String outerTab;
+	
 	//boolean containMerger;
 	//boolean containDistinctAggr;
 	

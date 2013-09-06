@@ -384,8 +384,17 @@ public class Executor {
 	}
 	
 	
-	
-	
+	/**
+	 * direct-shuffle: 
+	 * 	1. group-by list, ex-list, to-aggr-expr list shuffle by group-by list
+	 * 	2. aggr, having, out: EXPR-LIST(group-by list, ex-list, aggr-expr list)
+	 * 
+	 * pre-aggr:
+	 * 	1. in: group-by list, ex-list, to-aggr-expr list, pack with aggr shuffle by group-by list, 
+	 * 	   out: group-by list, ex-list, aggr-expr list
+	 * 	2. replace aggr exp with corresponding merger-function
+	 *     out: EXPR-LIST(group-by list, ex-list, aggr-expr list)
+	 */	
 	MidResult execAggr(QueryBlock qb){
 		
 		if(qb.aggrProc == null){
@@ -397,13 +406,12 @@ public class Executor {
 			return execQBFetchOrJoin(qb, qb.join.joinItems.length, mf);
 		}
 		
+		MidResult mr = execQBFetchOrJoin(qb, qb.join.joinItems.length, mf);
 		
 	}
 	
 	MidResult execQBFetchOrJoin(QueryBlock qb, int jiEnd, MidField[] fields){
-		if(jItemPos == qb.joinItems.length - 1 && qb.aggrProc != null){
-			//last condition handle...
-		}
+
 		
 		int beg = jItemPos;
 		while(qb.joinItems[beg].isDistributed())
