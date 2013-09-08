@@ -1,4 +1,12 @@
 
+parser:
+count(*), count(1), count(distinct xxx,xxx)
+
+
+
+
+
+
 pass1£º
 col-> tab-name
 expr-> tab-list

@@ -12,8 +12,14 @@ public final class Table {
 	
 	boolean isDistr;
 	
+	boolean isMiddle;
+	
 	public boolean isDistributed(){
 		return isDistr;
+	}
+	
+	public boolean isMiddle(){
+		return isMiddle;
 	}
 	
 	public Column getCol(String colName){

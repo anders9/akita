@@ -13,10 +13,11 @@ public class JoinItem {
 
 	String alias;
 	String table;
-	QueryBlock subQB;
+	SubQueryBlock subQB;
+	MidResult midResult;
 	
-	String[] fields;
-	
+	//String[] fields;
+	/*
 	public boolean existField(String field) {
 		if (subQB != null) {
 			return subQB.fieldList.containsKey(field);
@@ -39,5 +40,5 @@ public class JoinItem {
 		else
 			return Meta.getTab(table).isDistributed();
 	}
-	
+	*/
 }

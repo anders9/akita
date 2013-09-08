@@ -372,22 +372,15 @@ public class Executor {
 			}
 		}
 	}
-	
-	class MidResult {
-		
-		String[] schema;
-		
-		QueryBlock postQB;
-		
-		NodeEntry[] entries;
-		
-	}
-	
+
 	
 	/**
 	 * direct-shuffle: 
 	 * 	1. group-by list, ex-list, to-aggr-expr list shuffle by group-by list
 	 * 	2. aggr, having, out: EXPR-LIST(group-by list, ex-list, aggr-expr list)
+	 * 
+	 * already hash by keys:
+	 * 	x. aggr, having, out: EXPR-LIST(group-by list, ex-list, aggr-expr list)
 	 * 
 	 * pre-aggr:
 	 * 	1. in: group-by list, ex-list, to-aggr-expr list, pack with aggr shuffle by group-by list, 
@@ -395,9 +388,9 @@ public class Executor {
 	 * 	2. replace aggr exp with corresponding merger-function
 	 *     out: EXPR-LIST(group-by list, ex-list, aggr-expr list)
 	 */	
-	MidResult execAggr(QueryBlock qb){
+	MidResult execAggr(SubQueryBlock qb){
 		
-		if(qb.aggrProc == null){
+		if(qb.aggrDesc == null){
 			MidField[] mf = new MidField[qb.selectList.length];
 			for(int i = 0; i < mf.length; ++i){
 				mf[i].name = qb.selectAlias[i];
@@ -406,7 +399,38 @@ public class Executor {
 			return execQBFetchOrJoin(qb, qb.join.joinItems.length, mf);
 		}
 		
-		MidResult mr = execQBFetchOrJoin(qb, qb.join.joinItems.length, mf);
+		//COUNT(*)?? COUNT(distinct xx,xxx,xxx)
+		//MidField[] mf = new MidField[qb.aggrProc.groupBy.length
+		//          + qb.aggrProc.outerTab != null? qb.aggrProc.outerTab.selectList.length, ];
+		ArrayList<MidField> mfl = new ArrayList<MidField>();
+		if(qb.aggrDesc.outerTab != null){
+			SubQueryBlock ot = qb.aggrDesc.outerTab;
+			for(int i = 0; i < ot.selectAlias.length; ++i){
+				mfl.add(new MidField(ot.selectAlias[i], ot.selectList[i]));
+			}
+		}
+		else{
+			for(int i = 0; i < qb.aggrProc.groupBy.length; ++i){
+				mfl.add(new MidField(qb.aggrProc.genGroupbyKeyAlias(i), qb.aggrProc.groupBy[i]));
+			}
+		}
+		for(int i = 0; i < qb.aggrProc.preAggrExprs.length; ++i){
+			mfl.add(new MidField(qb.aggrProc.genPreAggrAlias(i), qb.aggrProc.preAggrExprs[i]));
+		}
+		MidField[] mf = mfl.toArray(new MidField[0]);
+		if(/*hashed by key or 1 fragment*/){
+			// pack aggreation + having into MidResult
+			MidResult mr = execQBFetchOrJoin(qb, qb.join.joinItems.length, mf);
+			
+			
+			
+		}
+		else if(/*direct-shuffle condition*/){
+			
+		}
+		else{
+			
+		}
 		
 	}
 	

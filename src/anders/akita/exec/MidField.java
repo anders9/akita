@@ -6,6 +6,10 @@ public class MidField {
 
 	String name;// "table$column_name" or "alias"
 	
-	RootExp exp;
-	
+	ZColRef col;
+		
+	public MidField(String name, ZColRef col){
+		this.name = name;
+		this.col = col;
+	}
 }
