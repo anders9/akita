@@ -3,7 +3,7 @@ package anders.akita.exec;
 import java.util.*;
 import anders.akita.parser.*;
 
-public class SubQueryBlock {
+public class SubQueryBlock implements ITable{
 
 	QueryBlock QB;
 	
@@ -47,4 +47,6 @@ public class SubQueryBlock {
 	public String getAlias(){
 		return alias;
 	}
+	
+	public void cleanup(){}
 }

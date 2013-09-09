@@ -373,6 +373,9 @@ public class Executor {
 		}
 	}
 
+	ArrayList<ZColRef> getRefColList(RootExp[] expList){
+		
+	}
 	
 	/**
 	 * direct-shuffle: 
@@ -388,15 +391,13 @@ public class Executor {
 	 * 	2. replace aggr exp with corresponding merger-function
 	 *     out: EXPR-LIST(group-by list, ex-list, aggr-expr list)
 	 */	
-	MidResult execAggr(SubQueryBlock qb){
+	MidResult execAggrOrSelect(SubQueryBlock qb){
 		
 		if(qb.aggrDesc == null){
-			MidField[] mf = new MidField[qb.selectList.length];
-			for(int i = 0; i < mf.length; ++i){
-				mf[i].name = qb.selectAlias[i];
-				mf[i].exp = qb.selectList[i];
-			}
-			return execQBFetchOrJoin(qb, qb.join.joinItems.length, mf);
+			ArrayList<ZColRef> cols = getRefColList(qb.selectList);
+			MidResult mr = execQBFetchOrJoin(qb, qb.join.joinItems.length, cols);
+			
+			
 		}
 		
 		//COUNT(*)?? COUNT(distinct xx,xxx,xxx)
@@ -434,7 +435,7 @@ public class Executor {
 		
 	}
 	
-	MidResult execQBFetchOrJoin(QueryBlock qb, int jiEnd, MidField[] fields){
+	MidResult execQBFetchOrJoin(SubQueryBlock qb, int jiEnd, ArrayList<ZColRef> fields){
 
 		
 		int beg = jItemPos;

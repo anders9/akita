@@ -1,7 +1,6 @@
 package anders.akita.exec;
 
 
-import anders.akita.meta.*;
 
 public class JoinItem {
 
@@ -11,10 +10,12 @@ public class JoinItem {
 	int optType;
 	int reducerN;
 
-	String alias;
-	String table;
-	SubQueryBlock subQB;
-	MidResult midResult;
+	ITable table;
+	
+	//String alias;
+	//String table;
+	//SubQueryBlock subQB;
+	//MidResult midResult;
 	
 	//String[] fields;
 	/*
