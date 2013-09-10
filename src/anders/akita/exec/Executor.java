@@ -376,7 +376,9 @@ public class Executor {
 	ArrayList<ZColRef> getRefColList(RootExp[] expList){
 		
 	}
-	
+	ArrayList<ZColRef> removeRepeatCol(ArrayList<ZColRef> list){
+		
+	}
 	/**
 	 * direct-shuffle: 
 	 * 	1. group-by list, ex-list, to-aggr-expr list shuffle by group-by list
@@ -391,40 +393,47 @@ public class Executor {
 	 * 	2. replace aggr exp with corresponding merger-function
 	 *     out: EXPR-LIST(group-by list, ex-list, aggr-expr list)
 	 */	
-	MidResult execAggrOrSelect(SubQueryBlock qb){
+	MidResult execAggrOrSelect(SubQueryBlock subQB){
 		
-		if(qb.aggrDesc == null){
-			ArrayList<ZColRef> cols = getRefColList(qb.selectList);
-			MidResult mr = execQBFetchOrJoin(qb, qb.join.joinItems.length, cols);
+		if(subQB.aggrDesc == null){
+			ArrayList<ZColRef> cols = getRefColList(subQB.selectList);
+			MidResult mr = execQBFetchOrJoin(subQB, subQB.join.joinItems.length, cols);
 			
+			mr.selectAlias = subQB.selectAlias;
+			mr.selectList = subQB.selectList;
 			
+			return mr;
 		}
 		
 		//COUNT(*)?? COUNT(distinct xx,xxx,xxx)
 		//MidField[] mf = new MidField[qb.aggrProc.groupBy.length
 		//          + qb.aggrProc.outerTab != null? qb.aggrProc.outerTab.selectList.length, ];
-		ArrayList<MidField> mfl = new ArrayList<MidField>();
-		if(qb.aggrDesc.outerTab != null){
-			SubQueryBlock ot = qb.aggrDesc.outerTab;
-			for(int i = 0; i < ot.selectAlias.length; ++i){
-				mfl.add(new MidField(ot.selectAlias[i], ot.selectList[i]));
-			}
+		
+		ArrayList<ZColRef> cols = getRefColList(subQB.aggrDesc.preAggrExprs);
+		if(subQB.aggrDesc.isRelSubQuery){
+			cols.add(new ZColRef(subQB.join.joinItems[0].table.alias(), AggrDesc.REL_SUB_QB_ID));
+			cols.addAll(subQB.colRefs);
 		}
 		else{
-			for(int i = 0; i < qb.aggrProc.groupBy.length; ++i){
-				mfl.add(new MidField(qb.aggrProc.genGroupbyKeyAlias(i), qb.aggrProc.groupBy[i]));
-			}
+			cols.addAll(getRefColList(subQB.aggrDesc.groupBy));
 		}
-		for(int i = 0; i < qb.aggrProc.preAggrExprs.length; ++i){
-			mfl.add(new MidField(qb.aggrProc.genPreAggrAlias(i), qb.aggrProc.preAggrExprs[i]));
-		}
-		MidField[] mf = mfl.toArray(new MidField[0]);
+		cols = removeRepeatCol(cols);
+		
+		
 		if(/*hashed by key or 1 fragment*/){
 			// pack aggreation + having into MidResult
-			MidResult mr = execQBFetchOrJoin(qb, qb.join.joinItems.length, mf);
+			MidResult mr = execQBFetchOrJoin(subQB, subQB.join.joinItems.length, cols);
 			
-			
-			
+			for(RootExp re: subQB.selectList){
+				subQB.aggrDesc.expandPreAggrCol(re);
+			}
+			for(RootExp re: subQB.aggrDesc.havingPreds){
+				subQB.aggrDesc.expandPreAggrCol(re);
+			}
+			mr.selectList = subQB.selectList;
+			mr.selectAlias = subQB.selectAlias;
+			mr.havingPreds = subQB.aggrDesc.havingPreds;
+			return mr;
 		}
 		else if(/*direct-shuffle condition*/){
 			

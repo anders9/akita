@@ -22,7 +22,7 @@ public class SubQueryBlock implements ITable{
 	
 	JoinDesc join;// if preSubQB != NULL, then The first element of JOIN-LIST must be preSubQB.alias
 	
-	ZColRef[] colRefs;
+	ArrayList<ZColRef> colRefs;
 	
 	AggrDesc aggrDesc;	
 	

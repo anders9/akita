@@ -18,5 +18,11 @@ public class MidResult implements ITable{
 	ArrayList<RootExp> wherePreds;
 	NodeEntry[] entries;
 	
+	RootExp[] selectList;
+	String[] selectAlias;
+	
+	RootExp[] groupby;
+	ArrayList<RootExp> havingPreds;
+	
 	public void cleanup(){}
 }

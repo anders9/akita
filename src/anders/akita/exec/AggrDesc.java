@@ -6,13 +6,20 @@ import anders.akita.parser.*;
 
 public class AggrDesc {
 	
+	public static String REL_SUB_QB_ID = "$ID";
 	
-	boolean isForRelSubQ;
+	boolean isRelSubQuery;
+	
+	ZColRef refCols;//used for relative sub-query
+	
 	RootExp[] groupBy; // reference with $gb1, $gb2, ..., length be zero if aggr for whole table
 	
 	//RootExp[] aggrExprs; // reference with $ag1, $ag2, ...
 	
 	RootExp[] preAggrExprs;// reference with $pa1, $pa2, ...
+	
+	//ZExpression[] aggrNode;
+	
 	String[] aggrFunc;
 	boolean[] distinctAggr;
 	boolean[] canMergeAggr;
@@ -70,4 +77,8 @@ public class AggrDesc {
 		return checkMidAlias(alias, "$ag");
 	}
 
+	public void expandPreAggrCol(RootExp exp){
+		
+	}
+	
 }
