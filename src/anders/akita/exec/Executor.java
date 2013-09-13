@@ -203,6 +203,10 @@ public class Executor {
 	
 	
 	void buildQueryTree(final ZQuery q){
+		
+		//!!!
+		//COUNT(*) ==> COUNT(1)
+		
 		//!!!!
 		//!!!
 		/*
@@ -409,47 +413,112 @@ public class Executor {
 		//MidField[] mf = new MidField[qb.aggrProc.groupBy.length
 		//          + qb.aggrProc.outerTab != null? qb.aggrProc.outerTab.selectList.length, ];
 		
-		ArrayList<ZColRef> cols = getRefColList(subQB.aggrDesc.preAggrExprs);
+		ArrayList<ZColRef> colsForAg = getRefColList(subQB.aggrDesc.preAggrExprs);
 		if(subQB.aggrDesc.isRelSubQuery){
-			cols.add(new ZColRef(subQB.join.joinItems[0].table.alias(), AggrDesc.REL_SUB_QB_ID));
-			cols.addAll(subQB.colRefs);
+			colsForAg.add(new ZColRef(subQB.join.joinItems[0].table.alias(), AggrDesc.REL_SUB_QB_ID));
+			colsForAg.addAll(subQB.colRefsForRelSubQ);
 		}
 		else{
-			cols.addAll(getRefColList(subQB.aggrDesc.groupBy));
+			colsForAg.addAll(getRefColList(subQB.aggrDesc.groupBy));
 		}
-		cols = removeRepeatCol(cols);
-		
+		colsForAg = removeRepeatCol(colsForAg);
+		MidResult mr = execQBFetchOrJoin(subQB, subQB.join.joinItems.length, colsForAg);
 		
 		if(/*hashed by key or 1 fragment*/){
-			// pack aggreation + having into MidResult
-			MidResult mr = execQBFetchOrJoin(subQB, subQB.join.joinItems.length, cols);
-			
-			for(RootExp re: subQB.selectList){
-				subQB.aggrDesc.expandPreAggrCol(re);
-			}
-			for(RootExp re: subQB.aggrDesc.havingPreds){
-				subQB.aggrDesc.expandPreAggrCol(re);
-			}
-			mr.selectList = subQB.selectList;
-			mr.selectAlias = subQB.selectAlias;
-			mr.havingPreds = subQB.aggrDesc.havingPreds;
-			return mr;
+			return packAggr(subQB, mr, 1);
 		}
 		else if(/*direct-shuffle condition*/){
+			MidResult mr2 = new MidResult();
 			
+			// TODO execute mr and shuffle into reducer node
+			
+			mr2.alias = XXX;
+			mr2.jd = new JoinDesc();
+			mr2.jd.joinItems = XXX;
+			
+			mr2.midQBTabList = XXX;
+			
+			return packAggr(subQB, mr2, 2);
 		}
 		else{
+			/*
+			 * two phase aggregation:
+			 * 	1. pack phase-1 aggregation into MidResult
+			 * 	2. shuffle
+			 * 	3. execute phase-2 aggregation & having clause
+			 */
 			
+			ArrayList<RootExp> selList = new ArrayList<RootExp>();
+			ArrayList<String> selAlias = new ArrayList<String>();
+			RootExp[] groupby = null;
+			
+			for(int i = 0; i < subQB.aggrDesc.preAggrExprs.length; ++i){
+				selList.add(subQB.aggrDesc.expandAggrPhase1(i));
+				selAlias.add(AggrDesc.genAggrPh1Alias(i));
+			}
+			if(!subQB.aggrDesc.isRelSubQuery){
+				groupby = subQB.aggrDesc.groupBy;
+			}
+			mr.selectList = selList.toArray(new RootExp[0]);
+			mr.selectAlias = selAlias.toArray(new String[0]);
+			
+			mr.groupby = groupby;
+			mr.isRelSubQ = subQB.aggrDesc.isRelSubQuery;
+			
+			mr.havingPreds = new ArrayList<RootExp>();
+			
+			MidResult mr2 = new MidResult();
+			
+			// TODO shuffle here
+			
+			mr2.alias = XXX;
+			mr2.jd = new JoinDesc();
+			mr2.jd.joinItems = XXX;
+			
+			mr2.midQBTabList = XXX;
+			
+			return packAggr(subQB, mr2, 2);
 		}
 		
 	}
 	
-	MidResult execQBFetchOrJoin(SubQueryBlock qb, int jiEnd, ArrayList<ZColRef> fields){
-
+	
+	MidResult packAggr(SubQueryBlock subQB, MidResult mr, int phase){
+		// pack aggregation + having into MidResult
+		for(RootExp re: subQB.selectList){
+			if(phase == 1)subQB.aggrDesc.expandPreAggrCol(re);
+			else if(phase == 2)subQB.aggrDesc.expandAggrPhase2(re);
+		}
+		for(RootExp re: subQB.aggrDesc.havingPreds){
+			if(phase == 1)subQB.aggrDesc.expandPreAggrCol(re);
+			else if(phase == 2)subQB.aggrDesc.expandAggrPhase2(re);
+		}
+		mr.selectList = subQB.selectList;
+		mr.selectAlias = subQB.selectAlias;
+		mr.groupby = subQB.aggrDesc.groupBy;
+		mr.havingPreds = subQB.aggrDesc.havingPreds;
 		
-		int beg = jItemPos;
-		while(qb.joinItems[beg].isDistributed())
-			break;
+		mr.isRelSubQ = subQB.aggrDesc.isRelSubQuery;
+		
+		return mr;
+	}
+	
+	MidResult execQBFetchOrJoin(SubQueryBlock subQB, int jiEnd, ArrayList<ZColRef> fields){
+
+		int jiBeg;
+		int i;
+		for(i = jiEnd; i >= 0; --i){
+			if(!subQB.join.joinItems[i].table.isLocal())
+				break;
+		}
+		if(i < 0)jiBeg = 0;
+		else{
+			
+		}
+		
+		
+		MidResult prevMR = null;	
+		
 		
 		
 	}

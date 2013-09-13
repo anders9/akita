@@ -41,42 +41,48 @@ public class AggrDesc {
 
 	final static public int INVALID_VALUE = -1;
 	
-	private String genMidAlias(int idx, String prefix){
+	static private String genMidAlias(int idx, String prefix){
 		return prefix + idx;
 	}
 		
-	private int checkMidAlias(String alias, String prefix){
+	static private int checkMidAlias(String alias, String prefix){
 		if(alias.startsWith(prefix)){
 			return Integer.valueOf(alias.substring(prefix.length()));
 		}
 		return INVALID_VALUE;
 	}	
 	
-	public String genGroupbyKeyAlias(int idx){
+	static public String genGroupbyKeyAlias(int idx){
 		return genMidAlias(idx, "$gb");
 	}
 		
-	public int checkGroupbyKey(String alias){
+	static public int checkGroupbyKey(String alias){
 		return checkMidAlias(alias, "$gb");
 	}
 
-	public String genPreAggrAlias(int idx){
+	static public String genAggrPh1Alias(int idx){
 		return genMidAlias(idx, "$pa");
 	}
 		
-	public int checkPreAggrAlias(String alias){
+	static public int checkAggrPh1Alias(String alias){
 		return checkMidAlias(alias, "$pa");
 	}
 
 
-	public String genAggrAlias(int idx){
+	static public String genAggrAlias(int idx){
 		return genMidAlias(idx, "$ag");
 	}
 		
-	public int checkAggrAlias(String alias){
+	static public int checkAggrAlias(String alias){
 		return checkMidAlias(alias, "$ag");
 	}
 
+	public RootExp expandAggrPhase1(int index){
+		
+	}
+	public void expandAggrPhase2(RootExp exp){
+		
+	}
 	public void expandPreAggrCol(RootExp exp){
 		
 	}

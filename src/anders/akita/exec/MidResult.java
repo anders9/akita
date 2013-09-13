@@ -21,6 +21,7 @@ public class MidResult implements ITable{
 	RootExp[] selectList;
 	String[] selectAlias;
 	
+	boolean isRelSubQ;
 	RootExp[] groupby;
 	ArrayList<RootExp> havingPreds;
 	

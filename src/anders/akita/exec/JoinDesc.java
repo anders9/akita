@@ -6,7 +6,9 @@ import anders.akita.parser.RootExp;
 
 public class JoinDesc {
 	
-	int joinType;
+	public static final int NO_JOIN = -1;
+	
+	int joinType = NO_JOIN;
 	
 	JoinItem[] joinItems;
 	
