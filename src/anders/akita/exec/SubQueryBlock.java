@@ -21,7 +21,7 @@ public class SubQueryBlock implements ITable{
 	HashMap<String, RootExp> fieldList;
 	
 	JoinDesc join;// if preSubQB != NULL, then The first element of JOIN-LIST must be preSubQB.alias
-	
+
 	ArrayList<ZColRef> colRefsForRelSubQ;
 	
 	AggrDesc aggrDesc;	

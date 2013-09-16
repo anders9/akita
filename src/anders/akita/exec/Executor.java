@@ -380,9 +380,18 @@ public class Executor {
 	ArrayList<ZColRef> getRefColList(RootExp[] expList){
 		
 	}
-	ArrayList<ZColRef> removeRepeatCol(ArrayList<ZColRef> list){
+	ArrayList<ZColRef> mergeRefColList(ArrayList<ZColRef> list1, ArrayList<ZColRef> list2){
 		
 	}
+	
+	ArrayList<RootExp> filterExprBy(ArrayList<RootExp> exp, ArrayList<String> set){
+		
+	}
+	
+	ArrayList<RootExp> bridgeExprBy(ArrayList<RootExp> exp, ArrayList<String> set1, ArrayList<String> set2){
+		
+	}
+	
 	/**
 	 * direct-shuffle: 
 	 * 	1. group-by list, ex-list, to-aggr-expr list shuffle by group-by list
@@ -415,14 +424,15 @@ public class Executor {
 		
 		ArrayList<ZColRef> colsForAg = getRefColList(subQB.aggrDesc.preAggrExprs);
 		if(subQB.aggrDesc.isRelSubQuery){
-			colsForAg.add(new ZColRef(subQB.join.joinItems[0].table.alias(), AggrDesc.REL_SUB_QB_ID));
-			colsForAg.addAll(subQB.colRefsForRelSubQ);
+			ArrayList<ZColRef> tmp = new ArrayList<ZColRef>();
+			tmp.add(new ZColRef(subQB.join.joinItems[0].table.alias(), AggrDesc.REL_SUB_QB_ID));
+			tmp.addAll(subQB.colRefsForRelSubQ);
+			colsForAg = mergeRefColList(colsForAg, tmp);
 		}
 		else{
-			colsForAg.addAll(getRefColList(subQB.aggrDesc.groupBy));
+			colsForAg = mergeRefColList(colsForAg, getRefColList(subQB.aggrDesc.groupBy));
 		}
-		colsForAg = removeRepeatCol(colsForAg);
-		MidResult mr = execQBFetchOrJoin(subQB, subQB.join.joinItems.length, colsForAg);
+		MidResult mr = execQBFetchOrJoin(subQB, subQB.joinChain, colsForAg, subQB.join.wherePreds);
 		
 		if(/*hashed by key or 1 fragment*/){
 			return packAggr(subQB, mr, 1);
@@ -503,24 +513,39 @@ public class Executor {
 		return mr;
 	}
 	
-	MidResult execQBFetchOrJoin(SubQueryBlock subQB, int jiEnd, ArrayList<ZColRef> fields){
+	MidResult execQBFetchOrJoin(SubQueryBlock subQB, JoinChain jChain, ArrayList<ZColRef> fields, ArrayList<RootExp> filters){
 
-		int jiBeg;
-		int i;
-		for(i = jiEnd; i >= 0; --i){
-			if(!subQB.join.joinItems[i].table.isLocal())
-				break;
+		ArrayList<ZColRef> allFields = mergeRefColList(fields, getRefColList(filters.toArray(new RootExp[0])));
+		if(jChain.joinConds != null)
+			allFields = mergeRefColList(allFields, getRefColList(jChain.joinConds.toArray(new RootExp[0])));
+		
+		
+		if(jChain.prev == null){
+			//first node
+			MidResult mr = new MidResult();
+			mr.fetchList = fields;
+			mr.joinType = jChain.join_type;
+			mr.joinCond = jChain.joinConds;
+			mr.joinItems = new ITable[jChain.fromTabs.size()];
+			for(int i = 0; i < mr.joinItems.length; ++i)
+				mr.joinItems[i] = jChain.fromTabs.get(i);
+			
+			mr.alias = xxx;
+			mr.entries = xxx;
+			
+			mr.midQBTabList = mr.joinItems[0].embeddedAlias();
+			mr.wherePreds = filters;
+			
+			return mr;
 		}
-		if(i < 0)jiBeg = 0;
-		else{
+		
+		if(jChain.optType == JoinItem.MAP_JOIN){
 			
 		}
-		
-		
-		MidResult prevMR = null;	
-		
-		
-		
+		else if(jChain.optType == JoinItem.REDUCE_JOIN){
+			
+		}
+		else throw new ExecException("Internal error #Executor.execQBFetchOrJoin");
 	}
 	
 	MidResult execQB(QueryBlock qb){

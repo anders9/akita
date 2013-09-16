@@ -12,8 +12,12 @@ public class MidResult implements ITable{
 	
 	ArrayList<ZColRef> fetchList;
 	
-	int[] len;
-	JoinDesc jd;
+	//int[] len;
+	//JoinDesc jd;
+	int joinType;
+	ArrayList<RootExp> joinCond;
+	ITable[] joinItems;
+	
 	ArrayList<String> midQBTabList;
 	ArrayList<RootExp> wherePreds;
 	NodeEntry[] entries;

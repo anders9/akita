@@ -7,8 +7,8 @@ public class JoinChain {
 	
 	JoinChain prev;
 	
-	ArrayList<String> fromTabs;//used when JoinChain.prev==NULL
-	String distrTab;//May be NULL,//used when JoinChain.prev==NULL
+	ArrayList<ITable> fromTabs;//used when JoinChain.prev==NULL
+	ITable distrTab;//May be NULL,//used when JoinChain.prev==NULL
 	
 	//The following properties is used when JoinChain.prev != NULL
 	String rhsTab;

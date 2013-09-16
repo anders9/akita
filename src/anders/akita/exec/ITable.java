@@ -4,9 +4,11 @@ import java.util.*;
 
 public interface ITable {
 	
+	public String name();
+	
 	public String alias();
 
-	public String uniqAlias();
+	public String uniqName();
 	
 	public ArrayList<String> embeddedAlias();
 	

@@ -12,6 +12,8 @@ public class JoinDesc {
 	
 	JoinItem[] joinItems;
 	
+	JoinChain joinChain;
+
 	ArrayList<RootExp> joinConds;
 	
 	ArrayList<RootExp> wherePreds;
