@@ -380,11 +380,17 @@ public class Executor {
 	ArrayList<ZColRef> getRefColList(RootExp[] expList){
 		
 	}
-	ArrayList<ZColRef> mergeRefColList(ArrayList<ZColRef> list1, ArrayList<ZColRef> list2){
+	ArrayList<ZColRef> getRefColList(ArrayList<RootExp> list){
+		return getRefColList(list.toArray(new RootExp[0]));
+	}
+	ArrayList<ZColRef> mergeRefColList(ArrayList<ZColRef> ... subLists){
 		
 	}
 	
 	ArrayList<RootExp> filterExprBy(ArrayList<RootExp> exp, ArrayList<String> set){
+		
+	}
+	ArrayList<ZColRef> filterColBy(ArrayList<ZColRef> list, ArrayList<String> set){
 		
 	}
 	
@@ -392,6 +398,12 @@ public class Executor {
 		
 	}
 	
+	ArrayList<RootExp> minusExpSet(ArrayList<RootExp> set, ArrayList<RootExp> ... list){
+		
+	}
+	ArrayList<RootExp> mergeExprList(ArrayList<RootExp> ... subLists){
+		
+	}
 	/**
 	 * direct-shuffle: 
 	 * 	1. group-by list, ex-list, to-aggr-expr list shuffle by group-by list
@@ -513,12 +525,10 @@ public class Executor {
 		return mr;
 	}
 	
+	
+	
 	MidResult execQBFetchOrJoin(SubQueryBlock subQB, JoinChain jChain, ArrayList<ZColRef> fields, ArrayList<RootExp> filters){
 
-		ArrayList<ZColRef> allFields = mergeRefColList(fields, getRefColList(filters.toArray(new RootExp[0])));
-		if(jChain.joinConds != null)
-			allFields = mergeRefColList(allFields, getRefColList(jChain.joinConds.toArray(new RootExp[0])));
-		
 		
 		if(jChain.prev == null){
 			//first node
@@ -538,7 +548,47 @@ public class Executor {
 			
 			return mr;
 		}
+
+		//ArrayList<ZColRef> allFields = mergeRefColList(fields, getRefColList(filters.toArray(new RootExp[0])));
+		//if(jChain.joinConds != null)
+		//	allFields = mergeRefColList(allFields, getRefColList(jChain.joinConds.toArray(new RootExp[0])));
 		
+		ArrayList<String> set1, set2;
+		set1 = xxx;
+		set2 = xxx;
+		set3 = xxx;
+		
+		ArrayList<RootExp> leftFilters = this.filterExprBy(filters, set1);
+		ArrayList<RootExp> bridgeFilters = this.bridgeExprBy(filters, set1, set2);
+		ArrayList<RootExp> rightFilters = this.filterExprBy(filters, set2);
+		ArrayList<RootExp> finalFilters = this.minusExpSet(filters, leftFilters, bridgeFilters, rightFilters);
+		ArrayList<RootExp> joinCond = jChain.joinConds;
+		//ArrayList<ZColRef> leftFields = this.filterColBy(allFields, set1);
+		ArrayList<ZColRef> tmp1 = this.mergeRefColList(
+				fields,
+				this.getRefColList(
+					this.mergeExprList(
+							bridgeFilters, finalFilters)));
+		
+		ArrayList<ZColRef> leftFields = this.filterColBy(tmp1, set1);
+		ArrayList<ZColRef> rightFields = this.filterColBy(tmp1, set2);
+		
+		this.mergeRefColList(fields, )
+		ArrayList<ZColRef> midFields = this.filterColBy()
+		//For outer join, pushdown join-conds
+		if(jChain.join_type == ZFromClause.LEFT_JOIN){
+			ArrayList<RootExp> pushPreds = this.filterExprBy(joinCond, set2);
+			joinCond = this.minusExpSet(joinCond, pushPreds);
+			rightFilters.addAll(pushPreds);
+		}
+		else if(jChain.join_type == ZFromClause.RIGHT_JOIN){
+			ArrayList<RootExp> pushPreds = this.filterExprBy(joinCond, set1);
+			joinCond = this.minusExpSet(joinCond, pushPreds);
+			leftFilters.addAll(pushPreds);			
+		}
+		
+		MidResult mr = execQBFetchOrJoin(subQB, jChain.prev, leftFields, leftFilters);
+				
 		if(jChain.optType == JoinItem.MAP_JOIN){
 			
 		}

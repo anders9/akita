@@ -6,6 +6,9 @@ import java.util.*;
 public class JoinChain {
 	
 	JoinChain prev;
+
+	ArrayList<RootExp> joinConds;
+	int join_type;
 	
 	ArrayList<ITable> fromTabs;//used when JoinChain.prev==NULL
 	ITable distrTab;//May be NULL,//used when JoinChain.prev==NULL
@@ -14,8 +17,7 @@ public class JoinChain {
 	String rhsTab;
 	
 	ArrayList<String> rhsLocalTabs;
-	ArrayList<RootExp> joinConds;
-	int join_type;
+
 	
 	int optType;
 	int reducerN;
