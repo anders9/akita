@@ -435,16 +435,19 @@ public class Executor {
 		//          + qb.aggrProc.outerTab != null? qb.aggrProc.outerTab.selectList.length, ];
 		
 		ArrayList<ZColRef> colsForAg = getRefColList(subQB.aggrDesc.preAggrExprs);
+		
 		if(subQB.aggrDesc.isRelSubQuery){
 			ArrayList<ZColRef> tmp = new ArrayList<ZColRef>();
 			tmp.add(new ZColRef(subQB.join.joinItems[0].table.alias(), AggrDesc.REL_SUB_QB_ID));
 			tmp.addAll(subQB.colRefsForRelSubQ);
+			
 			colsForAg = mergeRefColList(colsForAg, tmp);
 		}
 		else{
+			
 			colsForAg = mergeRefColList(colsForAg, getRefColList(subQB.aggrDesc.groupBy));
 		}
-		MidResult mr = execQBFetchOrJoin(subQB, subQB.joinChain, colsForAg, subQB.join.wherePreds);
+		MidResult mr = execQBFetchOrJoin(subQB, subQB.join.joinChain, colsForAg, subQB.join.wherePreds);
 		
 		if(/*hashed by key or 1 fragment*/){
 			return packAggr(subQB, mr, 1);
@@ -561,23 +564,16 @@ public class Executor {
 		ArrayList<RootExp> leftFilters = this.filterExprBy(filters, set1);
 		ArrayList<RootExp> bridgeFilters = this.bridgeExprBy(filters, set1, set2);
 		ArrayList<RootExp> rightFilters = this.filterExprBy(filters, set2);
+		@SuppressWarnings("unchecked")
 		ArrayList<RootExp> finalFilters = this.minusExpSet(filters, leftFilters, bridgeFilters, rightFilters);
 		ArrayList<RootExp> joinCond = jChain.joinConds;
 		//ArrayList<ZColRef> leftFields = this.filterColBy(allFields, set1);
-		ArrayList<ZColRef> tmp1 = this.mergeRefColList(
-				fields,
-				this.getRefColList(
-					this.mergeExprList(
-							bridgeFilters, finalFilters)));
-		
-		ArrayList<ZColRef> leftFields = this.filterColBy(tmp1, set1);
-		ArrayList<ZColRef> rightFields = this.filterColBy(tmp1, set2);
-		
-		this.mergeRefColList(fields, )
-		ArrayList<ZColRef> midFields = this.filterColBy()
+		//@SuppressWarnings("unchecked")
+
 		//For outer join, pushdown join-conds
 		if(jChain.join_type == ZFromClause.LEFT_JOIN){
 			ArrayList<RootExp> pushPreds = this.filterExprBy(joinCond, set2);
+			//@SuppressWarnings("unchecked")
 			joinCond = this.minusExpSet(joinCond, pushPreds);
 			rightFilters.addAll(pushPreds);
 		}
@@ -586,6 +582,18 @@ public class Executor {
 			joinCond = this.minusExpSet(joinCond, pushPreds);
 			leftFilters.addAll(pushPreds);			
 		}
+		@SuppressWarnings("unchecked")
+		ArrayList<ZColRef> tmp1 = this.mergeRefColList(
+				fields, this.getRefColList(
+					this.mergeExprList(joinCond, bridgeFilters, finalFilters)));
+		
+		ArrayList<ZColRef> leftFields = this.filterColBy(tmp1, set1);
+		ArrayList<ZColRef> rightFields = this.filterColBy(tmp1, set2);
+		
+		ArrayList<String> setLR = new ArrayList<String>(set1);
+		setLR.addAll(set2);
+		ArrayList<ZColRef> midFields = this.filterColBy(
+				this.mergeRefColList(fields, this.getRefColList(finalFilters)), setLR);
 		
 		MidResult mr = execQBFetchOrJoin(subQB, jChain.prev, leftFields, leftFilters);
 				
