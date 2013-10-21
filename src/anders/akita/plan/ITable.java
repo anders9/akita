@@ -1,4 +1,4 @@
-package anders.akita.exec;
+package anders.akita.plan;
 
 import java.util.*;
 
@@ -21,5 +21,7 @@ public interface ITable {
 	public boolean isLocal();
 	
 	public int fragNum();
+	
+	public int lenAt();
 	
 }

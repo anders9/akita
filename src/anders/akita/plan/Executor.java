@@ -1,4 +1,4 @@
-package anders.akita.exec;
+package anders.akita.plan;
 
 /**
  * 
@@ -64,9 +64,11 @@ public class Executor {
 
 	ZQuery query;
 	
-	public Executor(ZQuery query){
+	NodeMgr nodeMgr;
+	
+	public Executor(ZQuery query, NodeMgr nodeMgr){
 		this.query = query;
-		
+		this.nodeMgr = nodeMgr;
 		//syntax check
 	}
 	
@@ -564,6 +566,7 @@ public class Executor {
 		ArrayList<RootExp> leftFilters = this.filterExprBy(filters, set1);
 		ArrayList<RootExp> bridgeFilters = this.bridgeExprBy(filters, set1, set2);
 		ArrayList<RootExp> rightFilters = this.filterExprBy(filters, set2);
+		
 		@SuppressWarnings("unchecked")
 		ArrayList<RootExp> finalFilters = this.minusExpSet(filters, leftFilters, bridgeFilters, rightFilters);
 		ArrayList<RootExp> joinCond = jChain.joinConds;

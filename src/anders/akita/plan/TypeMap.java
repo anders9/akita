@@ -1,4 +1,4 @@
-package anders.akita.exec;
+package anders.akita.plan;
 
 /**
  * 
@@ -34,6 +34,36 @@ YEAR               4                     YEAR                  java.sql.Date
  *
  */
 
-public class TypeMap {
+import anders.akita.parser.ExecException;
 
+public final class TypeMap {
+
+	String getType(Object obj, int len)
+		throws ExecException
+	{
+		if(obj instanceof String)
+			return "VARCHAR" + "(" + len + ")";
+		else if(obj instanceof Long)
+			return "INTEGER";
+		else if(obj instanceof Integer)
+			return "MEDIUMINT";
+		else if(obj instanceof Boolean)
+			return "BIT";
+		else if(obj instanceof java.math.BigInteger)
+			return "BIGINT";				
+		else if(obj instanceof Float)
+			return "FLOAT";
+		else if(obj instanceof Double)
+			return "DOUBLE";		
+		else if(obj instanceof java.math.BigDecimal)
+			return "DECIMAL";
+		else if(obj instanceof java.sql.Date)
+			return "DATE";
+		else if(obj instanceof java.sql.Time)
+			return "TIME";
+		else if(obj instanceof java.sql.Timestamp)
+			return "DATETIME";
+		else throw new ExecException("Illegal type");
+	}
+	
 }
