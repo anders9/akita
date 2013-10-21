@@ -564,6 +564,7 @@ public class Executor {
 		ArrayList<RootExp> leftFilters = this.filterExprBy(filters, set1);
 		ArrayList<RootExp> bridgeFilters = this.bridgeExprBy(filters, set1, set2);
 		ArrayList<RootExp> rightFilters = this.filterExprBy(filters, set2);
+		
 		@SuppressWarnings("unchecked")
 		ArrayList<RootExp> finalFilters = this.minusExpSet(filters, leftFilters, bridgeFilters, rightFilters);
 		ArrayList<RootExp> joinCond = jChain.joinConds;

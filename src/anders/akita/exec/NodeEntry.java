@@ -1,5 +1,9 @@
 package anders.akita.exec;
 
-public class NodeEntry {
-
+public interface NodeEntry {
+	
+	public IRecordStream execQuery(String sql);
+	
+	IInsertBuff insertRecord(ITable midTab);
+	
 }

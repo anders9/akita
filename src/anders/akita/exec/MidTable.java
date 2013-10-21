@@ -8,6 +8,7 @@ public class MidTable implements ITable {
 	String uniqAlias;
 	ArrayList<String> embeddedAlias;
 	String[] fields;
+	int[] len;
 	NodeEntry[] entries;
 	
 	@Override
