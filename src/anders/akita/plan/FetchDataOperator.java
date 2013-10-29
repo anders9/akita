@@ -9,4 +9,5 @@ public class FetchDataOperator {
 	
 	String fetchSQL;
 	
+	String tmpTabName;
 }
