@@ -16,4 +16,7 @@ public final class Meta {
 		return tables.get(tab).containCol(col);
 	}
 	
+	static public String[] randomEntries(int N){
+		return null;
+	}
 }

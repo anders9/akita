@@ -11,11 +11,14 @@ public class SubQB {
 	String[] srcPys;
 	String[] src;
 	
-	JoinType joinType;
+	JoinType[] joinType;
+	JoinPolicy[] joinPolicy;
+	int[] joinReducerN;	
 	
 	RootExp[] wherePreds;
 	
 	String[] groupby;	
+	int aggrReducerN;
 	RootExp[] havingPreds;
 	
 	RootExp[] selList;

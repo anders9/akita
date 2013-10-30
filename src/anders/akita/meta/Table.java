@@ -10,9 +10,15 @@ public final class Table {
 	
 	Column[] col;
 	
+	String[] entries;
+	
 	boolean isDistr;
 	
 	boolean isMiddle;
+	
+	public String[] getEntries(){
+		return entries;
+	}
 	
 	public boolean isDistributed(){
 		return isDistr;
