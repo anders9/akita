@@ -8,6 +8,7 @@ public class FetchDataOperator {
 	int[] colLen;
 	
 	String fetchSQL;
+	boolean genID;
 	
 	String tmpTabName;
 }
