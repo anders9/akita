@@ -2,8 +2,9 @@ package anders.akita.plan;
 
 import java.util.*;
 
-import anders.akita.meta.Meta;
-import anders.akita.parser.RootExp;
+import anders.akita.meta.*;
+import anders.akita.parser.*;
+import anders.util.*;
 
 public class Planner {
 	
@@ -56,6 +57,7 @@ public class Planner {
 	}
 	static class OpAggr extends OpBase{
 		int aggrReducerN;
+		RootExp[] aggrExprs;
 		String[] groupby;//if NULL, is for relative-sub-query
 		ArrayList<RootExp> havingPreds;
 	}
@@ -67,9 +69,47 @@ public class Planner {
 		ArrayList<RootExp> havingPreds;		
 	}
 	*/
+	
+	 ArrayList<String> getPredCoverSrc(RootExp pred)
+	 {
+		final ArrayList<String> cov = new ArrayList<String>();
+		try{
+			pred.traverse(new NodeVisitor(){
+				public void visit(ZExp node, RootExp root)
+						throws ExecException{
+					if(node instanceof ZColRef){
+						ZColRef cr = (ZColRef)node;
+						if(!cov.contains(cr.table)){
+							cov.add(cr.table);
+						}
+					}
+				}
+			});
+		}catch(ExecException e){}
+		return cov;
+	}
+	int getPushdownLevel(String[] srcs, ArrayList<String> covers){
+		int level = 0;
+		for(String c: covers){
+			int l = Util.findStr(c, srcs);
+			if(l != -1 && l > level)
+				level = l;
+		}
+		return level;
+	}
 	FetchDataOperator[] genSubQBPlan(QB qb){
 		
 		ArrayList<OpBase> opList = new ArrayList<OpBase>();
+		
+		//push predicates down
+		ArrayList<RootExp>[] pdList = new ArrayList[qb.src.length];
+		for(int i = 0; i < qb.src.length; ++i){
+			pdList[i] = new ArrayList<RootExp>();
+		}
+		for(RootExp pred: qb.where){
+			int lv = getPushdownLevel(qb.src, getPredCoverSrc(pred));
+			pdList[lv].add(pred);
+		}
 		
 		int ri = 0;
 		int end = qb.src.length;
@@ -216,10 +256,15 @@ public class Planner {
 			else
 				end = qb.src.length;
 		}
+		
+
+		
+		
 		OpAggr oa = new OpAggr();
 		oa.aggrReducerN = qb.aggrReducerN;
 		oa.groupby = qb.groupby;
 		oa.havingPreds = qb.havingPreds;
+		//oa.aggrExprs = #;
 		oa.endPos = qb.src.length;
 		
 		opList.add(oa);
