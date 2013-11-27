@@ -97,18 +97,34 @@ public class Planner {
 		}
 		return level;
 	}
+	ArrayList<RootExp>[] genPushDownPredsArray(String[] src, ArrayList<RootExp> preds){
+		ArrayList<RootExp>[] pdList = new ArrayList[src.length];
+		for(int i = 0; i < src.length; ++i){
+			pdList[i] = new ArrayList<RootExp>();
+		}
+		for(RootExp pred: preds){
+			int lv = getPushdownLevel(src, getPredCoverSrc(pred));
+			pdList[lv].add(pred);
+		}
+		return pdList;
+	}
+	ArrayList<RootExp> mergePredArray(ArrayList<RootExp>[] preds, int beg, int end){
+		ArrayList<RootExp> list = new ArrayList<RootExp>();
+		for(int i = beg; i < end; ++i){
+			list.addAll(preds[i]);
+		}
+		return list;
+	}
 	FetchDataOperator[] genSubQBPlan(QB qb){
 		
 		ArrayList<OpBase> opList = new ArrayList<OpBase>();
 		
 		//push predicates down
-		ArrayList<RootExp>[] pdList = new ArrayList[qb.src.length];
-		for(int i = 0; i < qb.src.length; ++i){
-			pdList[i] = new ArrayList<RootExp>();
-		}
-		for(RootExp pred: qb.where){
-			int lv = getPushdownLevel(qb.src, getPredCoverSrc(pred));
-			pdList[lv].add(pred);
+		ArrayList<RootExp>[] pdList = genPushDownPredsArray(qb.src, qb.where);
+		ArrayList<RootExp>[][] spdList = new ArrayList[qb.relSubQ.length][];
+		for(int i = 0; i < spdList.length; ++i){
+			RelSubQuery rsq = qb.relSubQ[i];
+			spdList[i] = genPushDownPredsArray(rsq.src, rsq.wherePreds);
 		}
 		
 		int ri = 0;
@@ -143,7 +159,7 @@ public class Planner {
 		ofp.endPos = pos;
 		ofp.joinType = qb.joinType;
 		ofp.joinCond = qb.joinCond;
-		
+		ofp.where = mergePredArray(pdList, 0, pos);
 		opList.add(ofp);
 		
 		while(true){
@@ -173,7 +189,7 @@ public class Planner {
 				if(oj.joinPolicy == JoinPolicy.Reduceside)
 					oj.reducerEntry = Meta.randomEntries(oj.joinReducerN);
 				oj.endPos = pos;
-				
+				oj.where = mergePredArray(pdList, beg, pos);
 				opList.add(oj);
 			}
 			
@@ -201,6 +217,7 @@ public class Planner {
 					oj.endPos = pos;
 					oj.rsqPos = relPos;
 					oj.rsqEndPos = k;
+					oj.where = mergePredArray(spdList[relPos], 0, k);
 					opList.add(oj);
 				}
 				while(k < rsq.srcPhy.length){
@@ -229,12 +246,14 @@ public class Planner {
 					oj.endPos = pos;
 					oj.rsqPos = relPos;
 					oj.rsqEndPos = k;
+					oj.where = mergePredArray(spdList[relPos], beg, k);
 					opList.add(oj);
 				}
 				//add aggregation node for Relative-Sub-query
 				OpAggr oa = new OpAggr();
 				oa.aggrReducerN = rsq.aggrReducerN;
-				oa.havingPreds = rsq.havingPreds;
+				oa.havingPreds = new ArrayList<RootExp>();
+				oa.havingPreds.add(rsq.havingPreds);
 				oa.removeID = true;
 				
 				oa.endPos = pos;
@@ -268,6 +287,11 @@ public class Planner {
 		oa.endPos = qb.src.length;
 		
 		opList.add(oa);
+		
+		
+		//JoinCond process..
+		
+		//column pruning
 	}
 
 }

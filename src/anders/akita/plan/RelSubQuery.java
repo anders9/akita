@@ -16,5 +16,7 @@ public class RelSubQuery {
 
 	int aggrReducerN;
 	ArrayList<RootExp> wherePreds;
-	ArrayList<RootExp> havingPreds;
+	
+	RootExp havingPreds;
+	
 }
