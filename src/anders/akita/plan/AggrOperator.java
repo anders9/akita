@@ -4,6 +4,6 @@ public class AggrOperator extends FetchDataOperator {
 	
 	FetchDataOperator src;
 	
-	int[] shuffleKeyIdx;
+	int[] shuffleKeyIdx;// if NULL, no shuffle process
 
 }

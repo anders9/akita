@@ -27,7 +27,7 @@ public class Planner {
 	}
 	
 	static class OpBase{
-		String[] fetchCol;
+		ArrayList<String> fetchCol;
 		int endPos;
 		int rsqPos = -1;
 		int rsqEndPos = -1;
@@ -55,10 +55,10 @@ public class Planner {
 		String[] reducerEntry;
 		ArrayList<RootExp> where;
 	}
-	static class OpAggr extends OpBase{
+	static class OpRelAggr extends OpBase{
 		int aggrReducerN;
-		RootExp[] aggrExprs;
-		String[] groupby;//if NULL, is for relative-sub-query
+		//RootExp[] aggrExprs;
+		//String[] groupby;//if NULL, is for relative-sub-query
 		ArrayList<RootExp> havingPreds;
 	}
 	/*
@@ -115,17 +115,87 @@ public class Planner {
 		}
 		return list;
 	}
+	
+	String genCol(String src, String col){
+		return src + '.' + col;
+	}
+	String getColSrc(String col){
+		return col.substring(0, col.indexOf('.'));
+	}
+	String getColName(String col){
+		return col.substring(col.indexOf('.') + 1);
+	}
+	ArrayList<String> getCoverCol(RootExp exp){
+		final ArrayList<String> list = new ArrayList<String>();
+		try{
+			exp.traverse(new NodeVisitor(){
+				public void visit(ZExp node, RootExp root) throws ExecException {
+					if(node instanceof ZColRef){
+						ZColRef cr = (ZColRef)node;
+						String col = cr.toString();
+						if(!list.contains(col))
+							list.add(col);
+					}
+				}
+			});
+		}catch(Exception e){}
+		return list;
+	}
+	ArrayList<String> getCoverCol(ArrayList<RootExp> expList){
+		ArrayList<String> list = new ArrayList<String>();
+		for(RootExp e: expList){
+			list.addAll(getCoverCol(e));
+		}
+		return list;
+	}
+	ArrayList<String> getCoverCol(RootExp[] expList){
+		ArrayList<String> list = new ArrayList<String>();
+		for(RootExp e: expList){
+			list.addAll(getCoverCol(e));
+		}
+		return list;
+	}
+	ArrayList<String> filteCoverCol(String[] cutSrc, ArrayList<String> list){
+		ArrayList<String> rlist = new ArrayList<String>();
+		for(String col: list){
+			String s = getColSrc(col);
+			if(Util.findStr(s, cutSrc) == -1)
+				rlist.add(col);
+		}
+		return rlist;
+	}
 	FetchDataOperator[] genSubQBPlan(QB qb){
 		
 		ArrayList<OpBase> opList = new ArrayList<OpBase>();
 		
 		//push predicates down
 		ArrayList<RootExp>[] pdList = genPushDownPredsArray(qb.src, qb.where);
+		//special process for RIGHT-JOIN
+		if(qb.src.length == 2 && qb.joinType == JoinType.RIGHT){
+			pdList[1].addAll(pdList[0]);
+			pdList[0].clear();
+		}
+		//process Join condition
+		if(qb.src.length == 2 && qb.joinType != JoinType.INNER && qb.joinCond != null){
+			if(qb.joinType == JoinType.RIGHT){
+				Iterator<RootExp> iter = qb.joinCond.iterator();
+				while(iter.hasNext()){
+					RootExp jc = iter.next();
+					int lv = getPushdownLevel(qb.src, getPredCoverSrc(jc));
+					if(lv == 0){
+						pdList[0].add(jc);
+						iter.remove();
+					}
+				}
+			}
+		}
 		ArrayList<RootExp>[][] spdList = new ArrayList[qb.relSubQ.length][];
 		for(int i = 0; i < spdList.length; ++i){
 			RelSubQuery rsq = qb.relSubQ[i];
 			spdList[i] = genPushDownPredsArray(rsq.src, rsq.wherePreds);
 		}
+		//process LEFT/RIGHT JOIN condition 
+		
 		
 		int ri = 0;
 		int end = qb.src.length;
@@ -250,7 +320,7 @@ public class Planner {
 					opList.add(oj);
 				}
 				//add aggregation node for Relative-Sub-query
-				OpAggr oa = new OpAggr();
+				OpRelAggr oa = new OpRelAggr();
 				oa.aggrReducerN = rsq.aggrReducerN;
 				oa.havingPreds = new ArrayList<RootExp>();
 				oa.havingPreds.add(rsq.havingPreds);
@@ -276,18 +346,50 @@ public class Planner {
 				end = qb.src.length;
 		}
 		
-
+		ArrayList<String> fcols;
+		//get col set...
+		fcols = getCoverCol(qb.selList);
+		if(qb.groupby != null){
+			ArrayList<String> t = new ArrayList<String>();
+			for(ZColRef gb : qb.groupby)
+				t.add(t.toString());
+			fcols = Util.<String>mergeArrayList(fcols, t);
+			if(qb.havingPreds != null){
+				t = getCoverCol(qb.havingPreds);
+				fcols = Util.<String>mergeArrayList(fcols, t);
+			}
+		}
 		
+		//pruning column...
+		for(int k = opList.size() - 1; k >= 0; --k){
+			OpBase ob = opList.get(k);
+			ob.fetchCol = (ArrayList<String>)fcols.clone();
+			if(ob instanceof OpRelAggr){
+				OpRelAggr oa = (OpRelAggr)ob;
+				fcols = Util.<String>mergeArrayList(fcols, getCoverCol(oa.havingPreds));
+			}
+			else if(ob instanceof OpJoin){
+				OpJoin oj = (OpJoin)ob;
+				fcols = Util.<String>mergeArrayList(fcols, getCoverCol(oj.where));
+				if(oj.joinCond != null)
+					fcols = Util.<String>mergeArrayList(fcols, getCoverCol(oj.joinCond));
+				fcols = filteCoverCol(oj.src, fcols);
+			}
+			else if(ob instanceof OpFetchData){
+				//Do nothing
+			}
+		}
 		
-		OpAggr oa = new OpAggr();
+		/*
+		OpRelAggr oa = new OpRelAggr();
 		oa.aggrReducerN = qb.aggrReducerN;
-		oa.groupby = qb.groupby;
+		//oa.groupby = qb.groupby;
 		oa.havingPreds = qb.havingPreds;
 		//oa.aggrExprs = #;
 		oa.endPos = qb.src.length;
 		
 		opList.add(oa);
-		
+		*/
 		
 		//JoinCond process..
 		

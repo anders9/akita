@@ -20,7 +20,7 @@ public class QB {
 	
 	ArrayList<RootExp> where;
 	
-	String[] groupby;//may be length = 0 
+	ZColRef[] groupby;//may be length = 0 
 	int aggrReducerN;
 	ArrayList<RootExp> havingPreds;
 	
