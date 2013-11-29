@@ -8,11 +8,11 @@ public class QBPlan {
 	
 	FetchDataOperator[] operators;
 	
-	String tmpTabName;
+	//String tmpTabName;
 	
 	String[] entries;
 	
-	String[] schema;
-	int[] colLen;
-	
+	//String[] schema;
+	//int[] colLen;
+	Schema schema;
 }
