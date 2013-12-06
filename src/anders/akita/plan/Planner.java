@@ -8,15 +8,27 @@ import anders.util.*;
 
 public class Planner {
 	
-	QBPlan genQBPlan(QB qb){
+	QB rootqb;
+	int qid;
+	
+	public Planner(QB qb, int qid){
+		this.rootqb = qb;
+		this.qid = qid;
+	}
+	
+	public QBPlan genQBPlan(){
+		return genQBPlanIter(rootqb);
+	}
+	
+	private QBPlan genQBPlanIter(QB qb){
 		
 		QBPlan plan = new QBPlan();
 		
 		plan.prevQBPlans = new ArrayList<QBPlan>();
 		
-		for(QB pqb: qb.prevQBs){
+		for(QB pqb: qb.prevQBs.values()){
 			
-			QBPlan qbp = genQBPlan(pqb);
+			QBPlan qbp = genQBPlanIter(pqb);
 			
 			plan.prevQBPlans.add(qbp);
 		}
@@ -116,13 +128,13 @@ public class Planner {
 		return list;
 	}
 	
-	String genCol(String src, String col){
+	static String genCol(String src, String col){
 		return src + '.' + col;
 	}
-	String getColSrc(String col){
+	static String getColSrc(String col){
 		return col.substring(0, col.indexOf('.'));
 	}
-	String getColName(String col){
+	static String getColName(String col){
 		return col.substring(col.indexOf('.') + 1);
 	}
 	ArrayList<String> getCoverCol(RootExp exp){
@@ -164,6 +176,11 @@ public class Planner {
 		}
 		return rlist;
 	}
+	
+	String genTmpTableName(String qbName, int step){
+		return String.format("$$ts%d_%d", qid, step); 
+	}
+	
 	FetchDataOperator[] genSubQBPlan(QB qb){
 		
 		ArrayList<OpBase> opList = new ArrayList<OpBase>();
@@ -380,6 +397,29 @@ public class Planner {
 			}
 		}
 		
+		ArrayList<FetchDataOperator> ops;		
+		
+		for(int i = 0; i < opList.size(); ++i){
+			OpBase ob = opList.get(i);
+			
+			FetchDataOperator fdo = null;
+			
+			if(ob instanceof OpFetchData){
+				OpFetchData ofd = (OpFetchData)ob;
+				fdo = new FetchDataOperator();
+				//fdo.schema = new 
+			}
+			
+			fdo.schema = new Schema();
+			fdo.schema.name = this.genTmpTableName(qb.schema.name, i);
+			fdo.schema.col = (String[])ob.fetchCol.clone();
+			for(String c : fdo.schema.col)
+				c.replace('.', '$');
+			fdo.schema.type = new String[fdo.schema.col.length];
+			for(int k = 0; k < fdo.schema.col.length; ++k){
+				fdo.schema.type[k] = getColumnType(qb, fdo.schema.col[k]);
+			}
+		}
 		/*
 		OpRelAggr oa = new OpRelAggr();
 		oa.aggrReducerN = qb.aggrReducerN;
@@ -395,5 +435,28 @@ public class Planner {
 		
 		//column pruning
 	}
-
+	
+	static String src2PhySrc(QB qb, String src){
+		int idx = Util.findStr(src, qb.src);
+		if(idx != -1)
+			return qb.srcPhy[idx];
+		return null;
+	}
+	
+	static String getColumnType(QB qb, String col){
+		String src = Planner.getColSrc(col);
+		String colName = Planner.getColName(col);
+		
+		String tab = Planner.src2PhySrc(qb, src);
+		
+		
+		//!!!
+		//process temp table#
+		QB pqb = qb.prevQBs.get(tab);
+		if(pqb != null){
+			int idx = Util.findStr(colName, pqb.schema.col);
+			return pqb.schema.type[idx];
+		}
+		return Meta.getTab(tab).getCol(colName).getType();
+	}
 }

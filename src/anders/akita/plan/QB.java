@@ -6,12 +6,13 @@ import anders.akita.parser.*;
 
 public class QB {
 	
-	ArrayList<QB> prevQBs;
+	//ArrayList<QB> prevQBs;
+	HashMap<String, QB> prevQBs;//contain nested from clause & non-relative inner-query
 	
 	//SubQB[] subQBs;
 	
 	String[] src;
-	String[] srcPhy;
+	String[] srcPhy;//if is nested from clause, srcPhy = src
 	JoinType joinType;
 	ArrayList<RootExp> joinCond;
 	JoinPolicy[] joinPolicy;
@@ -25,8 +26,8 @@ public class QB {
 	ArrayList<RootExp> havingPreds;
 	
 	RootExp[] selList;
-	String[] selAlias;
+	//String[] selAlias;
+	Schema schema;
 	
-	String name;
-	
+	//String name;
 }

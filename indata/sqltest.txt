@@ -1,3 +1,5 @@
+select max(c1) from t1;
+
 select count(*) from t1;
 select count(all *) from t1;
 select count(all c1) from t1;

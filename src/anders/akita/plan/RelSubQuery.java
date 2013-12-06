@@ -8,6 +8,7 @@ public class RelSubQuery {
 	
 	int pos;
 	
+	String colType;
 	String[] src;
 	String[] srcPhy;
 
