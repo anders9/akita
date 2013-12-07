@@ -178,7 +178,7 @@ public class Planner {
 	}
 	
 	String genTmpTableName(String qbName, int step){
-		return String.format("$$ts%d_%d", qid, step); 
+		return String.format("$$ts%d_%s_%d", qid, qbName, step); 
 	}
 	
 	FetchDataOperator[] genSubQBPlan(QB qb){
@@ -397,7 +397,7 @@ public class Planner {
 			}
 		}
 		
-		ArrayList<FetchDataOperator> ops;		
+		ArrayList<FetchDataOperator> ops = new ArrayList<FetchDataOperator>();		
 		
 		for(int i = 0; i < opList.size(); ++i){
 			OpBase ob = opList.get(i);
@@ -407,8 +407,25 @@ public class Planner {
 			if(ob instanceof OpFetchData){
 				OpFetchData ofd = (OpFetchData)ob;
 				fdo = new FetchDataOperator();
-				//fdo.schema = new 
+				fdo.fetchSQL = Planner.genSelectClause(ofd.src, ofd.srcPhy, ofd.where, ofd.fetchCol, null);
+				fdo.entries = ofd.entry;
+				fdo.tmpTabList = new ArrayList<String>();
+				fdo.tmpTabList.add(this.genTmpTableName(qb.schema.name, i));
 			}
+			else if(ob instanceof OpJoin){
+				OpJoin oj = (OpJoin)ob;
+				if(oj.joinPolicy == JoinPolicy.Mapside){
+					fdo = new MapJoinOperator();
+					MapJoinOperator mjo = (MapJoinOperator)fdo;
+					
+					mjo.leftSrc = ops.get(i - 1);
+					mjo.rhsEntries = oj.rhsEntry;
+					mjo.entries = Meta.randomEntries(1);
+					mjo.collectNode = mjo.entries[0];
+					mjo.
+				}
+			}
+			
 			
 			fdo.schema = new Schema();
 			fdo.schema.name = this.genTmpTableName(qb.schema.name, i);
@@ -434,6 +451,12 @@ public class Planner {
 		//JoinCond process..
 		
 		//column pruning
+	}
+	
+	static String genSelectClause(String[] src, String[] srcPhy, ArrayList<RootExp> where, 
+			ArrayList<String> cols,
+			String prevSrc){
+		
 	}
 	
 	static String src2PhySrc(QB qb, String src){
