@@ -8,4 +8,8 @@ public class MapJoinOperator extends FetchDataOperator{
 	
 	String collectNode;
 	
+	String midTab;
+	
+	String joinClause;
+	
 }

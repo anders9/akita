@@ -407,10 +407,13 @@ public class Planner {
 			if(ob instanceof OpFetchData){
 				OpFetchData ofd = (OpFetchData)ob;
 				fdo = new FetchDataOperator();
-				fdo.fetchSQL = Planner.genSelectClause(ofd.src, ofd.srcPhy, ofd.where, ofd.fetchCol, null);
+				fdo.fetchSQL = Planner.genSelectClause(ofd.src, ofd.srcPhy,
+						ofd.joinType,
+						ofd.joinCond,
+						ofd.where, ofd.fetchCol, null);
 				fdo.entries = ofd.entry;
 				fdo.tmpTabList = new ArrayList<String>();
-				fdo.tmpTabList.add(this.genTmpTableName(qb.schema.name, i));
+				//fdo.tmpTabList.add(this.genTmpTableName(qb.schema.name, i));
 			}
 			else if(ob instanceof OpJoin){
 				OpJoin oj = (OpJoin)ob;
@@ -422,7 +425,25 @@ public class Planner {
 					mjo.rhsEntries = oj.rhsEntry;
 					mjo.entries = Meta.randomEntries(1);
 					mjo.collectNode = mjo.entries[0];
-					mjo.
+					mjo.midTab = mjo.leftSrc.schema.name;
+					mjo.joinClause = Planner.genSelectClause(oj.src, oj.srcPhy, 
+							oj.joinType,
+							oj.joinCond,
+							oj.where, oj.fetchCol, mjo.midTab);
+					
+					fdo.tmpTabList = new ArrayList<String>();
+					String resultTab = this.genTmpTableName(qb.schema.name, i);
+					fdo.tmpTabList.add(resultTab);
+					fdo.fetchSQL = "select * from " + resultTab;
+				}
+				else if(oj.joinPolicy == JoinPolicy.Reduceside){
+					fdo = new ReduceJoinOperator();
+					ReduceJoinOperator rjo = (ReduceJoinOperator)fdo;
+					
+					rjo.srcs = new FetchDataOperator[2];
+					rjo.srcs[0] = ops.get(i - 1);
+					//rjo.joinKeyIdx
+					
 				}
 			}
 			
@@ -453,7 +474,10 @@ public class Planner {
 		//column pruning
 	}
 	
-	static String genSelectClause(String[] src, String[] srcPhy, ArrayList<RootExp> where, 
+	static String genSelectClause(String[] src, String[] srcPhy, 
+			JoinType joinType, 
+			ArrayList<RootExp> joinCond,
+			ArrayList<RootExp> where, 
 			ArrayList<String> cols,
 			String prevSrc){
 		
