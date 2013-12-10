@@ -13,6 +13,7 @@ public class FetchDataOperator {
 	
 	String fetchSQL; // if null, use: select * from schema.name;
 	boolean genPrevID;
+	//boolean containID; // move into schema
 	
 	ArrayList<String> tmpTabList;//used for clean-up tmp table(generated in Operator)
 }

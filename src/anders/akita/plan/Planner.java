@@ -429,7 +429,7 @@ public class Planner {
 				fdo.fetchSQL = Planner.genSelectClause(ofd.src, ofd.srcPhy,
 						ofd.joinType,
 						ofd.joinCond,
-						ofd.where, ofd.fetchCol, null);
+						ofd.where, ofd.fetchCol, null, false);
 				fdo.entries = ofd.entry;
 				//fdo.genID = ofd.genID;
 				//fdo.tmpTabList = new ArrayList<String>();
@@ -451,14 +451,25 @@ public class Planner {
 					mjo.collectNode = mjo.entries[0];
 					mjo.midTab = mjo.leftSrc.schema.name;
 					
+					//if this step contain ID but previous step result-tab not contain ID, 
+					//generate ID for it when fetch prev result-tab					
 					fdo.genPrevID = oj.containID && !mjo.leftSrc.schema.containID;
+					
+					//prevTab ==> MidTab (if ID : genPrevID)
+					
+					//if MidTab has ID, check $containID
 					
 					mjo.joinClause = Planner.genSelectClause(oj.src, oj.srcPhy, 
 							oj.joinType,
 							oj.joinCond,
 							oj.where, oj.fetchCol, mjo.midTab,
-							mjo.leftSrc.schema.containID && oj.containID
+							oj.containID
 							);
+					
+					//execute JOIN-CLAUSE, insert into result-Tab, 
+					//1. if $containID, result-Tab contain ID,
+					//2. if $oj.genID, then generate ID into result-Tab beforehand, set $genIDForResTab
+					mjo.genIDForResTab = oj.genID;
 					
 					fdo.tmpTabList = new ArrayList<String>();
 					fdo.tmpTabList.add(fdo.schema.name);
@@ -466,7 +477,8 @@ public class Planner {
 					fdo.fetchSQL = null;
 					//fdo.genID = false;
 					//mjo.genMidTabID = oj.genID;
-					fdo.schema.containID = oj.genID;
+					
+					fdo.schema.containID = oj.containID || oj.genID;
 					
 				}
 				else if(oj.joinPolicy == JoinPolicy.Reduceside){
@@ -508,9 +520,10 @@ public class Planner {
 					fdo.entries = oj.reducerEntry;
 					String[] jsrc = new String[]{rjo.srcs[0].schema.name, rjo.srcs[1].schema.name};
 					fdo.fetchSQL = Planner.genSelectClause(jsrc, jsrc, oj.joinType, oj.joinCond, oj.where, oj.fetchCol, null,
-							
+							oj.containID
 							);
-					//fdo.genID = oj.genID;
+					fdo.genPrevID = oj.containID && !rjo.srcs[0].schema.containID;
+					fdo.schema.containID = oj.containID;
 				}
 				else
 					assert false;
