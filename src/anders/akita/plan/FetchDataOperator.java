@@ -11,8 +11,8 @@ public class FetchDataOperator {
 	
 	Schema schema;
 	
-	String fetchSQL;
-	//boolean genID;
+	String fetchSQL; // if null, use: select * from schema.name;
+	boolean genPrevID;
 	
 	ArrayList<String> tmpTabList;//used for clean-up tmp table(generated in Operator)
 }

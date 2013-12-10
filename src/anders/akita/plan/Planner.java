@@ -43,8 +43,8 @@ public class Planner {
 		int endPos;
 		int rsqPos = -1;
 		int rsqEndPos = -1;
-		boolean genID = false;
-		boolean removeID = false;
+		boolean genID = false;//for next step
+		boolean containID = false;
 	}
 	//src, srcPhy, entry, 
 	static class OpFetchData extends OpBase{
@@ -65,6 +65,7 @@ public class Planner {
 		int joinReducerN;
 		String[] rhsEntry;
 		String[] reducerEntry;
+		//String collectEntry;
 		ArrayList<RootExp> where;
 	}
 	static class OpRelAggr extends OpBase{
@@ -100,6 +101,16 @@ public class Planner {
 		}catch(ExecException e){}
 		return cov;
 	}
+	boolean checkCanPushDown(String[] srcs, ArrayList<String> covers){
+		for(String c: covers){
+			int l = Util.findStr(c, srcs);
+			if(l == -1)
+				return false;
+		}
+		return true;
+	}
+	 
+	 
 	int getPushdownLevel(String[] srcs, ArrayList<String> covers){
 		int level = 0;
 		for(String c: covers){
@@ -275,6 +286,7 @@ public class Planner {
 				oj.rhsEntry = Meta.getTab(oj.srcPhy[0]).getEntries();
 				if(oj.joinPolicy == JoinPolicy.Reduceside)
 					oj.reducerEntry = Meta.randomEntries(oj.joinReducerN);
+				
 				oj.endPos = pos;
 				oj.where = mergePredArray(pdList, beg, pos);
 				opList.add(oj);
@@ -289,7 +301,7 @@ public class Planner {
 				RelSubQuery rsq = qb.relSubQ[relPos];
 				opList.get(opList.size() - 1).genID = true;
 				int k = 0;
-				while(!Meta.getTab(rsq.srcPhy[k]).isDistributed())
+				while(k < rsq.srcPhy.length && !Meta.getTab(rsq.srcPhy[k]).isDistributed())
 					++k;
 				
 				if(k > 0){
@@ -305,6 +317,7 @@ public class Planner {
 					oj.rsqPos = relPos;
 					oj.rsqEndPos = k;
 					oj.where = mergePredArray(spdList[relPos], 0, k);
+					oj.containID = true;
 					opList.add(oj);
 				}
 				while(k < rsq.srcPhy.length){
@@ -334,6 +347,7 @@ public class Planner {
 					oj.rsqPos = relPos;
 					oj.rsqEndPos = k;
 					oj.where = mergePredArray(spdList[relPos], beg, k);
+					oj.containID = true;
 					opList.add(oj);
 				}
 				//add aggregation node for Relative-Sub-query
@@ -341,7 +355,7 @@ public class Planner {
 				oa.aggrReducerN = rsq.aggrReducerN;
 				oa.havingPreds = new ArrayList<RootExp>();
 				oa.havingPreds.add(rsq.havingPreds);
-				oa.removeID = true;
+				oa.containID = true;
 				
 				oa.endPos = pos;
 				oa.rsqPos = relPos;
@@ -362,6 +376,10 @@ public class Planner {
 			else
 				end = qb.src.length;
 		}
+		
+		/*
+		 * FetchData, Join, ... Join(genID),| Join(containID), ... Aggr(containID, [genID]),| ...
+		 */
 		
 		ArrayList<String> fcols;
 		//get col set...
@@ -407,56 +425,101 @@ public class Planner {
 			if(ob instanceof OpFetchData){
 				OpFetchData ofd = (OpFetchData)ob;
 				fdo = new FetchDataOperator();
+				fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol);
 				fdo.fetchSQL = Planner.genSelectClause(ofd.src, ofd.srcPhy,
 						ofd.joinType,
 						ofd.joinCond,
 						ofd.where, ofd.fetchCol, null);
 				fdo.entries = ofd.entry;
-				fdo.tmpTabList = new ArrayList<String>();
+				//fdo.genID = ofd.genID;
+				//fdo.tmpTabList = new ArrayList<String>();
 				//fdo.tmpTabList.add(this.genTmpTableName(qb.schema.name, i));
 			}
 			else if(ob instanceof OpJoin){
 				OpJoin oj = (OpJoin)ob;
 				if(oj.joinPolicy == JoinPolicy.Mapside){
 					fdo = new MapJoinOperator();
+					fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol);
 					MapJoinOperator mjo = (MapJoinOperator)fdo;
 					
 					mjo.leftSrc = ops.get(i - 1);
 					mjo.rhsEntries = oj.rhsEntry;
-					mjo.entries = Meta.randomEntries(1);
+					if(mjo.leftSrc.entries.length == 1)
+						mjo.entries = mjo.leftSrc.entries.clone();
+					else
+						mjo.entries = Meta.randomEntries(1);
 					mjo.collectNode = mjo.entries[0];
 					mjo.midTab = mjo.leftSrc.schema.name;
+					
+					fdo.genPrevID = oj.containID && !mjo.leftSrc.schema.containID;
+					
 					mjo.joinClause = Planner.genSelectClause(oj.src, oj.srcPhy, 
 							oj.joinType,
 							oj.joinCond,
-							oj.where, oj.fetchCol, mjo.midTab);
+							oj.where, oj.fetchCol, mjo.midTab,
+							mjo.leftSrc.schema.containID && oj.containID
+							);
 					
 					fdo.tmpTabList = new ArrayList<String>();
-					String resultTab = this.genTmpTableName(qb.schema.name, i);
-					fdo.tmpTabList.add(resultTab);
-					fdo.fetchSQL = "select * from " + resultTab;
+					fdo.tmpTabList.add(fdo.schema.name);
+					//fdo.fetchSQL = "select * from " + fdo.schema.name;
+					fdo.fetchSQL = null;
+					//fdo.genID = false;
+					//mjo.genMidTabID = oj.genID;
+					fdo.schema.containID = oj.genID;
+					
 				}
 				else if(oj.joinPolicy == JoinPolicy.Reduceside){
 					fdo = new ReduceJoinOperator();
+					fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol);
 					ReduceJoinOperator rjo = (ReduceJoinOperator)fdo;
 					
 					rjo.srcs = new FetchDataOperator[2];
 					rjo.srcs[0] = ops.get(i - 1);
-					//rjo.joinKeyIdx
 					
+					ArrayList<RootExp> rhsWhere = genJoinRhsPred(oj.joinType, oj.joinCond, oj.src, oj.where);
+					
+					rjo.srcs[1] = new FetchDataOperator();
+					//generate rhs-table column
+					ArrayList<String> rhsCols = (ArrayList<String>)oj.fetchCol.clone();
+					rhsCols = Util.<String>mergeArrayList(rhsCols, getCoverCol(oj.where));
+					if(oj.joinCond != null)
+						rhsCols = Util.<String>mergeArrayList(rhsCols, getCoverCol(oj.joinCond));
+					rhsCols = filteCoverCol(oj.src, rhsCols);
+					rjo.srcs[1].schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i) + "_rhs", rhsCols);
+					rjo.srcs[1].entries = oj.rhsEntry;
+					rjo.srcs[1].fetchSQL = Planner.genSelectClause(oj.src, oj.srcPhy, JoinType.INNER, null, rhsWhere, rhsCols, null, false);
+					
+					fdo.tmpTabList = new ArrayList<String>();
+					fdo.tmpTabList.add(rjo.srcs[0].schema.name);
+					fdo.tmpTabList.add(rjo.srcs[1].schema.name);
+					
+					//rjo.joinKeyIdx
+					String[][] jk = Planner.genJoinKeyIdx(oj.joinType, oj.joinCond, oj.where);
+					
+					int[][] jkIdx = new int[jk.length][2];
+					
+					for(int k = 0; k < jk.length; ++k){
+						jkIdx[k][0] = Util.findStr(jk[k][0], rjo.srcs[0].schema.col);
+						jkIdx[k][1] = Util.findStr(jk[k][1], rjo.srcs[1].schema.col);
+					}
+					rjo.joinKeyIdx = jkIdx;
+					
+					fdo.entries = oj.reducerEntry;
+					String[] jsrc = new String[]{rjo.srcs[0].schema.name, rjo.srcs[1].schema.name};
+					fdo.fetchSQL = Planner.genSelectClause(jsrc, jsrc, oj.joinType, oj.joinCond, oj.where, oj.fetchCol, null,
+							
+							);
+					//fdo.genID = oj.genID;
 				}
+				else
+					assert false;
+			}
+			else if(ob instanceof OpRelAggr){
+				
 			}
 			
-			
-			fdo.schema = new Schema();
-			fdo.schema.name = this.genTmpTableName(qb.schema.name, i);
-			fdo.schema.col = (String[])ob.fetchCol.clone();
-			for(String c : fdo.schema.col)
-				c.replace('.', '$');
-			fdo.schema.type = new String[fdo.schema.col.length];
-			for(int k = 0; k < fdo.schema.col.length; ++k){
-				fdo.schema.type[k] = getColumnType(qb, fdo.schema.col[k]);
-			}
+			//!!! gen ID !!!
 		}
 		/*
 		OpRelAggr oa = new OpRelAggr();
@@ -473,13 +536,38 @@ public class Planner {
 		
 		//column pruning
 	}
+	Schema genTabSchema(QB qb, String name, ArrayList<String> cols){
+		Schema s = new Schema();
+		s.name = name;
+		s.col = ((ArrayList<String>)cols.clone()).toArray(new String[0]);
+		for(String c : s.col)
+			c.replace('.', '$');
+		s.type = new String[s.col.length];
+		for(int k = 0; k < s.col.length; ++k){
+			s.type[k] = getColumnType(qb, s.col[k]);
+		}
+		s.containID = false;
+		return s;
+	}
+	ArrayList<RootExp> genJoinRhsPred(JoinType joinType, ArrayList<RootExp> joinCond, String[] rhsSrcs, ArrayList<RootExp> where){
+		
+	}
+	
 	
 	static String genSelectClause(String[] src, String[] srcPhy, 
 			JoinType joinType, 
 			ArrayList<RootExp> joinCond,
 			ArrayList<RootExp> where, 
 			ArrayList<String> cols,
-			String prevSrc){
+			String prevSrc,
+			boolean genID
+			){
+		
+	}
+	
+	static String[][] genJoinKeyIdx(JoinType joinType, 
+			ArrayList<RootExp> joinCond,
+			ArrayList<RootExp> where){
 		
 	}
 	

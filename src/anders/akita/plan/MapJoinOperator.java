@@ -12,4 +12,6 @@ public class MapJoinOperator extends FetchDataOperator{
 	
 	String joinClause;
 	
+	boolean containID;
+	//boolean genMidTabID;
 }

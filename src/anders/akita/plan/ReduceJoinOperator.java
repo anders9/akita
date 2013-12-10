@@ -6,4 +6,5 @@ public class ReduceJoinOperator extends FetchDataOperator {
 	
 	int[][] joinKeyIdx;
 	
+	boolean containID;
 }
