@@ -14,3 +14,16 @@ jdbc:useCompression=true
 
      _timeBetweenEvictionRunsMillis：失效检查线程运行时间间隔，如果小于等于0，不会启动检查线程
 ----------
+
+MySQL
+
+内存表：
+1. 参数控制：max_heap_table_size
+2. 到达上线后报错。
+3. 表定义保存在磁盘上，数据和索引保存在内存里面。
+4. 不能包含TEXT,BLOB等字段。
+临时表：
+1. 参数控制：tmp_table_size。
+2. 到达上线后创建文件在磁盘上。
+3. 表定义和数据都在内存里。
+4. 可以包含TEXT, BLOB等字段。

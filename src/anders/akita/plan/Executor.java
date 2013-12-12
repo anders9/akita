@@ -34,10 +34,11 @@ col in ( select icol)      exists ( select * where col = icol )    0 < (select c
 
 col > ALL()     col > (  select max() ...) //if no corelated, transform to sub-Q
 col > ANY()     col > (  select min() ...) //if no corelated, transform to sub-Q
-col != ALL      col not in(..)
-col = ANY       col in(..)
-col = ALL       col = max() && col = min()    not exists ( select * where col != icol)  
-col != ANY      exists ( select * where col != icol)
+col != ALL      col not in(..) ==> not exist (co-related, eq-cond)
+col = ANY       col in(..) ==> ==> exist (co-related, eq-cond)
+col = ALL       col = max() && col = min() 
+ 			||  not exists ( select * where col != icol) (co-related, non-eq-cond£¬ low efficiency) 
+col != ANY      <=> ! (col = ALL)
 
 
 Annotation

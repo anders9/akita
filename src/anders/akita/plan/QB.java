@@ -29,5 +29,8 @@ public class QB {
 	//String[] selAlias;
 	Schema schema;
 	
-	//String name;
+	//!!!!
+	boolean distince;
+	String[] orderby;
+	boolean[] orderbyAsc;
 }

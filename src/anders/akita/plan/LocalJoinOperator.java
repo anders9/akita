@@ -1,10 +1,9 @@
 package anders.akita.plan;
 
-public class ReduceJoinOperator extends FetchDataOperator {
+public class LocalJoinOperator extends FetchDataOperator{
 
-	FetchDataOperator[] srcs;
-	
-	int[][] joinKeyIdx;
+	FetchDataOperator leftSrc;
 	
 	boolean genPrevID; //whether this step need generate ID when fetch previous step output tab
+	
 }

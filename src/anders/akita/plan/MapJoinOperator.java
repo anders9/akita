@@ -4,14 +4,15 @@ public class MapJoinOperator extends FetchDataOperator{
 
 	FetchDataOperator leftSrc;
 	
-	String[] rhsEntries; //may be null
+	//String[] rhsEntries; 
 	
 	String collectNode;
 	
-	String midTab;
+	boolean genPrevID; //whether this step need generate ID when fetch previous step output tab
 	
-	String joinClause;
+	//String midTab;
 	
+	//String joinClause;
 	
-	boolean genIDForResTab;
+	//boolean genIDForResTab;
 }
