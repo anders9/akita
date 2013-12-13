@@ -430,9 +430,13 @@ public class Planner {
 		ArrayList<FetchDataOperator> ops = new ArrayList<FetchDataOperator>();		
 		
 		for(int i = 0; i < opList.size(); ++i){
-			OpBase ob = opList.get(i);
+			OpBase ob = opList.get(i), prevOb = null;
 			
-			FetchDataOperator fdo = null;
+			FetchDataOperator fdo = null, prevOp = null;
+			if(i > 0){
+				prevOp = ops.get(ops.size() - 1);
+				prevOb = opList.get(i - 1);
+			}
 			
 			if(ob instanceof OpFetchData){
 				OpFetchData ofd = (OpFetchData)ob;
@@ -457,7 +461,7 @@ public class Planner {
 					LocalJoinOperator ljo = (LocalJoinOperator)fdo;
 					fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, oj.containID);
 					
-					ljo.leftSrc = ops.get(i - 1);
+					ljo.leftSrc = prevOp;
 					assert oj.containID == true;
 					
 					ljo.genPrevID = !ljo.leftSrc.schema.containID;
@@ -473,7 +477,7 @@ public class Planner {
 					fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, oj.containID);
 					MapJoinOperator mjo = (MapJoinOperator)fdo;
 					
-					mjo.leftSrc = ops.get(i - 1);
+					mjo.leftSrc = prevOp;
 					fdo.entries = oj.rhsEntry;
 					
 					mjo.collectNode = Meta.randomEntries(1)[0];
@@ -495,7 +499,7 @@ public class Planner {
 					ReduceJoinOperator rjo = (ReduceJoinOperator)fdo;
 					
 					rjo.srcs = new FetchDataOperator[2];
-					rjo.srcs[0] = ops.get(i - 1);
+					rjo.srcs[0] = prevOp;
 					
 					ArrayList<RootExp> rhsWhere = genJoinRhsPred(oj.joinType, oj.joinCond, oj.src, oj.where);
 					
@@ -543,9 +547,6 @@ public class Planner {
 				boolean containID = ob.genID;//if $genID for next step, no need to re-gen, only keep ID column from src-tab
 				OpRelAggr ora = new OpRelAggr();
 				
-				FetchDataOperator prevOp = ops.get(i - 1);
-				OpBase prevOb = opList.get(i - 1);
-				
 				if(prevOp.entries.length == 1){
 					//push current node into prev-node (fetch data)
 					ob.qbClause = Planner.genAggrClause(prevOb.qbClause, ora.fetchCol, null, 
@@ -553,8 +554,7 @@ public class Planner {
 					prevOb.qbClause = ob.qbClause;
 					
 					//replace previous operator's fetch data SQL, not gen new operator
-					prevOp.fetchSQL = ob.qbClause.toString();
-					
+					prevOp.fetchSQL = ob.qbClause.toString();					
 					prevOp.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, containID);
 				}
 				else{
