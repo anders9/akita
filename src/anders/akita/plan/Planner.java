@@ -805,7 +805,9 @@ public class Planner {
 			return qb.srcPhy[idx];
 		return null;
 	}
-	
+	/*
+	 * this function can't process col that ref inner-query table !!!
+	 */
 	static String getColumnType(QB qb, String col){
 		String src = Planner.getColSrc(col);
 		String colName = Planner.getColName(col);
