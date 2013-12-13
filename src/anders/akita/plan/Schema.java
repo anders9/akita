@@ -8,6 +8,6 @@ public class Schema {
 	
 	String[] type;
 	
-	boolean containID;
+	boolean containID = false;
 	
 }

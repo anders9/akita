@@ -10,6 +10,8 @@ public class FetchDataOperator {
 	
 	String fetchSQL; // if null, use: select * from schema.name;
 	
+	ArrayList<String> nonRelSubQVar;
+	
 	//boolean containID; // move into schema
 	
 	ArrayList<String> tmpTabList;//temp tab generated in this step, on each Entry-Node listed in $entries

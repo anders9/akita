@@ -10,9 +10,9 @@ import anders.util.*;
 public class Planner {
 	
 	QB rootqb;
-	int qid;
+	String qid;
 	
-	public Planner(QB qb, int qid){
+	public Planner(QB qb, String qid){
 		this.rootqb = qb;
 		this.qid = qid;
 	}
@@ -193,7 +193,7 @@ public class Planner {
 	}
 	
 	String genTmpTableName(String qbName, int step){
-		return String.format("$$ts%d_%s_%d", qid, qbName, step); 
+		return String.format("%s_ts_%s_%d", qid, qbName, step); 
 	}
 	
 	FetchDataOperator[] genSubQBPlan(QB qb){
@@ -439,15 +439,22 @@ public class Planner {
 			}
 			
 			if(ob instanceof OpFetchData){
+				
+				assert i == 0;
+				
 				OpFetchData ofd = (OpFetchData)ob;
 				fdo = new FetchDataOperator();
-				fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, false);
+				//fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, false);
 				
-				ob.qbClause = Planner.genSelectClause(ofd.src, ofd.srcPhy,
+				ob.qbClause = Planner.genSelectClause(qb, i, ofd.src, ofd.srcPhy,
 						ofd.joinType,
 						ofd.joinCond,
 						ofd.where, ofd.fetchCol, null, false);
+				fdo.schema = ob.qbClause.schema;
+				
 				fdo.fetchSQL = ob.qbClause.toString();
+				
+				fdo.nonRelSubQVar = ob.qbClause.nonRelSubQVar;
 				fdo.entries = ofd.entry;
 				
 				fdo.tmpTabList = new ArrayList<String>();//No temp tab generated this step
@@ -459,22 +466,25 @@ public class Planner {
 				if(oj.joinPolicy == JoinPolicy.Local){
 					fdo = new LocalJoinOperator();
 					LocalJoinOperator ljo = (LocalJoinOperator)fdo;
-					fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, oj.containID);
+					//fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, oj.containID);
 					
 					ljo.leftSrc = prevOp;
 					assert oj.containID == true;
 					
 					ljo.genPrevID = !ljo.leftSrc.schema.containID;
 					fdo.entries = ljo.leftSrc.entries;
-					ob.qbClause = Planner.genSelectClause(oj.src, oj.srcPhy, 
+					ob.qbClause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy, 
 							oj.joinType, oj.joinCond, oj.where, oj.fetchCol, new String[]{ljo.leftSrc.schema.name}, true);
+					fdo.schema = ob.qbClause.schema;
 					fdo.fetchSQL = ob.qbClause.toString();
+					fdo.nonRelSubQVar = ob.qbClause.nonRelSubQVar;
+					
 					fdo.tmpTabList = new ArrayList<String>();
 					fdo.tmpTabList.add(ljo.leftSrc.schema.name);
 				}
 				else if(oj.joinPolicy == JoinPolicy.Mapside){
 					fdo = new MapJoinOperator();
-					fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, oj.containID);
+					//fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, oj.containID);
 					MapJoinOperator mjo = (MapJoinOperator)fdo;
 					
 					mjo.leftSrc = prevOp;
@@ -483,19 +493,23 @@ public class Planner {
 					mjo.collectNode = Meta.randomEntries(1)[0];
 					mjo.genPrevID = oj.containID && !mjo.leftSrc.schema.containID;
 					
-					ob.qbClause = Planner.genSelectClause(oj.src, oj.srcPhy, 
+					ob.qbClause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy, 
 							oj.joinType,
 							oj.joinCond,
 							oj.where, oj.fetchCol, new String[]{mjo.leftSrc.schema.name},
 							oj.containID
 							);
 					fdo.fetchSQL = ob.qbClause.toString();
+					fdo.schema = ob.qbClause.schema;
+					
+					fdo.nonRelSubQVar = ob.qbClause.nonRelSubQVar;
+					
 					fdo.tmpTabList = new ArrayList<String>();
 					fdo.tmpTabList.add(mjo.leftSrc.schema.name);
 				}
 				else if(oj.joinPolicy == JoinPolicy.Reduceside){
 					fdo = new ReduceJoinOperator();
-					fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, oj.containID);
+					//fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, oj.containID);
 					ReduceJoinOperator rjo = (ReduceJoinOperator)fdo;
 					
 					rjo.srcs = new FetchDataOperator[2];
@@ -510,11 +524,16 @@ public class Planner {
 					if(oj.joinCond != null)
 						rhsCols = Util.<String>mergeArrayList(rhsCols, getCoverCol(oj.joinCond));
 					rhsCols = filteCoverCol(oj.src, rhsCols);
-					rjo.srcs[1].schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i) + "_rhs", rhsCols, false);
+					//rjo.srcs[1].schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i) + "_rhs", rhsCols, false);
 					rjo.srcs[1].entries = oj.rhsEntry;
-					rjo.srcs[1].fetchSQL = Planner.genSelectClause(oj.src, oj.srcPhy,
-							JoinType.INNER, null, rhsWhere, rhsCols, null, false)
-							.toString();
+					
+					QBClause rhsQBclause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy,
+							JoinType.INNER, null, rhsWhere, rhsCols, null, false);
+							
+					rjo.srcs[1].fetchSQL = rhsQBclause.toString();
+					rjo.srcs[1].schema = rhsQBclause.schema;
+					rjo.srcs[1].schema.name += "_rhs"; //avoid name conflict with result fetch table
+					rjo.srcs[1].nonRelSubQVar = rhsQBclause.nonRelSubQVar;
 					
 					fdo.tmpTabList = new ArrayList<String>();
 					fdo.tmpTabList.add(rjo.srcs[0].schema.name);
@@ -533,10 +552,14 @@ public class Planner {
 					
 					fdo.entries = oj.reducerEntry;
 					String[] jsrc = new String[]{rjo.srcs[0].schema.name, rjo.srcs[1].schema.name};
-					ob.qbClause = Planner.genSelectClause(new String[0], new String[0], oj.joinType, oj.joinCond, oj.where, oj.fetchCol, jsrc,
+					ob.qbClause = Planner.genSelectClause(qb, i, new String[0], new String[0],
+							oj.joinType, oj.joinCond, oj.where, oj.fetchCol, jsrc,
 							oj.containID
 							);
+					fdo.schema = ob.qbClause.schema;
 					fdo.fetchSQL = ob.qbClause.toString();
+					fdo.nonRelSubQVar = ob.qbClause.nonRelSubQVar;
+					
 					rjo.genPrevID = oj.containID && !rjo.srcs[0].schema.containID;
 				}
 				else
@@ -549,24 +572,26 @@ public class Planner {
 				
 				if(prevOp.entries.length == 1){
 					//push current node into prev-node (fetch data)
-					ob.qbClause = Planner.genAggrClause(prevOb.qbClause, ora.fetchCol, null, 
+					ob.qbClause = Planner.genAggrClause(qb, i, prevOb.qbClause, ora.fetchCol, null, 
 							new String[]{"id"}, ora.havingPreds, containID);
 					prevOb.qbClause = ob.qbClause;
 					
 					//replace previous operator's fetch data SQL, not gen new operator
-					prevOp.fetchSQL = ob.qbClause.toString();					
-					prevOp.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, containID);
+					prevOp.fetchSQL = ob.qbClause.toString();
+					prevOp.schema = ob.qbClause.schema;
+					prevOp.nonRelSubQVar = ob.qbClause.nonRelSubQVar;
+					//prevOp.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, containID);
 				}
 				else{
 					QBClause[] qbClauses = new QBClause[2];
-					Schema[] schemas = new Schema[2];
 					Planner.gen2PhaseAggrClause(qb, i, prevOb.qbClause, ora.fetchCol, null, 
 							new String[]{"id"}, ora.havingPreds, containID,
-							qbClauses, schemas);
+							qbClauses);
 					//modify previous node
 					prevOb.qbClause = qbClauses[0];
 					prevOp.fetchSQL = qbClauses[0].toString();
-					prevOp.schema = schemas[0];
+					prevOp.nonRelSubQVar = qbClauses[0].nonRelSubQVar;
+					prevOp.schema = qbClauses[0].schema;
 					
 					fdo = new AggrOperator();
 					AggrOperator ao = (AggrOperator)fdo;
@@ -574,9 +599,11 @@ public class Planner {
 					ao.src = prevOp;
 					fdo.entries = ora.reducerEntry;
 					
-					ora.qbClause = qbClauses[1];
+					ob.qbClause = qbClauses[1];
 					fdo.fetchSQL = qbClauses[1].toString();
-					fdo.schema = schemas[1];
+					//fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, containID);
+					fdo.schema = qbClauses[1].schema;
+					fdo.nonRelSubQVar = qbClauses[1].nonRelSubQVar;
 					fdo.tmpTabList = new ArrayList<String>();
 					fdo.tmpTabList.add(ao.src.schema.name);
 					
@@ -585,11 +612,95 @@ public class Planner {
 			}
 		}
 		
-		//append Aggr clause if exist, if last operator is AggrOp, then generate two-level aggr clause
+		FetchDataOperator prevOp = ops.get(ops.size() - 1);
+		QBClause prevClause = opList.get(opList.size() - 1).qbClause;
+		int obIdx = opList.size();
 		
-
+		
+		if(qb.groupby != null){
+			//append Aggr clause if exist, if last operator is AggrOp, then generate two-level aggr clause
+			String[] groupby = new String[qb.groupby.length];
+			for(int i = 0; i < groupby.length; ++i)
+				groupby[i] = qb.groupby[i].toString();
+			
+			if(prevOp.entries.length == 1){
+				//push current node into prev-node (fetch data)
+				prevClause = Planner.genAggrClause(qb, obIdx, prevClause, null, 
+						groupby, qb.havingPreds, false);
+				
+				//replace previous operator's fetch data SQL, not gen new operator
+				prevOp.fetchSQL = prevClause.toString();
+				prevOp.nonRelSubQVar = prevClause.nonRelSubQVar;
+				prevOp.schema = prevClause.schema;
+			}
+			else{
+				QBClause[] qbClauses = new QBClause[2];
+				Planner.gen2PhaseAggrClause(qb, obIdx, prevClause, null,  
+						groupby, qb.havingPreds, false,
+						qbClauses);
+				//modify previous node
+				//prevClause = qbClauses[0];
+				prevOp.fetchSQL = qbClauses[0].toString();
+				prevOp.nonRelSubQVar = qbClauses[0].nonRelSubQVar;
+				prevOp.schema = qbClauses[0].schema;
+				
+				AggrOperator ao = new AggrOperator();
+				
+				ao.src = prevOp;
+				ao.entries = Meta.randomEntries(qb.aggrReducerN);
+				
+				prevClause = qbClauses[1];
+				ao.fetchSQL = qbClauses[1].toString();
+				ao.schema = qbClauses[1].schema;
+				ao.nonRelSubQVar = qbClauses[1].nonRelSubQVar;
+				
+				ao.tmpTabList = new ArrayList<String>();
+				ao.tmpTabList.add(ao.src.schema.name);
+				
+				ops.add(ao);
+				prevOp = ao;
+			}			
+		}
+		else{
+			//!!!
+			//replace select expr list into prevClause
+			
+			prevClause = Planner.genSelExpClause(qb, obIdx, prevClause);
+			prevOp.fetchSQL = prevClause.toString();
+			prevOp.schema = prevClause.schema;
+			prevOp.nonRelSubQVar = prevClause.nonRelSubQVar;
+		}
+		++obIdx;
+		
+		//last step,
+		//1. distinct flag
+		//2. order by + top K
+		//3. balance table data (shuffle)
+		
+		if(prevOp.entries.length == 1){
+			//no need shuffle, add possible distinct flag & order-by top k into prevClause
+		}
+		else{
+			if(qb.orderby != null){
+				//no shuffle
+				//phase 1. add [distinct] & order-by top k into prevClause
+				//phase 2. collect data into one node and add [distinct] & order-by top k again
+			}
+			else{
+				//no order by
+				if(qb.distinct){
+					//phase 1. add distinct into prevClause
+					//phase 2. shuffle with all column, then add distinct again
+				}
+				else{
+					//direct shuffle, or do nothing
+				}
+			}
+		}
 	}
-	Schema genTabSchema(QB qb, String name, ArrayList<String> cols, boolean withID){
+	
+	/*
+	static Schema genTabSchema(QB qb, String name, ArrayList<String> cols, boolean withID){
 		Schema s = new Schema();
 		s.name = name;
 		s.col = ((ArrayList<String>)cols.clone()).toArray(new String[0]);
@@ -601,8 +712,9 @@ public class Planner {
 		}
 		s.containID = withID;
 		return s;
-	}
-	ArrayList<RootExp> genJoinRhsPred(JoinType joinType, ArrayList<RootExp> joinCond, String[] rhsSrcs, ArrayList<RootExp> where){
+	}*/
+	
+	static ArrayList<RootExp> genJoinRhsPred(JoinType joinType, ArrayList<RootExp> joinCond, String[] rhsSrcs, ArrayList<RootExp> where){
 		
 	}
 	
@@ -611,6 +723,8 @@ public class Planner {
 		String fromClause;
 		String[] rawSrcs;//when Column ref tab not in this array, then translate into tab$column 
 		String whereClause;
+		ArrayList<String> nonRelSubQVar;
+		Schema schema;
 		
 		int aggrLevel;// = 0, 1, 2
 		
@@ -639,7 +753,8 @@ public class Planner {
 		}
 	}
 	
-	static QBClause genSelectClause(String[] src, String[] srcPhy, 
+	static QBClause genSelectClause(QB qb, int stepIdx,
+			String[] src, String[] srcPhy, 
 			JoinType joinType, 
 			ArrayList<RootExp> joinCond,
 			ArrayList<RootExp> where, 
@@ -650,20 +765,24 @@ public class Planner {
 		
 	}
 	
-	static QBClause genAggrClause(QBClause prevClause, 
-			ArrayList<String> selList, ArrayList<RootExp> selListExp,  String[] groupby, ArrayList<RootExp> having,
+	static QBClause genSelExpClause(QB qb, int stepIdx, QBClause prevClause){
+		
+	}
+	
+	static QBClause genAggrClause(QB qb, int stepIdx, QBClause prevClause, 
+			ArrayList<String> selList, String[] groupby, ArrayList<RootExp> having,
 			boolean withID){
 		
 	}
 	
 	
-	static boolean gen2PhaseAggrClause(QB qb, int idx, QBClause prevClause, 
-			ArrayList<String> selList, ArrayList<RootExp> selListExp,  String[] groupby, ArrayList<RootExp> having,
+	static boolean gen2PhaseAggrClause(QB qb, int stepIdx, QBClause prevClause, 
+			ArrayList<String> selList, String[] groupby, ArrayList<RootExp> having,
 			boolean withID,
-			QBClause[] qbClauses,
-			Schema[] schemas
+			QBClause[] qbClauses
 			){
-		
+		//!!!
+		//if selList == NULL, then generate QB self's aggr operator
 	}
 	
 	static String[][] genJoinKeyIdx(JoinType joinType, 
@@ -692,8 +811,6 @@ public class Planner {
 		String colName = Planner.getColName(col);
 		
 		String tab = Planner.src2PhySrc(qb, src);
-		
-		
 		//!!!
 		//process temp table#
 		QB pqb = qb.prevQBs.get(tab);

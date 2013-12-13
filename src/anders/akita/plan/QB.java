@@ -8,7 +8,7 @@ public class QB {
 	
 	//ArrayList<QB> prevQBs;
 	HashMap<String, QB> prevQBs;//contain nested from clause & non-relative inner-query
-	
+	HashMap<String, ArrayList<String>> nonRelSubQVarMap;
 	//SubQB[] subQBs;
 	
 	String[] src;
@@ -21,7 +21,7 @@ public class QB {
 	
 	ArrayList<RootExp> where;
 	
-	ZColRef[] groupby;//may be length = 0 
+	ZColRef[] groupby;//may be length = 0, when aggr the hole table. = null when not contain aggr operation
 	int aggrReducerN;
 	ArrayList<RootExp> havingPreds;
 	
@@ -30,7 +30,8 @@ public class QB {
 	Schema schema;
 	
 	//!!!!
-	boolean distince;
-	String[] orderby;
+	boolean distinct;
+	String[] orderby;//if null, no order-by operation
 	boolean[] orderbyAsc;
+	int shuffleCnt; // if == 0, no shuffle
 }
