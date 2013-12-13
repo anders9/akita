@@ -560,7 +560,7 @@ public class Planner {
 				else{
 					QBClause[] qbClauses = new QBClause[2];
 					Schema[] schemas = new Schema[2];
-					Planner.gen2PhaseAggrClause(prevOb.qbClause, ora.fetchCol, null, 
+					Planner.gen2PhaseAggrClause(qb, i, prevOb.qbClause, ora.fetchCol, null, 
 							new String[]{"id"}, ora.havingPreds, containID,
 							qbClauses, schemas);
 					//modify previous node
@@ -586,6 +586,7 @@ public class Planner {
 		}
 		
 		//append Aggr clause if exist, if last operator is AggrOp, then generate two-level aggr clause
+		
 
 	}
 	Schema genTabSchema(QB qb, String name, ArrayList<String> cols, boolean withID){
@@ -656,7 +657,7 @@ public class Planner {
 	}
 	
 	
-	static boolean gen2PhaseAggrClause(QBClause prevClause, 
+	static boolean gen2PhaseAggrClause(QB qb, int idx, QBClause prevClause, 
 			ArrayList<String> selList, ArrayList<RootExp> selListExp,  String[] groupby, ArrayList<RootExp> having,
 			boolean withID,
 			QBClause[] qbClauses,

@@ -13,7 +13,7 @@ inner-query 's rel-condition
 inner-query fields-list cond:
 	1. exists => *
 	2. all/any/in => 1 expr
-	3. noraml => with aggregation
+	3. normal => with aggregation
 	
 expand * , tab.*
 check col repeat
