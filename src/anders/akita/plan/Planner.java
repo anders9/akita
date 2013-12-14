@@ -43,8 +43,8 @@ public class Planner {
 		ArrayList<String> fetchCol;
 		QBClause qbClause;
 		int endPos;
-		int rsqPos = -1;
-		int rsqEndPos = -1;
+		int rsqPos = -1; // the index in relSubQ array
+		int rsqEndPos = -1; // the end position in this relSubQ's src array
 		boolean genID = false;//for next step
 		boolean containID = false;//whether this step's output tab contain ID
 	}
@@ -54,7 +54,8 @@ public class Planner {
 		String[] srcPhy;
 		JoinType joinType = JoinType.INNER;
 		ArrayList<RootExp> joinCond;		
-		String[] entry;
+		//String[] entry;
+		String distrSrcPhy;
 		int distrIdx;
 		ArrayList<RootExp> where;
 	}
@@ -65,14 +66,14 @@ public class Planner {
 		ArrayList<RootExp> joinCond;
 		JoinPolicy joinPolicy;
 		int joinReducerN;
-		String[] rhsEntry;
-		String[] reducerEntry;
+		//String[] rhsEntry;
+		//String[] reducerEntry;
 		//String collectEntry;
 		ArrayList<RootExp> where;
 	}
 	static class OpRelAggr extends OpBase{
 		int aggrReducerN;
-		String[] reducerEntry;
+		//String[] reducerEntry;
 		//RootExp[] aggrExprs;
 		//String[] groupby;//if NULL, is for relative-sub-query
 		ArrayList<RootExp> havingPreds;
@@ -240,7 +241,7 @@ public class Planner {
 		int distrIdx = -1;
 		while(pos < end){
 			if(/*Meta.getTab(qb.srcPhy[pos]).isDistributed()*/
-					Planner.checkSrcDistribute(qb, qb.src[pos]))
+					Planner.checkSrcPhyDistribute(qb, qb.srcPhy[pos]))
 				++distr;
 			if(distr == 1)
 				distrIdx = pos;
@@ -256,10 +257,11 @@ public class Planner {
 			ofp.srcPhy[i] = qb.srcPhy[i];
 		}
 		ofp.distrIdx = distrIdx;
-		ofp.entry = distrIdx == -1 ?
-				Meta.randomEntries(1) : 
+		//ofp.entry = distrIdx == -1 ?
+				//Meta.randomEntries(1) : 
 				/*Meta.getTab(ofp.srcPhy[distrIdx]).getEntries()*/
-				Planner.getSrcEntries(qb, qb.src[distrIdx]);
+				//Planner.getSrcPhyEntries(qb, qb.src[distrIdx]);
+		
 		ofp.endPos = pos;
 		ofp.joinType = qb.joinType;
 		ofp.joinCond = qb.joinCond;
@@ -274,7 +276,7 @@ public class Planner {
 				++pos;
 				while (pos < end) {
 					if (/*Meta.getTab(qb.srcPhy[pos]).isDistributed()*/
-							Planner.checkSrcDistribute(qb, qb.src[pos]))
+							Planner.checkSrcPhyDistribute(qb, qb.srcPhy[pos]))
 						break;
 				}
 
@@ -290,9 +292,9 @@ public class Planner {
 				oj.joinCond = qb.joinCond;
 				oj.joinPolicy = qb.joinPolicy[beg];
 				oj.joinReducerN = qb.joinReducerN[beg];
-				oj.rhsEntry = /*Meta.getTab(oj.srcPhy[0]).getEntries()*/Planner.getSrcEntries(qb, qb.src[0]);
-				if(oj.joinPolicy == JoinPolicy.Reduceside)
-					oj.reducerEntry = Meta.randomEntries(oj.joinReducerN);
+				//oj.rhsEntry = /*Meta.getTab(oj.srcPhy[0]).getEntries()*/Planner.getSrcEntries(qb, qb.src[0]);
+				//if(oj.joinPolicy == JoinPolicy.Reduceside)
+				//	oj.reducerEntry = Meta.randomEntries(oj.joinReducerN);
 				
 				oj.endPos = pos;
 				oj.where = mergePredArray(pdList, beg, pos);
@@ -309,7 +311,7 @@ public class Planner {
 				opList.get(opList.size() - 1).genID = true;
 				int k = 0;
 				while(k < rsq.srcPhy.length && /* !Meta.getTab(rsq.srcPhy[k]).isDistributed()*/
-						!Planner.checkSrcDistribute(qb, qb.src[k])
+						!Planner.checkSrcPhyDistribute(qb, qb.srcPhy[k])
 						)
 					++k;
 				
@@ -334,7 +336,7 @@ public class Planner {
 					++k;
 					while (k < rsq.srcPhy.length) {
 						if (/*Meta.getTab(rsq.srcPhy[k]).isDistributed()*/
-								Planner.checkSrcDistribute(qb, qb.src[k]))
+								Planner.checkSrcPhyDistribute(qb, qb.srcPhy[k]))
 							break;
 						++k;
 					}
@@ -349,9 +351,9 @@ public class Planner {
 					oj.joinType = JoinType.INNER;
 					oj.joinPolicy = rsq.joinPolicy[beg];
 					oj.joinReducerN = rsq.joinReducerN[beg];
-					oj.rhsEntry = /*Meta.getTab(oj.srcPhy[0]).getEntries()*/Planner.getSrcEntries(qb, oj.src[0]);
-					if(oj.joinPolicy == JoinPolicy.Reduceside)
-						oj.reducerEntry = Meta.randomEntries(oj.joinReducerN);
+					//oj.rhsEntry = /*Meta.getTab(oj.srcPhy[0]).getEntries()*/Planner.getSrcEntries(qb, oj.src[0]);
+					//if(oj.joinPolicy == JoinPolicy.Reduceside)
+					//	oj.reducerEntry = Meta.randomEntries(oj.joinReducerN);
 					
 					oj.endPos = pos;
 					oj.rsqPos = relPos;
@@ -363,7 +365,7 @@ public class Planner {
 				//add aggregation node for Relative-Sub-query
 				OpRelAggr oa = new OpRelAggr();
 				oa.aggrReducerN = rsq.aggrReducerN;
-				oa.reducerEntry = Meta.randomEntries(rsq.aggrReducerN);
+				//oa.reducerEntry = Meta.randomEntries(rsq.aggrReducerN);
 				oa.havingPreds = new ArrayList<RootExp>();
 				oa.havingPreds.add(rsq.havingPreds);
 				oa.containID = false;//By default, AGGR-node output table not contain ID, but if next step need ID (chain Inner-query),
@@ -446,7 +448,9 @@ public class Planner {
 				fdo = new FetchDataOperator();
 				//fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, false);
 				
-				ob.qbClause = Planner.genSelectClause(qb, i, ofd.src, ofd.srcPhy,
+				ob.qbClause = Planner.genSelectClause(qb, i, 
+						ofd.src, ofd.srcPhy,
+						null,
 						ofd.joinType,
 						ofd.joinCond,
 						ofd.where, ofd.fetchCol, null, false);
@@ -455,7 +459,9 @@ public class Planner {
 				fdo.fetchSQL = ob.qbClause.toString();
 				
 				fdo.nonRelSubQVar = ob.qbClause.nonRelSubQVar;
-				fdo.entries = ofd.entry;
+				fdo.entries = ofd.distrIdx == -1 ?
+						Meta.randomEntries(1) : 
+						Planner.getSrcPhyEntries(qb, ofd.srcPhy[ofd.distrIdx]);
 				
 				fdo.tmpTabList = new ArrayList<String>();//No temp tab generated this step
 				
@@ -473,7 +479,8 @@ public class Planner {
 					
 					ljo.genPrevID = !ljo.leftSrc.schema.containID;
 					fdo.entries = ljo.leftSrc.entries;
-					ob.qbClause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy, 
+					ob.qbClause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy,
+							qb.relSubQ[ob.rsqPos],
 							oj.joinType, oj.joinCond, oj.where, oj.fetchCol, new String[]{ljo.leftSrc.schema.name}, true);
 					fdo.schema = ob.qbClause.schema;
 					fdo.fetchSQL = ob.qbClause.toString();
@@ -488,12 +495,13 @@ public class Planner {
 					MapJoinOperator mjo = (MapJoinOperator)fdo;
 					
 					mjo.leftSrc = prevOp;
-					fdo.entries = oj.rhsEntry;
+					fdo.entries = Planner.getSrcPhyEntries(qb, oj.srcPhy[0]);
 					
 					mjo.collectNode = Meta.randomEntries(1)[0];
 					mjo.genPrevID = oj.containID && !mjo.leftSrc.schema.containID;
 					
 					ob.qbClause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy, 
+							ob.rsqPos == -1 ? null : qb.relSubQ[ob.rsqPos],
 							oj.joinType,
 							oj.joinCond,
 							oj.where, oj.fetchCol, new String[]{mjo.leftSrc.schema.name},
@@ -525,9 +533,10 @@ public class Planner {
 						rhsCols = Util.<String>mergeArrayList(rhsCols, getCoverCol(oj.joinCond));
 					rhsCols = filteCoverCol(oj.src, rhsCols);
 					//rjo.srcs[1].schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i) + "_rhs", rhsCols, false);
-					rjo.srcs[1].entries = oj.rhsEntry;
+					rjo.srcs[1].entries = Planner.getSrcPhyEntries(qb, oj.srcPhy[0]);;
 					
 					QBClause rhsQBclause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy,
+							ob.rsqPos == -1 ? null : qb.relSubQ[ob.rsqPos],
 							JoinType.INNER, null, rhsWhere, rhsCols, null, false);
 							
 					rjo.srcs[1].fetchSQL = rhsQBclause.toString();
@@ -550,9 +559,10 @@ public class Planner {
 					}
 					rjo.joinKeyIdx = jkIdx;
 					
-					fdo.entries = oj.reducerEntry;
+					fdo.entries = Meta.randomEntries(oj.joinReducerN);
 					String[] jsrc = new String[]{rjo.srcs[0].schema.name, rjo.srcs[1].schema.name};
 					ob.qbClause = Planner.genSelectClause(qb, i, new String[0], new String[0],
+							ob.rsqPos == -1 ? null : qb.relSubQ[ob.rsqPos],
 							oj.joinType, oj.joinCond, oj.where, oj.fetchCol, jsrc,
 							oj.containID
 							);
@@ -572,7 +582,9 @@ public class Planner {
 				
 				if(prevOp.entries.length == 1){
 					//push current node into prev-node (fetch data)
-					ob.qbClause = Planner.genAggrClause(qb, i, prevOb.qbClause, ora.fetchCol, null, 
+					ob.qbClause = Planner.genAggrClause(qb, i, prevOb.qbClause, 
+							qb.relSubQ[ob.rsqPos],
+							ora.fetchCol,
 							new String[]{"id"}, ora.havingPreds, containID);
 					prevOb.qbClause = ob.qbClause;
 					
@@ -584,7 +596,9 @@ public class Planner {
 				}
 				else{
 					QBClause[] qbClauses = new QBClause[2];
-					Planner.gen2PhaseAggrClause(qb, i, prevOb.qbClause, ora.fetchCol, null, 
+					Planner.gen2PhaseAggrClause(qb, i, prevOb.qbClause,
+							qb.relSubQ[ob.rsqPos],
+							ora.fetchCol,  
 							new String[]{"id"}, ora.havingPreds, containID,
 							qbClauses);
 					//modify previous node
@@ -597,7 +611,7 @@ public class Planner {
 					AggrOperator ao = (AggrOperator)fdo;
 					//fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, containID);
 					ao.src = prevOp;
-					fdo.entries = ora.reducerEntry;
+					fdo.entries = Meta.randomEntries(ora.aggrReducerN);
 					
 					ob.qbClause = qbClauses[1];
 					fdo.fetchSQL = qbClauses[1].toString();
@@ -625,7 +639,7 @@ public class Planner {
 			
 			if(prevOp.entries.length == 1){
 				//push current node into prev-node (fetch data)
-				prevClause = Planner.genAggrClause(qb, obIdx, prevClause, null, 
+				prevClause = Planner.genAggrClause(qb, obIdx, prevClause, null, null, 
 						groupby, qb.havingPreds, false);
 				
 				//replace previous operator's fetch data SQL, not gen new operator
@@ -635,7 +649,7 @@ public class Planner {
 			}
 			else{
 				QBClause[] qbClauses = new QBClause[2];
-				Planner.gen2PhaseAggrClause(qb, obIdx, prevClause, null,  
+				Planner.gen2PhaseAggrClause(qb, obIdx, prevClause, null, null,  
 						groupby, qb.havingPreds, false,
 						qbClauses);
 				//modify previous node
@@ -714,7 +728,8 @@ public class Planner {
 		return s;
 	}*/
 	
-	static ArrayList<RootExp> genJoinRhsPred(JoinType joinType, ArrayList<RootExp> joinCond, String[] rhsSrcs, ArrayList<RootExp> where){
+	static ArrayList<RootExp> genJoinRhsPred(JoinType joinType, 
+			ArrayList<RootExp> joinCond, String[] rhsSrcs, ArrayList<RootExp> where){
 		
 	}
 	
@@ -755,6 +770,7 @@ public class Planner {
 	
 	static QBClause genSelectClause(QB qb, int stepIdx,
 			String[] src, String[] srcPhy, 
+			RelSubQuery rsq, //if Inner-Q, this RSQ used for generate middle expr's type(need check ref's srcPhy)
 			JoinType joinType, 
 			ArrayList<RootExp> joinCond,
 			ArrayList<RootExp> where, 
@@ -770,6 +786,7 @@ public class Planner {
 	}
 	
 	static QBClause genAggrClause(QB qb, int stepIdx, QBClause prevClause, 
+			RelSubQuery rsq, //if Inner-Q, this RSQ used for generate middle expr's type(need check ref's srcPhy)
 			ArrayList<String> selList, String[] groupby, ArrayList<RootExp> having,
 			boolean withID){
 		
@@ -777,6 +794,7 @@ public class Planner {
 	
 	
 	static boolean gen2PhaseAggrClause(QB qb, int stepIdx, QBClause prevClause, 
+			RelSubQuery rsq, //if Inner-Q, this RSQ used for generate middle expr's type(need check ref's srcPhy)
 			ArrayList<String> selList, String[] groupby, ArrayList<RootExp> having,
 			boolean withID,
 			QBClause[] qbClauses
@@ -791,28 +809,33 @@ public class Planner {
 		
 	}
 	
-	static String[] getSrcEntries(QB qb, String src){
+	static String[] getSrcPhyEntries(QB qb, String srcPhy){
 		
 	}
 	
-	static boolean checkSrcDistribute(QB qb, String src){
+	static boolean checkSrcPhyDistribute(QB qb, String srcPhy){
 		
 	}
 	
-	static String src2PhySrc(QB qb, String src){
+
+	static String src2PhySrc(QB qb, String src, String[] extSrc, String[] extSrcPhy){
 		int idx = Util.findStr(src, qb.src);
 		if(idx != -1)
 			return qb.srcPhy[idx];
+		if(extSrc != null){
+			idx = Util.findStr(src, extSrc);
+			if(idx != -1)
+				return extSrcPhy[idx];
+		}
 		return null;
 	}
-	/*
-	 * this function can't process col that ref inner-query table !!!
-	 */
-	static String getColumnType(QB qb, String col){
+
+	
+	static String getColumnType(QB qb, String col, String[] extSrc, String[] extSrcPhy){
 		String src = Planner.getColSrc(col);
 		String colName = Planner.getColName(col);
 		
-		String tab = Planner.src2PhySrc(qb, src);
+		String tab = Planner.src2PhySrc(qb, src, extSrc, extSrcPhy);
 		//!!!
 		//process temp table#
 		QB pqb = qb.prevQBs.get(tab);
