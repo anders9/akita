@@ -22,6 +22,11 @@ public class QBParser {
 		QB qb = new QB();
 		
 		//1. generate from list, including sub-q in from list
+		ZFromClause fc = q.getFrom();
+		qb.joinType = fc.getJoinType();
+		
+		fc.items.get(0).getFieldList()
+		
 		
 		//2. check aggr
 		

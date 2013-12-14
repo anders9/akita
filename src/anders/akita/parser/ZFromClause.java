@@ -2,6 +2,8 @@ package anders.akita.parser;
 
 import java.util.*;
 
+import anders.akita.plan.JoinType;
+
 public class ZFromClause {
 
 	public Vector<ZFromItemEx> items;
@@ -17,6 +19,15 @@ public class ZFromClause {
 	}
 	public ZFromItemEx getItem(int idx){
 		return (ZFromItemEx)items.get(idx);
+	}
+	
+	public JoinType getJoinType(){
+		switch(join_type){
+		case INNER_JOIN: return JoinType.INNER;
+		case LEFT_JOIN: return JoinType.LEFT;
+		case RIGHT_JOIN: return JoinType.RIGHT;
+		default: return null;
+		}
 	}
 	
 	public ZFromClause(int join_type, Vector<ZFromItemEx> items, ZExp join_cond){
