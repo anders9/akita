@@ -50,6 +50,7 @@ PARSER_BEGIN(ZqlJJParser)
 
 package anders.akita.parser;
 
+import anders.akita.plan.*;
 import java.io.*;
 import java.util.*;
 
@@ -164,6 +165,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_LEFT:"LEFT">
 |   <K_LIKE:"LIKE">
 |   <K_LOCK:"LOCK">
+|	<K_MAPJOIN:"MAPJOIN">
 |   <K_MAX:"MAX">
 |   <K_MIN:"MIN">
 |   <K_MOD:"MOD">
@@ -187,6 +189,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_QUIT:"QUIT">
 |   <K_READ:"READ">
 |   <K_REAL:"REAL">
+|	<K_REDUCEJOIN:"REDUCEJOIN">
 |	<K_RIGHT:"RIGHT">
 |   <K_REGEXP:"REGEXP">
 |	<K_RLIKE:"RLIKE">
@@ -202,6 +205,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SUM:"SUM">
 |   <K_TABLE:"TABLE">
 |	<K_THEN:"THEN">
+|	<K_TOP:"TOP">
 |   <K_TRANSACTION:"TRANSACTION">
 |	<K_TRUE: "TRUE">
 |   <K_UNION:"UNION">
@@ -222,11 +226,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 TOKEN : /* Numeric Constants */
 {
 	< S_NUMBER:  (<FLOAT>  | <FLOAT> ( ["e","E"] ([ "-","+"])? <INTEGER> )? ) >
-  | 	< #FLOAT: <INTEGER>
+  | 	< FLOAT: <INTEGER>
 	    | <INTEGER> ( "." <INTEGER> )?
 	    | "." <INTEGER>
     	>
-  | 	< #INTEGER: ( <DIGIT> )+ >
+  | 	< INTEGER: ( <DIGIT> )+ >
   | 	< #DIGIT: ["0" - "9"] >
 }
 
@@ -665,10 +669,21 @@ ZFromItemEx FromItemEx():
 	ZFromItem tab_item = null;
 	String tab = null;
 	String s = null;
+	JoinPolicy joinPolicy = null;
+	Token reducerN = null;
+	int joinReducerN = -1;
 }
 {
-	( tab =  TableReference() { tab_item = new ZFromItem(tab); f = new ZFromItemEx(tab_item); }
-	 |  "(" subq = SelectStatement() ")" { f = new ZFromItemEx(subq); }
+	[
+		"MAPJOIN" { joinPolicy = JoinPolicy.Mapside; }
+		|
+		(
+		"REDUCEJOIN" "(" reducerN = <INTEGER> {joinReducerN = Integer.parseInt(reducerN.toString());} ")"
+		)
+	]	
+	
+	( tab =  TableReference() { tab_item = new ZFromItem(tab); f = new ZFromItemEx(tab_item, joinPolicy, joinReducerN); }
+	 |  "(" subq = SelectStatement() ")" { f = new ZFromItemEx(subq, joinPolicy, joinReducerN); }
 	)
 	 [ ["AS"] s = identifier() {
 	 	 f.alias = s;

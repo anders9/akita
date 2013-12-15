@@ -1,6 +1,7 @@
 package anders.akita.plan;
 
 import anders.akita.parser.*;
+import java.util.*;
 
 public class QBParser {
 
@@ -25,14 +26,31 @@ public class QBParser {
 		ZFromClause fc = q.getFrom();
 		qb.joinType = fc.getJoinType();
 		
-		fc.items.get(0).getFieldList()
+		qb.src = new String[fc.items.size()];
+		qb.srcPhy = new String[fc.items.size()];
+		qb.prevQBs = new HashMap<String, QB>();
+		
+		for(int i = 0; i < fc.getItemN(); ++i){
+			ZFromItemEx item = fc.getItem(i);
+			if(item.isSubQuery()){
+				qb.src[i] = qb.srcPhy[i] = item.alias;
+				QB subQB = parseIter(item.getSubQuery());
+				qb.prevQBs.put(item.alias, subQB);
+			}
+			else{
+				qb.src[i] = item.alias;
+				qb.srcPhy[i] = item.getFromItem().table;
+			}
+		}
+		
+		// !!! check & gen join-cond
 		
 		
 		//2. check aggr
 		
-		//3. check & generate select list
+		//3. check & generate select list, generate type !!
 		
-		//4. where list generate, including inner-q
+		//4. where list generate, including inner-q, & type in aggr-call !!
 		
 		//5. generate aggr, order by, distinct, and so on.
 		

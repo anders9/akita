@@ -43,6 +43,7 @@ public class ZQuery extends ZExp implements ZStatement {
 	public enum InnerQType {NORMAL, EXISTS, IN, ANY, ALL};
 	public InnerQType innerQType = null;
 	
+	/*
 	public ArrayList<ZQuery> innerQinWhereList = new ArrayList<ZQuery>();
 	public ArrayList<ZQuery> innerQinHavingList = new ArrayList<ZQuery>();
 	
@@ -52,7 +53,7 @@ public class ZQuery extends ZExp implements ZStatement {
 	public ArrayList<ZExp> whereList = new ArrayList<ZExp>();
 	public ArrayList<ZExp> groupByKey = null;
 	public ArrayList<ZExp> havingList = null;
-	
+	*/
 	
 	static class InnerQuery{
 		ZExp cond;
@@ -68,6 +69,10 @@ public class ZQuery extends ZExp implements ZStatement {
   Vector<ZExp> orderby_ = null;
   //boolean forupdate_ = false;
 
+  int topK; //if with order-by, must with this value
+  
+  int shuffleN;
+  
   /**
    * Create a new SELECT statement
    */

@@ -4,10 +4,17 @@ import java.util.*;
 
 import anders.akita.meta.*;
 
+import anders.akita.plan.*;
+
 public class ZFromItemEx {
 
+	JoinPolicy joinPolicy;
+	int joinReducerN;
+	
+	
+	
 	public String alias;
-	public String table;
+	//public String table;
 	
 	ZQuery subQuery = null;
 	ZFromItem fromItem = null;
@@ -24,21 +31,24 @@ public class ZFromItemEx {
 		return fromItem;
 	}
 	
-	public ZFromItemEx(ZFromItem item){
+	public ZFromItemEx(ZFromItem item, JoinPolicy joinPolicy, int joinReducerN){
 		this.fromItem = item;
+		this.joinPolicy = joinPolicy;
+		this.joinReducerN = joinReducerN;
 	}
 	
-	public ZFromItemEx(ZQuery query){
+	public ZFromItemEx(ZQuery query, JoinPolicy joinPolicy, int joinReducerN){
 		this.subQuery = query;
-	}
+		this.joinPolicy = joinPolicy;
+		this.joinReducerN = joinReducerN;	}
 	
-	  
+	/*  
 	  public boolean existField(String field){
 		  if(isSubQuery()){
 			  return subQuery.fieldList.containsKey(field);
 		  }
 		  else{
-			  return Meta.containCol(table, field);
+			  return Meta.containCol(fromItem.table, field);
 		  }
 	  }	
 	
@@ -54,10 +64,10 @@ public class ZFromItemEx {
 			return list.toArray(new String[0]);
 		}
 		else{
-			return Meta.getTab(table).getAllColName();
+			return Meta.getTab(fromItem.table).getAllColName();
 		}
 	}
-	  
+	 */ 
 	public String toString(){
 		String s;
 		if(isSubQuery()){

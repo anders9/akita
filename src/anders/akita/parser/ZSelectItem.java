@@ -36,6 +36,8 @@ public class ZSelectItem {
 	
 	public String alias;
 	
+	public String valType;
+	
 	public ZSelectItem(ZExp exp, String alias){
 		this.expr = exp;
 		this.alias = alias;
