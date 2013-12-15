@@ -52,6 +52,8 @@ public class QBParser {
 		
 		//4. where list generate, including inner-q, & type in aggr-call !!
 		
+		//change middle QB's name, avoid name conflict.
+		
 		//5. generate aggr, order by, distinct, and so on.
 		
 	}

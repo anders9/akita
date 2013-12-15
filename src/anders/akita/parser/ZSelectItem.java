@@ -38,10 +38,11 @@ public class ZSelectItem {
 	
 	public String valType;
 	
-	public ZSelectItem(ZExp exp, String alias){
+	public ZSelectItem(ZExp exp, String alias, String valType){
 		this.expr = exp;
 		this.alias = alias;
 		this.type = EXPR;
+		this.valType = valType;
 	}
 	public ZSelectItem(String table){
 		this.table = table;

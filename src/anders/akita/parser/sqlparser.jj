@@ -127,6 +127,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_ASC:"ASC">
 |   <K_AVG:"AVG">
 |   <K_BETWEEN:"BETWEEN">
+|	<K_BIGINT:"BIGINT">
 |   <K_BINARY_INTEGER: "BINARY_INTEGER">
 |   <K_BOOLEAN:"BOOLEAN">
 |   <K_BY:"BY">
@@ -137,13 +138,17 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_CONNECT:"CONNECT">
 |   <K_COUNT:"COUNT">
 |   <K_DATE:"DATE">
+|	<K_DATETIME:"DATETIME">
 |	<K_DAY:"DAY">
+|	<K_DECIMAL:"DECIMAL">
 |   <K_DELETE:"DELETE">
 |   <K_DESC:"DESC">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DIV:"DIV">
+|	<K_DOUBLE:"DOUBLE">
 |	<K_ELSE:"ELSE">
 |	<K_END:"END">
+|	<K_ENUM:"ENUM">
 |   <K_EXCLUSIVE:"EXCLUSIVE">
 |   <K_EXISTS:"EXISTS">
 |   <K_EXIT:"EXIT">
@@ -156,6 +161,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_HOUR:"HOUR">
 |   <K_IN:"IN">
 |   <K_INSERT:"INSERT">
+|	<K_INT:"INT">
 |   <K_INTEGER:"INTEGER">
 |   <K_INTERSECT:"INTERSECT">
 |	<K_INTERVAL:"INTERVAL">
@@ -168,16 +174,18 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_MAPJOIN:"MAPJOIN">
 |   <K_MAX:"MAX">
 |   <K_MIN:"MIN">
-|   <K_MOD:"MOD">
 |   <K_MINUS:"MINUS">
 |	<K_MINUTE:"MINUTE">
+|	<K_MEDIUMINT:"MEDIUMINT">
+|   <K_MOD:"MOD">
 |   <K_MODE:"MODE">
 |	<K_MONTH:"MONTH">
-|   <K_NATURAL:"NATURAL">
+//|   <K_NATURAL:"NATURAL">
 |   <K_NOT:"NOT">
 |   <K_NOWAIT:"NOWAIT">
 |   <K_NULL:"NULL">
 |   <K_NUMBER:"NUMBER">
+|	<K_NUMERIC:"NUMERIC">
 |   <K_OF:"OF">
 |	<K_ON:"ON">
 |   <K_ONLY:"ONLY">
@@ -205,6 +213,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SUM:"SUM">
 |   <K_TABLE:"TABLE">
 |	<K_THEN:"THEN">
+|	<K_TIME:"TIME">
+|	<K_TIMESTAMP:"TIMESTAMP">
+|	<K_TINYINT:"TINYINT">
 |	<K_TOP:"TOP">
 |   <K_TRANSACTION:"TRANSACTION">
 |	<K_TRUE: "TRUE">
@@ -269,8 +280,7 @@ TOKEN:
 
 }
 
-
-
+/*
 void BasicDataTypeDeclaration():
 {}
 {
@@ -287,6 +297,32 @@ void BasicDataTypeDeclaration():
     |   "DATE"
     |   "BINARY_INTEGER"
     |   "BOOLEAN"
+}
+*/
+String MySQLType():
+{
+	Token num;
+}
+{
+	"TINYINT" { return "TINYINT"; }
+	|"SMALLINT" { return "SMALLINT"; }
+	|"MEDIUMINT" { return "MEDIUMINT"; }
+	|"INT" { return "INT";}
+	|"INTEGER" { return "INT";}
+	|"BIGINT" { return "BIGINT"; }
+	|"FLOAT" { return "FLOAT"; }
+	|"DOUBLE" { return "DOUBLE"; }
+	|"REAL" { return "DOUBLE"; }
+	|"DECIMAL" { return "DECIMAL"; }
+	|"NUMERIC" { return "DECIMAL"; }
+	|"DATE" { return "DATE"; }
+	|"DATETIME" { return "DATETIME"; }
+	|"TIMESTAMP" { return "TIMESTAMP"; }
+	|"TIME" { return "TIME"; }
+	|"YEAR" { return "YEAR"; }
+	|("CHAR" num = <INTEGER> {return "CHAR(" + num.toString() + ")";}) 
+	|("VARCHAR" num = <INTEGER> {return "VARCHAR(" + num.toString() + ")";}) 
+	|"ENUM" { return "ENUM"; }
 }
 
 
@@ -534,10 +570,13 @@ ZQuery SelectStatement():
 {
   ZQuery q;
   Vector v;
+  Token num;
 }
 {
   q = SelectWithoutOrder()
-  [ v = OrderByClause() { q.setOrderBy(v); } ]
+  [ v = OrderByClause() { q.setOrderBy(v); }  "TOP" num = <INTEGER> { 
+  		q.topK = Integer.parseInt(num.toString());
+  	 }]
   //[ ForUpdateClause() { q.forupdate_ = true; } ]
   { return q; }
 
@@ -607,6 +646,7 @@ ZSelectItem SelectItem():
   String s = null;
   ZSelectItem it;
   ZExp e;
+  String type = null;
 }
 {
 	LOOKAHEAD(1) ("*" {return new ZSelectItem();})
@@ -615,7 +655,8 @@ ZSelectItem SelectItem():
 |   
 	(e = SQLExpression() // Column or Expression
     [["AS"]  s = identifier()  ] // Column Alias
-    { return new ZSelectItem(e, s); })
+    [ "#" type = MySQLType() ]
+    { return new ZSelectItem(e, s, type); })
 }
 
 ZFromClause FromClause():
@@ -1322,6 +1363,7 @@ ZQuery SQLInnerQuery(ZQuery.InnerQType type):
   ZExp exp;
   ZFromClause from;
   ZExp where = null;
+  String valType = null;
 }
 {
    "(" 
@@ -1330,7 +1372,8 @@ ZQuery SQLInnerQuery(ZQuery.InnerQType type):
      "*" { select.add(new ZSelectItem()); }
      |
       [ "ALL" | "DISTINCT" { q.distinct_ = true; } ]
-  	  exp = SQLExpression() { select.add(new ZSelectItem(exp, null)); }
+  	  exp = SQLExpression() [ "#" valType = MySQLType() ]
+  	  { select.add(new ZSelectItem(exp, null, valType)); }
   	)
   "FROM" from = InnerJoinClause()
   [ where = WhereClause() ]

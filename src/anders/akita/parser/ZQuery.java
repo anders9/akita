@@ -69,7 +69,7 @@ public class ZQuery extends ZExp implements ZStatement {
   Vector<ZExp> orderby_ = null;
   //boolean forupdate_ = false;
 
-  int topK; //if with order-by, must with this value
+  int topK = -1; //if with order-by, must with this value
   
   int shuffleN;
   
