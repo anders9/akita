@@ -32,7 +32,9 @@ public abstract class ZExp {
 	
 	public ZExp parentExp;
 	
-	public int len; //used for char/varchar type
+	public String valType;
+	
+	//public int len; //used for char/varchar type
 	//public String midAlias;//used for middle table fields.
 	
 	//public RootExp root;

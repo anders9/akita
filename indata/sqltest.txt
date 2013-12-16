@@ -1,3 +1,18 @@
+
+
+//test type flag
+select [count(distinct c1, [c2+5]:float)]:int from t1 where [c1+1>c2]:integer;
+
+select c1 from t1 where c1*[c2+c3]:int>10;
+select c1 from t1 where c1*c2+[c3]:int>10;
+
+//test mapjoin, reduce join
+select * from t1, (select * from t2 where a>b) x1 ,reducejoin(4) (select * from t3 right outer join reducejoin(5) (select * from t4) x5 on t3.c1=x5.c1 ) x2 ,mapjoin t5;
+
+//test shuffle
+select my_aggr1(distinct c1+c2) + [my_aggr2(distinct c1)]:decimal + my_aggr2(c3) from t1 order by t1 desc, t2, t3 asc top 123 shuffle 12;
+
+
 select max(c1) from t1;
 
 select count(*) from t1;

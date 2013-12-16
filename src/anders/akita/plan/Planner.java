@@ -10,9 +10,9 @@ import anders.util.*;
 public class Planner {
 	
 	QB rootqb;
-	String qid;
+	long qid;
 	
-	public Planner(QB qb, String qid){
+	public Planner(QB qb, long qid){
 		this.rootqb = qb;
 		this.qid = qid;
 	}
@@ -193,8 +193,11 @@ public class Planner {
 		return rlist;
 	}
 	
-	String genTmpTableName(String qbName, int step){
-		return String.format("%s_ts_%s_%d", qid, qbName, step); 
+	
+	
+	String genTmpTableName(QB qb, int step){
+		String prefix = qb.genNamePrefix(qid);
+		return prefix + String.format("ts%d", step); 
 	}
 	
 	FetchDataOperator[] genSubQBPlan(QB qb){

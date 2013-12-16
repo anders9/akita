@@ -21,10 +21,11 @@ package anders.akita.parser;
  * An SQL query ORDER BY clause.
  */
 public class ZOrderBy {
-  ZExp col_;
+  //ZExp col_;
+  String col_;
   boolean asc_ = true;
 
-  public ZOrderBy(ZExp s) { col_ = s; }
+  public ZOrderBy(String s) { col_ = s; }
 
   /**
    * Set the order to ascending or descending (defailt is ascending order).
@@ -43,10 +44,10 @@ public class ZOrderBy {
    * @return An expression (generally, a ZConstant that represents a column
    * name).
    */
-  public ZExp getCol() { return col_; }
+  public String getCol() { return col_; }
 
   public String toString() {
-    return col_.toString() + " " + (asc_ ? "ASC" : "DESC");
+    return col_ + " " + (asc_ ? "ASC" : "DESC");
   }
 };
 

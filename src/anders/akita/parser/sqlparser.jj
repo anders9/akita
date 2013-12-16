@@ -16,7 +16,7 @@
  */
 
 /**
-	mysql operator precedenct
+	mysql operator precedent
 
 	INTERVAL
 	BINARY, COLLATE
@@ -207,6 +207,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_SELECT:"SELECT">
 |   <K_SET:"SET">
 |   <K_SHARE:"SHARE">
+| 	<K_SHUFFLE:"SHUFFLE" >
 |   <K_SMALLINT:"SMALLINT">
 |	<K_SOME:"SOME">
 |   <K_START:"START">
@@ -237,11 +238,11 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 TOKEN : /* Numeric Constants */
 {
 	< S_NUMBER:  (<FLOAT>  | <FLOAT> ( ["e","E"] ([ "-","+"])? <INTEGER> )? ) >
-  | 	< FLOAT: <INTEGER>
+  | 	< #FLOAT: <INTEGER>
 	    | <INTEGER> ( "." <INTEGER> )?
 	    | "." <INTEGER>
     	>
-  | 	< INTEGER: ( <DIGIT> )+ >
+  | 	< #INTEGER: ( <DIGIT> )+ >
   | 	< #DIGIT: ["0" - "9"] >
 }
 
@@ -280,6 +281,11 @@ TOKEN:
 
 }
 
+int oneInteger():
+{
+  Token num;}{  num = < S_NUMBER >  {
+    return Integer.parseInt(num.toString());  }
+}
 /*
 void BasicDataTypeDeclaration():
 {}
@@ -301,7 +307,7 @@ void BasicDataTypeDeclaration():
 */
 String MySQLType():
 {
-	Token num;
+	int num;
 }
 {
 	"TINYINT" { return "TINYINT"; }
@@ -320,8 +326,8 @@ String MySQLType():
 	|"TIMESTAMP" { return "TIMESTAMP"; }
 	|"TIME" { return "TIME"; }
 	|"YEAR" { return "YEAR"; }
-	|("CHAR" num = <INTEGER> {return "CHAR(" + num.toString() + ")";}) 
-	|("VARCHAR" num = <INTEGER> {return "VARCHAR(" + num.toString() + ")";}) 
+	|("CHAR" num = oneInteger() {return "CHAR(" + num + ")";}) 
+	|("VARCHAR" num = oneInteger() {return "VARCHAR(" + num + ")";}) 
 	|"ENUM" { return "ENUM"; }
 }
 
@@ -570,13 +576,13 @@ ZQuery SelectStatement():
 {
   ZQuery q;
   Vector v;
-  Token num;
+  int topK;
+  int shuffleN;
 }
 {
   q = SelectWithoutOrder()
-  [ v = OrderByClause() { q.setOrderBy(v); }  "TOP" num = <INTEGER> { 
-  		q.topK = Integer.parseInt(num.toString());
-  	 }]
+  [ v = OrderByClause() { q.setOrderBy(v); }  "TOP" topK = oneInteger() {  q.topK = topK; } ]
+  [ "SHUFFLE" shuffleN = oneInteger() { q.shuffleN = shuffleN; } ]
   //[ ForUpdateClause() { q.forupdate_ = true; } ]
   { return q; }
 
@@ -646,7 +652,7 @@ ZSelectItem SelectItem():
   String s = null;
   ZSelectItem it;
   ZExp e;
-  String type = null;
+  //String type = null;
 }
 {
 	LOOKAHEAD(1) ("*" {return new ZSelectItem();})
@@ -655,8 +661,8 @@ ZSelectItem SelectItem():
 |   
 	(e = SQLExpression() // Column or Expression
     [["AS"]  s = identifier()  ] // Column Alias
-    [ "#" type = MySQLType() ]
-    { return new ZSelectItem(e, s, type); })
+    //[ "#" type = MySQLType() ]
+    { return new ZSelectItem(e, s); })
 }
 
 ZFromClause FromClause():
@@ -711,7 +717,7 @@ ZFromItemEx FromItemEx():
 	String tab = null;
 	String s = null;
 	JoinPolicy joinPolicy = null;
-	Token reducerN = null;
+	
 	int joinReducerN = -1;
 }
 {
@@ -719,7 +725,7 @@ ZFromItemEx FromItemEx():
 		"MAPJOIN" { joinPolicy = JoinPolicy.Mapside; }
 		|
 		(
-		"REDUCEJOIN" "(" reducerN = <INTEGER> {joinReducerN = Integer.parseInt(reducerN.toString());} ")"
+		"REDUCEJOIN" "(" joinReducerN = oneInteger() ")" { joinPolicy = JoinPolicy.Reduceside; }
 		)
 	]	
 	
@@ -777,13 +783,13 @@ Vector GroupByList():
 Vector OrderByClause():
 {
   Vector v = new Vector();
-  ZExp s;
+  String s;
   ZOrderBy ob;
 }
 {
-    "ORDER" "BY" s = SQLExpression() { ob = new ZOrderBy(s); }
+    "ORDER" "BY" s = identifier() { ob = new ZOrderBy(s); }
     ["ASC" | "DESC" { ob.setAscOrder(false); }] { v.addElement(ob); }
-    ("," s = SQLExpression() { ob = new ZOrderBy(s); }
+    ("," s = identifier() { ob = new ZOrderBy(s); }
      ["ASC" | "DESC" { ob.setAscOrder(false); }] { v.addElement(ob); } )*
     { return v; }
 }
@@ -794,11 +800,27 @@ void ForUpdateClause():
     "FOR" "UPDATE" [ "OF" TableColumn() ("," TableColumn())* ]
 }
 */
+
 ZExp SQLExpression():
+{
+  ZExp e;}{
+  LOOKAHEAD("[") e = SQLExpressionWithType(){ return e; }
+| 
+  e = SQLExpressionInner(){ return e; }}
+ZExp SQLExpressionWithType():{
+  	ZExp e;
+    String valType;}
+{	"[" e = SQLExpressionInner() "]" ":" valType = MySQLType(){
+      	e.valType = valType;
+      	return e;
+    }
+}
+ZExp SQLExpressionInner():
 {
   ZExp e1, e2;
   ZExpression e = null;
   boolean single = true;
+  String valType = null;
 }
 {
     e1 = SQLXORExpression()
@@ -807,7 +829,9 @@ ZExp SQLExpression():
       single=false;
       e.addOperand(e2);
     } )*
-    { return (single ? e1 : e); }
+    {
+       return (single ? e1 : e);
+    }
 }
 
 ZExp SQLXORExpression():
@@ -1290,7 +1314,12 @@ ZExp SQLPrimaryExpression():
 	  else throw new ParseException("Undefined function/aggregation/UDF: " + s);
    }  
 | LOOKAHEAD	("(" "SELECT") e = SQLInnerQuery(ZQuery.InnerQType.NORMAL) {return e;}
-| LOOKAHEAD ("(") "(" e = SQLExpression() ")" { return e; }   
+
+| LOOKAHEAD ("(") "(" e = SQLExpression() ")" { return e; }
+
+//!!!HERE!! add "[" judge for type !!!!
+//!!!!!!
+| LOOKAHEAD ("[") e = SQLExpressionWithType() { return e; }
 |  col = TableColumn() { return col; }
 |  t = <S_NUMBER> { return new ZConstant(t.toString(), ZConstant.NUMBER); }
 |  t = <S_CHAR_LITERAL> { return new ZConstant(t.toString(), ZConstant.STRING); }
@@ -1363,7 +1392,7 @@ ZQuery SQLInnerQuery(ZQuery.InnerQType type):
   ZExp exp;
   ZFromClause from;
   ZExp where = null;
-  String valType = null;
+  //String valType = null;
 }
 {
    "(" 
@@ -1372,8 +1401,9 @@ ZQuery SQLInnerQuery(ZQuery.InnerQType type):
      "*" { select.add(new ZSelectItem()); }
      |
       [ "ALL" | "DISTINCT" { q.distinct_ = true; } ]
-  	  exp = SQLExpression() [ "#" valType = MySQLType() ]
-  	  { select.add(new ZSelectItem(exp, null, valType)); }
+  	  exp = SQLExpression() 
+		//[ "#" valType = MySQLType() ]
+  	  { select.add(new ZSelectItem(exp, null)); }
   	)
   "FROM" from = InnerJoinClause()
   [ where = WhereClause() ]

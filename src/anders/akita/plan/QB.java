@@ -6,6 +6,9 @@ import anders.akita.parser.*;
 
 public class QB {
 	
+	QB parent;
+	String name;
+	
 	//ArrayList<QB> prevQBs;
 	HashMap<String, QB> prevQBs;//contain nested from clause & non-relative inner-query
 	HashMap<String, ArrayList<String>> nonRelSubQVarMap;
@@ -34,4 +37,14 @@ public class QB {
 	String[] orderby;//if null, no order-by operation
 	boolean[] orderbyAsc;
 	int shuffleCnt; // if == 0, no shuffle
+	
+	public String genNamePrefix(long qid){
+		QB cqb = this;
+		String prefix = "";
+		while(cqb != null){
+			prefix = cqb + prefix;
+			cqb = cqb.parent;
+		}
+		return "$" + qid + cqb;
+	}
 }

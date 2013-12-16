@@ -5,7 +5,7 @@ import java.util.*;
 
 public class QBParser {
 
-	String qid;
+	long qid;
 	
 	ZQuery rootQuery;
 	
@@ -16,11 +16,14 @@ public class QBParser {
 	}
 	
 	public QB parse(){
-		return parseIter(rootQuery);
+		return parseIter(rootQuery, "$", null);
 	}
 	
-	private QB parseIter(ZQuery q){
+	private QB parseIter(ZQuery q, String name, QB parent){
 		QB qb = new QB();
+		
+		qb.name = name;
+		qb.parent = parent;
 		
 		//1. generate from list, including sub-q in from list
 		ZFromClause fc = q.getFrom();
@@ -30,12 +33,20 @@ public class QBParser {
 		qb.srcPhy = new String[fc.items.size()];
 		qb.prevQBs = new HashMap<String, QB>();
 		
+		HashMap<String, String> subQBNameMap = new HashMap<String, String>();
+		
 		for(int i = 0; i < fc.getItemN(); ++i){
 			ZFromItemEx item = fc.getItem(i);
 			if(item.isSubQuery()){
 				qb.src[i] = qb.srcPhy[i] = item.alias;
-				QB subQB = parseIter(item.getSubQuery());
-				qb.prevQBs.put(item.alias, subQB);
+				QB subQB = parseIter(item.getSubQuery(), item.alias, qb);
+				
+				//!!! generate unique name for derived table !!!
+				String uniqName = subQB.genNamePrefix(qid) + "_derived";
+				subQB.schema.name = uniqName;
+				subQBNameMap.put(item.alias, uniqName);
+				
+				qb.prevQBs.put(uniqName, subQB);
 			}
 			else{
 				qb.src[i] = item.alias;

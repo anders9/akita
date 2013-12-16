@@ -36,13 +36,13 @@ public class ZSelectItem {
 	
 	public String alias;
 	
-	public String valType;
+	//public String valType;
 	
-	public ZSelectItem(ZExp exp, String alias, String valType){
+	public ZSelectItem(ZExp exp, String alias){
 		this.expr = exp;
 		this.alias = alias;
 		this.type = EXPR;
-		this.valType = valType;
+		//this.valType = valType;
 	}
 	public ZSelectItem(String table){
 		this.table = table;

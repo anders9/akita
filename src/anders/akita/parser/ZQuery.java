@@ -28,13 +28,13 @@ public class ZQuery extends ZExp implements ZStatement {
 	
 	//boolean isInnerQuery = false;
 	
-	public ZQuery parentQuery;
-	public ZQuery outerQuery;
+	//public ZQuery parentQuery;
+	//public ZQuery outerQuery;
 	
 	//Only use for inner-query, 
 	//if exist in the where clause of outer-query, set it true, otherwise (exist in having clause) false
-	public boolean inWhereClause;
-	public boolean needAggr;
+	//public boolean inWhereClause;
+	//public boolean needAggr;
 	/*
 	 * Only use for inner-Query:
 	 * 	ALL/any/exist/not exist inner-query not need return unique row
@@ -66,7 +66,7 @@ public class ZQuery extends ZExp implements ZStatement {
   ZExp where_ = null;
   ZGroupBy groupby_ = null;
   //ZExpression setclause_ = null;
-  Vector<ZExp> orderby_ = null;
+  Vector<ZOrderBy> orderby_ = null;
   //boolean forupdate_ = false;
 
   int topK = -1; //if with order-by, must with this value
@@ -113,7 +113,7 @@ public class ZQuery extends ZExp implements ZStatement {
    * Insert an ORDER BY clause
    * @param v A vector of ZOrderBy objects
    */
-  public void setOrderBy(Vector<ZExp> v) { orderby_ = v; }
+  public void setOrderBy(Vector v) { orderby_ = v; }
 
   /**
    * Get the SELECT part of the statement
@@ -149,7 +149,7 @@ public class ZQuery extends ZExp implements ZStatement {
    * Get the ORDER BY clause
    * @param v A vector of ZOrderBy objects
    */
-  public Vector<ZExp> getOrderBy() { return orderby_; }
+  public Vector<ZOrderBy> getOrderBy() { return orderby_; }
 
   /**
    * @return true if it is a SELECT DISTINCT query, false otherwise.

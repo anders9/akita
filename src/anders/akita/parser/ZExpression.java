@@ -40,9 +40,6 @@ public class ZExpression extends ZExp {
 	Vector<ZExp> operands_ = null;
 	public int type = OPERATOR;
 	
-	public String inType;//used for aggregation
-	public String outType;//used for aggregation
-	
 	public boolean isAggr(){
 		return type == ZExpression.AGGR_ALL || type == ZExpression.AGGR_DISTINCT;
 	}

@@ -6,6 +6,8 @@ public class RootExp extends ZExp {
 
 	ZExp exp;
 	
+	ArrayList<String> nonRelSubQVar;
+	
 	public RootExp(ZExp exp){
 		this.exp = exp;
 	}
