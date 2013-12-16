@@ -9,7 +9,7 @@ public class QBParser {
 	
 	ZQuery rootQuery;
 	
-	public QBParser(String qid, ZQuery q){
+	public QBParser(long qid, ZQuery q){
 		
 		this.qid = qid;
 		this.rootQuery = q;
@@ -39,10 +39,10 @@ public class QBParser {
 			ZFromItemEx item = fc.getItem(i);
 			if(item.isSubQuery()){
 				qb.src[i] = qb.srcPhy[i] = item.alias;
-				QB subQB = parseIter(item.getSubQuery(), item.alias, qb);
+				QB subQB = parseIter(item.getSubQuery(), "$" + item.alias, qb);
 				
 				//!!! generate unique name for derived table !!!
-				String uniqName = subQB.genNamePrefix(qid) + "_derived";
+				String uniqName = qb.genNamePrefix(qid) + "_dr_" + item.alias;
 				subQB.schema.name = uniqName;
 				subQBNameMap.put(item.alias, uniqName);
 				

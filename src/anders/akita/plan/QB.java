@@ -45,6 +45,6 @@ public class QB {
 			prefix = cqb + prefix;
 			cqb = cqb.parent;
 		}
-		return "$" + qid + cqb;
+		return "$$" + qid + cqb;
 	}
 }
