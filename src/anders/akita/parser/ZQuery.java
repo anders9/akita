@@ -71,8 +71,8 @@ public class ZQuery extends ZExp implements ZStatement {
 
   int topK = -1; //if with order-by, must with this value
   
-  int shuffleN;
-  
+  int shuffleN = -1;  
+  MidTabStorageType shuffleMtst = MidTabStorageType.Memory;
   /**
    * Create a new SELECT statement
    */

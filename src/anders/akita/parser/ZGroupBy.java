@@ -27,6 +27,8 @@ public class ZGroupBy {
 
   Vector<ZExp> groupby_;
   ZExp having_ = null;
+  int aggrReducerN = 1;
+  MidTabStorageType aggrMtst = MidTabStorageType.Memory;
 
   public ArrayList<ZExp> havingList = new ArrayList<ZExp>();
 
@@ -35,8 +37,10 @@ public class ZGroupBy {
    * Create a GROUP BY given a set of Expressions
    * @param exps A vector of SQL Expressions (ZExp objects).
    */
-  public ZGroupBy(Vector<ZExp> exps) { groupby_ = exps; }
+  public ZGroupBy() {  }
 
+  public void setGroupBy(Vector<ZExp> exps) { groupby_ = exps; }
+  
   /**
    * Initiallize the HAVING part of the GROUP BY
    * @param e An SQL Expression (the HAVING clause)

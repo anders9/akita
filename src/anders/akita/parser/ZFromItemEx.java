@@ -10,9 +10,12 @@ public class ZFromItemEx {
 
 	JoinPolicy joinPolicy;
 	int joinReducerN;
+	MidTabStorageType[] mstType = new MidTabStorageType[]{MidTabStorageType.Memory, MidTabStorageType.Memory};
 	
-	
-	
+	public void setMidTabStorageType(MidTabStorageType t1, MidTabStorageType t2){
+		mstType[0] = t1;
+		mstType[1] = t2;
+	}
 	public String alias;
 	//public String table;
 	

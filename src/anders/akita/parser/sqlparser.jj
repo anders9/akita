@@ -143,6 +143,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |	<K_DECIMAL:"DECIMAL">
 |   <K_DELETE:"DELETE">
 |   <K_DESC:"DESC">
+| 	<K_DISK:"DISK">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DIV:"DIV">
 |	<K_DOUBLE:"DOUBLE">
@@ -173,6 +174,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LOCK:"LOCK">
 |	<K_MAPJOIN:"MAPJOIN">
 |   <K_MAX:"MAX">
+| 	<K_MEMORY:"MEMORY">
 |   <K_MIN:"MIN">
 |   <K_MINUS:"MINUS">
 |	<K_MINUTE:"MINUTE">
@@ -198,6 +200,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_READ:"READ">
 |   <K_REAL:"REAL">
 |	<K_REDUCEJOIN:"REDUCEJOIN">
+| 	<K_REDUCEAGGR:"REDUCEAGGR">
 |	<K_RIGHT:"RIGHT">
 |   <K_REGEXP:"REGEXP">
 |	<K_RLIKE:"RLIKE">
@@ -578,11 +581,14 @@ ZQuery SelectStatement():
   Vector v;
   int topK;
   int shuffleN;
+  MidTabStorageType shuffleMtst = MidTabStorageType.Memory;
 }
 {
   q = SelectWithoutOrder()
   [ v = OrderByClause() { q.setOrderBy(v); }  "TOP" topK = oneInteger() {  q.topK = topK; } ]
-  [ "SHUFFLE" shuffleN = oneInteger() { q.shuffleN = shuffleN; } ]
+  [ "SHUFFLE" "(" shuffleN = oneInteger()
+  		[ LOOKAHEAD("," ("MEMORY" | "DISK") ")") "," ("MEMORY" | "DISK" { shuffleMtst = MidTabStorageType.Disk;}) ]
+   ")" { q.shuffleN = shuffleN; q.shuffleMtst = shuffleMtst; } ]
   //[ ForUpdateClause() { q.forupdate_ = true; } ]
   { return q; }
 
@@ -603,7 +609,7 @@ ZQuery SelectWithoutOrder():
   from = FromClause()
   [ where = WhereClause() ]
   //[ ConnectClause() ]
-  [ LOOKAHEAD( ("GROUP" "BY")|"HAVING") groupby = GroupByClause() ]
+  groupby = GroupByClause() 
   //[ setclause = SetClause() ]
   {
     q.setSelect(select);
@@ -660,7 +666,7 @@ ZSelectItem SelectItem():
 	LOOKAHEAD(2)(s = identifier()".*" { return new ZSelectItem(s); } )// table.*
 |   
 	(e = SQLExpression() // Column or Expression
-    [["AS"]  s = identifier()  ] // Column Alias
+    [ ["AS"]  s = identifier()  ] // Column Alias
     //[ "#" type = MySQLType() ]
     { return new ZSelectItem(e, s); })
 }
@@ -717,15 +723,23 @@ ZFromItemEx FromItemEx():
 	String tab = null;
 	String s = null;
 	JoinPolicy joinPolicy = null;
-	
+	MidTabStorageType mtst1 = MidTabStorageType.Memory, mtst2 = MidTabStorageType.Memory;
 	int joinReducerN = -1;
 }
 {
 	[
-		"MAPJOIN" { joinPolicy = JoinPolicy.Mapside; }
+		( "MAPJOIN"  [ LOOKAHEAD("(") "(" ("MEMORY" | "DISK" { mtst1 = MidTabStorageType.Disk; }) ")" ]
+           { joinPolicy = JoinPolicy.Mapside; }
+		 )
 		|
 		(
-		"REDUCEJOIN" "(" joinReducerN = oneInteger() ")" { joinPolicy = JoinPolicy.Reduceside; }
+		"REDUCEJOIN" "("
+			joinReducerN = oneInteger()
+			[ LOOKAHEAD("," ("MEMORY" | "DISK") ")") "," ("MEMORY" | "DISK" { mtst1 = mtst2 = MidTabStorageType.Disk;})
+				|
+			 LOOKAHEAD("," ("MEMORY" | "DISK")"," ("MEMORY" | "DISK") ")")"," ("MEMORY" | "DISK" { mtst1 = MidTabStorageType.Disk; }) "," ("MEMORY" | "DISK" { mtst2 = MidTabStorageType.Disk; })
+			]
+		")" { joinPolicy = JoinPolicy.Reduceside; }
 		)
 	]	
 	
@@ -735,7 +749,10 @@ ZFromItemEx FromItemEx():
 	 [ ["AS"] s = identifier() {
 	 	 f.alias = s;
 	  } ]  /* Alias Name */
-	{return f; }
+	{
+      f.setMidTabStorageType(mtst1, mtst2);
+	  return f;
+	}
 }
 
 
@@ -759,14 +776,28 @@ void ConnectClause():
 */
 ZGroupBy GroupByClause():
 {
-  ZGroupBy g = null;
+  ZGroupBy g = new ZGroupBy();
   Vector v = null;
   ZExp e;
+  MidTabStorageType aggrMtst = MidTabStorageType.Memory;
+  int aggrReducerN = -1;
 }
 {
-  (("GROUP" "BY" v = GroupByList() { g = new ZGroupBy(v); }
-  	 ["HAVING" e = SQLExpression() { g.setHaving(e);} ] )
-  |("HAVING" e = SQLExpression() { g = new ZGroupBy(null); g.setHaving(e);} ))
+    [ LOOKAHEAD("GROUP" "BY") "GROUP" "BY" v = GroupByList() { g.setGroupBy(v); } ]
+
+	[ LOOKAHEAD("REDUCEAGGR")
+		"REDUCEAGGR" "("
+			aggrReducerN = oneInteger()
+			[ LOOKAHEAD("," ("MEMORY" | "DISK") ")") "," ("MEMORY" | "DISK" { aggrMtst = MidTabStorageType.Disk;}) ]
+		")"
+		{
+		  g.aggrReducerN = aggrReducerN;
+		  g.aggrMtst = aggrMtst;
+		}
+	]
+
+	[ LOOKAHEAD("HAVING") "HAVING" e = SQLExpression() { g.setHaving(e);} ]
+  
   { return g; }
 }
 Vector GroupByList():
@@ -1137,7 +1168,7 @@ ZExp SQLAddSubExpression():
 }
 {
     e1 = SQLMultiplicativeExpression()
-    ( 
+    (  //LOOKAHEAD("+"|"-")
     	( "+" { op = Operator.ADD; } | "-" { op = Operator.SUB; } ) 
     	e2 = SQLMultiplicativeExpression() 
     	{
@@ -1161,7 +1192,7 @@ ZExp SQLMultiplicativeExpression():
 }
 {
     e1 = SQLBitXORExpression()
-    (	
+    (	//LOOKAHEAD("*"|"/"|"%"|"DIV"|"MOD")
     	( "*" { op = Operator.MUL; } | "/" { op = Operator.DIV; } | "%" { op = Operator.MOD; } | "DIV" { op = Operator.DIV; } | "MOD" { op = Operator.MOD; } ) 
     	e2 = SQLBitXORExpression() 
     	{

@@ -1,5 +1,20 @@
 
 
+//test join/aggr/shuffle reducerN, mtst type
+select * from t1, mapjoin(disk) t2, mapjoin(memory) t3, mapjoin t4, reducejoin(5, disk, disk) t5, reducejoin(5, disk) t6 group by c1,c2 reduceaggr(12, disk) shuffle(13, disk);
+select * from t1, mapjoin(disk) t2, mapjoin(memory) t3, mapjoin t4, reducejoin(5, memory, disk) t5, reducejoin(5, memory) t6 group by c1,c2 reduceaggr(12, memory) shuffle(13, memory);
+select * from t1, mapjoin(disk) t2, mapjoin(memory) t3, mapjoin t4, reducejoin(5, disk, memory) t5, reducejoin(5) t6 group by c1,c2 reduceaggr(12) having c1 > 1 shuffle(13);
+
+//test alias parse conflict
+select c1 as cc1, c2 from t1, mapjoin(disk) t2 as tt2, mapjoin(memory) t3, mapjoin t4, reducejoin(5, disk, memory) t5, reducejoin(5) t6 reduceaggr(12) shuffle(13);
+select c1 as cc1, c2 from t1, mapjoin(disk) t2 as tt2, mapjoin(memory) t3, mapjoin t4, reducejoin(5, disk, memory) t5, reducejoin(5) t6 having c1>1 shuffle(13);
+select c1 as cc1, c2 from t1, mapjoin(disk) t2 as tt2, mapjoin(memory) t3, mapjoin t4, reducejoin(5, disk, memory) t5, reducejoin(5) t6 group by c1,c2 shuffle(13);
+select c1 as cc1, c2 from t1, mapjoin(disk) t2 as tt2, mapjoin(memory) t3, mapjoin t4, reducejoin(5, disk, memory) t5, reducejoin(5) t6 shuffle(13);
+
+//test +/-/*//... confict
+select * from t1 where c1+c2+c3*c4*c5/c6 mod c7 -c8;
+
+
 //test type flag
 select [count(distinct c1, [c2+5]:float)]:int from t1 where [c1+1>c2]:integer;
 
@@ -10,7 +25,7 @@ select c1 from t1 where c1*c2+[c3]:int>10;
 select * from t1, (select * from t2 where a>b) x1 ,reducejoin(4) (select * from t3 right outer join reducejoin(5) (select * from t4) x5 on t3.c1=x5.c1 ) x2 ,mapjoin t5;
 
 //test shuffle
-select my_aggr1(distinct c1+c2) + [my_aggr2(distinct c1)]:decimal + my_aggr2(c3) from t1 order by t1 desc, t2, t3 asc top 123 shuffle 12;
+select my_aggr1(distinct c1+c2) + [my_aggr2(distinct c1)]:decimal + my_aggr2(c3) from t1 order by t1 desc, t2, t3 asc top 123 shuffle(12);
 
 
 select max(c1) from t1;
