@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 public class RootExp extends ZExp {
 
-	ZExp exp;
+	public ZExp exp;
 	
-	ArrayList<String> nonRelSubQVar;
+	public ArrayList<String> nonRelSubQVar;
 	
 	public RootExp(ZExp exp){
 		this.exp = exp;

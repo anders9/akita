@@ -1,6 +1,7 @@
 package anders.akita.plan;
 
 import anders.akita.parser.*;
+
 import java.util.*;
 
 public class QBParser {
@@ -54,8 +55,32 @@ public class QBParser {
 			}
 		}
 		
-		// !!! check & gen join-cond
+		Vector<ZSelectItem> newlist = new Vector<ZSelectItem>();
+		for(ZSelectItem item: q.getSelect()){
+			if(item.type == ZSelectItem.STAR){
+				for(String key: q.tabList.keySet()){
+					ZFromItemEx tab = q.tabList.get(key);
+					for(String field: tab.getFieldList()){
+						ZColRef cr = new ZColRef(key, field);
+						newlist.add(new ZSelectItem(cr, null));
+					}
+				}
+			}
+			else if(item.type == ZSelectItem.TAB_DOT_STAR){
+				if(q.tabList.get(item.table) == null)
+					throw new ExecException("Illegal select item: " + item.table + ".*");
+				for(String field: q.tabList.get(item.table).getFieldList()){
+					ZColRef cr = new ZColRef(item.table, field);
+					newlist.add(new ZSelectItem(cr, null));					
+				}
+			}
+			else newlist.add(item);
+		}
+		q.setSelect(newlist);
+
 		
+		
+		// !!! check & gen join-cond		
 		
 		//2. check aggr
 		
@@ -68,5 +93,33 @@ public class QBParser {
 		//5. generate aggr, order by, distinct, and so on.
 		
 	}
+	
+	void splitExprByAndIter(ZExp exp, ArrayList<ZExp> list){
+		if(
+			exp instanceof ZExpression
+			&& ((ZExpression)exp).type == ZExpression.OPERATOR
+			&& ((ZExpression)exp).getOperator() == Operator.AND
+		
+		){
+			for(ZExp sube: ((ZExpression)exp).getOperands()){
+				splitExprByAndIter(sube, list);
+			}
+		}
+		else{
+			list.add(exp);
+		}
+	}
+	
+	ArrayList<RootExp> genRootExpList(ZExp exp){
+		ArrayList<ZExp> list = new ArrayList<ZExp>();
+		splitExprByAndIter(exp, list);
+		ArrayList<RootExp> relist = new ArrayList<RootExp>();
+		for(ZExp e: list){
+			relist.add(new RootExp(e));
+		}
+		return relist;
+	}
+	
+	
 	
 }
