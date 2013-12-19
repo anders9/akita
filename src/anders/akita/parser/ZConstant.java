@@ -32,7 +32,7 @@ public class ZConstant extends ZExp {
   //public static final int STAR = -2;
   //public static final int UNKNOWN = -1;
   //public static final int COLUMNNAME = 0;
-  public static final int PREPARED_COL = 0;
+  //public static final int PREPARED_COL = 0;
   public static final int NULL = 1;
   public static final int NUMBER = 2;
   public static final int STRING = 3;
@@ -47,6 +47,7 @@ public class ZConstant extends ZExp {
   public ZConstant(String v, int typ) {
     val_ = new String(v);
     type_ = typ;
+    super.valType = toMySQLType();
   }
 
   /*
@@ -61,8 +62,8 @@ public class ZConstant extends ZExp {
 
   public String toString() {
     //if( type_ == STAR) return  "*" ;
-	  if(type_ == PREPARED_COL)
-		  return "?";
+	  //if(type_ == PREPARED_COL)
+		  //return "?";
     return val_;
   }
   
@@ -74,5 +75,19 @@ public class ZConstant extends ZExp {
 		return false;
 	}
   
+	
+	private String toMySQLType(){
+		switch(type_){
+		case NULL:
+		case BOOL:
+			return "TINYINT";
+		case NUMBER:
+			return "INT";
+		case STRING:
+			return "VARCHAR(" + val_.length() + ")";
+		default:
+			return null;
+		}
+	}
 };
 

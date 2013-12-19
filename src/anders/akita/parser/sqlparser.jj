@@ -1071,8 +1071,9 @@ Vector SQLExpressionList():
 
 ZExp PreparedCol(): {}
 {
-  "?" { return new ZConstant(null, ZConstant.PREPARED_COL); } // For prepared columns ("?")
+  "?" { return new ZPrepareCol(); } // For prepared columns ("?")
 }
+
 
 
 

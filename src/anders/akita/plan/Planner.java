@@ -144,15 +144,7 @@ public class Planner {
 		return list;
 	}
 	
-	static String genCol(String src, String col){
-		return src + '.' + col;
-	}
-	static String getColSrc(String col){
-		return col.substring(0, col.indexOf('.'));
-	}
-	static String getColName(String col){
-		return col.substring(col.indexOf('.') + 1);
-	}
+
 	ArrayList<String> getCoverCol(RootExp exp){
 		final ArrayList<String> list = new ArrayList<String>();
 		try{
@@ -186,7 +178,7 @@ public class Planner {
 	ArrayList<String> filteCoverCol(String[] cutSrc, ArrayList<String> list){
 		ArrayList<String> rlist = new ArrayList<String>();
 		for(String col: list){
-			String s = getColSrc(col);
+			String s = QBParser.getColSrc(col);
 			if(Util.findStr(s, cutSrc) == -1)
 				rlist.add(col);
 		}

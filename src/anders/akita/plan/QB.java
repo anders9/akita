@@ -24,6 +24,7 @@ public class QB {
 	
 	ArrayList<RootExp> where;
 	
+	public boolean needAggr;
 	ZColRef[] groupby;//may be length = 0, when aggr the whole table. = null when not contain aggr operation
 	int aggrReducerN;
 	ArrayList<RootExp> havingPreds;

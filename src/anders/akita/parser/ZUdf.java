@@ -61,7 +61,7 @@ public class ZUdf {
 											+ c.toString() + "' in: "
 											+ ZUdf.this.exp);
 						int aggrCnt = 0;
-						while (node != root) {
+						while (node != null) {
 							if (node instanceof ZExpression
 									&& ((ZExpression) node).isAggr())
 								++aggrCnt;

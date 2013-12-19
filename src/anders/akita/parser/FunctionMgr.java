@@ -186,6 +186,18 @@ public class FunctionMgr {
 		return aggrs.get(aggrName).merger;
 	}
 	
+	public static boolean aggrTypeUseParam(String aggrName){
+		
+	}
+	
+	public static String aggrParamType(String aggrName){
+		
+	}
+	
+	public static String aggrRetValType(String aggrName){
+		
+	}
+	
 	public static boolean isFunction(String funcName){
 		return functions.containsKey(funcName);
 	}
