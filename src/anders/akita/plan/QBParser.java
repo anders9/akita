@@ -182,6 +182,57 @@ public class QBParser {
 			}
 		}
 		
+
+		if(q.getGroupBy().getHaving() != null){
+			qb.havingPreds = genRootExpList(q.getGroupBy().getHaving());
+			for(RootExp re: qb.havingPreds){
+				re.traverse(new NodeVisitor(){
+					public void visit(ZExp node, RootExp root) throws ExecException {
+						if(node instanceof ZColRef){
+							QBParser.checkValidCol(qb, (ZColRef)node, null, null);
+						}
+						else if(node instanceof ZExpression){
+							if(((ZExpression)node).isAggr())
+								throw new ExecException("Not allow aggregation in having-clause: " + node.toString());
+						}
+						else if(node instanceof ZQuery){
+							//currently.
+							throw new ExecException("Not allow sub-query in where-clause: " + node.toString());
+						}
+					}
+				});
+			}
+		}
+		
+		if(qb.needAggr){
+			ZGroupBy gb = q.getGroupBy();
+			if(gb.getGroupBy() == null)
+				qb.groupby = new ZColRef[0];
+			else{
+				qb.groupby = new ZColRef[gb.getGroupBy().size()];
+				for(int i = 0; i < qb.groupby.length; ++i){
+					ZColRef cr = (ZColRef)gb.getGroupBy().get(i);
+					checkValidCol(qb, cr, null, null);
+					qb.groupby[i] = cr;
+				}
+			}
+		}
+		
+		qb.distinct = q.isDistinct();
+		if(q.getOrderBy() != null){
+			qb.orderby = new String[q.getOrderBy().size()];
+			qb.orderbyAsc = new boolean[q.getOrderBy().size()];
+			
+			for(int i = 0; i < qb.orderby.length; ++i){
+				qb.orderby[i] = q.getOrderBy().get(i).getCol();
+				qb.orderbyAsc[i] = q.getOrderBy().get(i).getAscOrder();
+			}
+			qb.topK = q.topK;
+		}
+		qb.shuffleCnt = q.shuffleN;
+		
+		//!!!!!! add mapjoin, reducejoin, aggrReducer, midtabstoragetype...
+		
 		//2. check aggr
 		
 		//3. check & generate select list, generate type !!

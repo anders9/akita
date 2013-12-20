@@ -806,7 +806,7 @@ Vector GroupByList():
   ZExp e;
 }
 {
-    e = SQLExpression() { v.addElement(e); }
+    e = TableColumn() { v.addElement(e); }
     ("," e = TableColumn() { v.addElement(e); } )*
     { return v; }
 }

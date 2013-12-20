@@ -69,10 +69,10 @@ public class ZQuery extends ZExp implements ZStatement {
   Vector<ZOrderBy> orderby_ = null;
   //boolean forupdate_ = false;
 
-  int topK = -1; //if with order-by, must with this value
+  public int topK = -1; //if with order-by, must with this value
   
-  int shuffleN = -1;  
-  MidTabStorageType shuffleMtst = MidTabStorageType.Memory;
+  public int shuffleN = -1;  
+  public MidTabStorageType shuffleMtst = MidTabStorageType.Memory;
   /**
    * Create a new SELECT statement
    */

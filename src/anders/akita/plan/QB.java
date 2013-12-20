@@ -37,6 +37,8 @@ public class QB {
 	boolean distinct;
 	String[] orderby;//if null, no order-by operation
 	boolean[] orderbyAsc;
+	int topK;
+	
 	int shuffleCnt; // if == 0, no shuffle
 	
 	public String genNamePrefix(long qid){
