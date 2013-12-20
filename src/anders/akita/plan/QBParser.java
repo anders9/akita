@@ -161,6 +161,14 @@ public class QBParser {
 			}
 		}
 		
+		qb.joinType = q.getFrom().getJoinType();
+		qb.joinPolicy = new JoinPolicy[q.getFrom().getItemN()];
+		qb.joinReducerN = new int[q.getFrom().getItemN()];
+		for(int i = 0; i < qb.joinPolicy.length; ++i){
+			qb.joinPolicy[i] = q.getFrom().getItem(i).joinPolicy;
+			qb.joinReducerN[i] = q.getFrom().getItem(i).joinReducerN;
+		}
+		
 		if(q.getWhere() != null){
 			qb.where = genRootExpList(q.getWhere());
 			for(RootExp re: qb.where){
@@ -216,6 +224,7 @@ public class QBParser {
 					qb.groupby[i] = cr;
 				}
 			}
+			qb.aggrReducerN = q.getGroupBy().aggrReducerN;
 		}
 		
 		qb.distinct = q.isDistinct();
@@ -243,6 +252,7 @@ public class QBParser {
 		
 		//5. generate aggr, order by, distinct, and so on.
 		
+		return qb;
 	}
 	
 	static boolean genTypeInfo(final QB qb, ZExp node, String[] extSrc, String[] extSrcPhy){

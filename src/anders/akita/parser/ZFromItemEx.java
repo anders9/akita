@@ -8,9 +8,9 @@ import anders.akita.plan.*;
 
 public class ZFromItemEx {
 
-	JoinPolicy joinPolicy;
-	int joinReducerN;
-	MidTabStorageType[] mstType = new MidTabStorageType[]{MidTabStorageType.Memory, MidTabStorageType.Memory};
+	public JoinPolicy joinPolicy;
+	public int joinReducerN;
+	public MidTabStorageType[] mstType = new MidTabStorageType[]{MidTabStorageType.Memory, MidTabStorageType.Memory};
 	
 	public void setMidTabStorageType(MidTabStorageType t1, MidTabStorageType t2){
 		mstType[0] = t1;

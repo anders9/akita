@@ -27,8 +27,8 @@ public class ZGroupBy {
 
   Vector<ZExp> groupby_;
   ZExp having_ = null;
-  int aggrReducerN = 1;
-  MidTabStorageType aggrMtst = MidTabStorageType.Memory;
+  public int aggrReducerN = 1;
+  public MidTabStorageType aggrMtst = MidTabStorageType.Memory;
 
   public ArrayList<ZExp> havingList = new ArrayList<ZExp>();
 

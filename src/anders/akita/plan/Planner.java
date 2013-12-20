@@ -87,7 +87,7 @@ public class Planner {
 	}
 	*/
 	
-	 ArrayList<String> getPredCoverSrc(RootExp pred)
+	 static ArrayList<String> getPredCoverSrc(RootExp pred)
 	 {
 		final ArrayList<String> cov = new ArrayList<String>();
 		try{
@@ -105,7 +105,7 @@ public class Planner {
 		}catch(ExecException e){}
 		return cov;
 	}
-	boolean checkCanPushDown(String[] srcs, ArrayList<String> covers){
+	static boolean checkCanPushDown(String[] srcs, ArrayList<String> covers){
 		for(String c: covers){
 			int l = Util.findStr(c, srcs);
 			if(l == -1)
@@ -115,7 +115,7 @@ public class Planner {
 	}
 	 
 	 
-	int getPushdownLevel(String[] srcs, ArrayList<String> covers){
+	static int getPushdownLevel(String[] srcs, ArrayList<String> covers){
 		int level = 0;
 		for(String c: covers){
 			int l = Util.findStr(c, srcs);
@@ -124,7 +124,7 @@ public class Planner {
 		}
 		return level;
 	}
-	ArrayList<RootExp>[] genPushDownPredsArray(String[] src, ArrayList<RootExp> preds){
+	static ArrayList<RootExp>[] genPushDownPredsArray(String[] src, ArrayList<RootExp> preds){
 		ArrayList<RootExp>[] pdList = new ArrayList[src.length];
 		
 		for(int i = 0; i < src.length; ++i){
@@ -136,7 +136,7 @@ public class Planner {
 		}
 		return pdList;
 	}
-	ArrayList<RootExp> mergePredArray(ArrayList<RootExp>[] preds, int beg, int end){
+	static ArrayList<RootExp> mergePredArray(ArrayList<RootExp>[] preds, int beg, int end){
 		ArrayList<RootExp> list = new ArrayList<RootExp>();
 		for(int i = beg; i < end; ++i){
 			list.addAll(preds[i]);
@@ -145,7 +145,7 @@ public class Planner {
 	}
 	
 
-	ArrayList<String> getCoverCol(RootExp exp){
+	static ArrayList<String> getCoverCol(RootExp exp){
 		final ArrayList<String> list = new ArrayList<String>();
 		try{
 			exp.traverse(new NodeVisitor(){
@@ -161,21 +161,21 @@ public class Planner {
 		}catch(Exception e){}
 		return list;
 	}
-	ArrayList<String> getCoverCol(ArrayList<RootExp> expList){
+	static ArrayList<String> getCoverCol(ArrayList<RootExp> expList){
 		ArrayList<String> list = new ArrayList<String>();
 		for(RootExp e: expList){
 			list.addAll(getCoverCol(e));
 		}
 		return list;
 	}
-	ArrayList<String> getCoverCol(RootExp[] expList){
+	static ArrayList<String> getCoverCol(RootExp[] expList){
 		ArrayList<String> list = new ArrayList<String>();
 		for(RootExp e: expList){
 			list.addAll(getCoverCol(e));
 		}
 		return list;
 	}
-	ArrayList<String> filteCoverCol(String[] cutSrc, ArrayList<String> list){
+	static ArrayList<String> filteCoverCol(String[] cutSrc, ArrayList<String> list){
 		ArrayList<String> rlist = new ArrayList<String>();
 		for(String col: list){
 			String s = QBParser.getColSrc(col);
@@ -200,12 +200,14 @@ public class Planner {
 		ArrayList<RootExp>[] pdList = genPushDownPredsArray(qb.src, qb.where);
 		//special process for RIGHT-JOIN
 		if(qb.src.length == 2 && qb.joinType == JoinType.RIGHT){
+			//when right-join, can't push down where-preds to left-src, so restore them.
 			pdList[1].addAll(pdList[0]);
 			pdList[0].clear();
 		}
 		//process Join condition
 		if(qb.src.length == 2 && qb.joinType != JoinType.INNER && qb.joinCond != null){
 			if(qb.joinType == JoinType.RIGHT){
+				//when right-join, can push join-condition into left-src.
 				Iterator<RootExp> iter = qb.joinCond.iterator();
 				while(iter.hasNext()){
 					RootExp jc = iter.next();
@@ -713,22 +715,59 @@ public class Planner {
 		Schema s = new Schema();
 		s.name = name;
 		s.col = ((ArrayList<String>)cols.clone()).toArray(new String[0]);
-		for(String c : s.col)
-			c.replace('.', '$');
+
 		s.type = new String[s.col.length];
 		for(int k = 0; k < s.col.length; ++k){
-			s.type[k] = getColumnType(qb, s.col[k]);
+			s.type[k] = getColumnType(qb, s.col[k], null, null);
 		}
+		for(String c : s.col)
+			c.replace('.', '$');
 		s.containID = withID;
 		return s;
-	}*/
+	}
+	*/
+	
+	static void pushDownPredsByCover(ArrayList<RootExp> from, ArrayList<RootExp> to, String[] srcs){
+		Iterator<RootExp> iter = from.iterator();
+		while(iter.hasNext()){
+			RootExp e = iter.next();
+			ArrayList<String> cvs = Planner.getCoverCol(e);
+			if(Planner.checkCanPushDown(srcs, cvs)){
+				to.add(e);
+				iter.remove();
+			}
+		}
+	}
 	
 	static ArrayList<RootExp> genJoinRhsPred(JoinType joinType, 
 			ArrayList<RootExp> joinCond, String[] rhsSrcs, ArrayList<RootExp> where){
-		
+		ArrayList<RootExp> to = new ArrayList<RootExp>();
+		if(joinType == JoinType.INNER || joinType == JoinType.RIGHT){
+			Planner.pushDownPredsByCover(where, to, rhsSrcs);
+		}
+		if(joinCond != null && joinType == JoinType.LEFT){
+			Planner.pushDownPredsByCover(joinCond, to, rhsSrcs);
+		}
+		return to;
 	}
 	
 	static class QBClause{
+		
+		public String toString(){
+			String dist = distinct ? " distinct" : "";
+			String t = String.format("select%s %s from %s where %s", dist, fields, fromClause, whereClause);
+			if(groupbyClause != null)
+				t += (" group by " + groupbyClause);
+			if(havingClause != null)
+				t += (" having " + havingClause);
+			if(orderbyClause != null)
+				t += (" order by " + orderbyClause);
+			//!!
+			//add second aggr code.
+			
+			return t;
+		}
+		
 		String fields;
 		String fromClause;
 		String[] rawSrcs;//when Column ref tab not in this array, then translate into tab$column 
@@ -747,23 +786,9 @@ public class Planner {
 		boolean distinct = false;
 		String orderbyClause;
 		
-		public String toString(){
-			String dist = distinct ? " distinct" : "";
-			String t = String.format("select%s %s from %s where %s", dist, fields, fromClause, whereClause);
-			if(groupbyClause != null)
-				t += (" group by " + groupbyClause);
-			if(havingClause != null)
-				t += (" having " + havingClause);
-			if(orderbyClause != null)
-				t += (" order by " + orderbyClause);
-			//!!
-			//add second aggr code.
-			
-			//return t;
-		}
 	}
 	
-	static QBClause genSelectClause(QB qb, int stepIdx,
+	QBClause genSelectClause(QB qb, int stepIdx,
 			String[] src, String[] srcPhy, 
 			RelSubQuery rsq, //if Inner-Q, this RSQ used for generate middle expr's type(need check ref's srcPhy)
 			JoinType joinType, 
@@ -774,6 +799,41 @@ public class Planner {
 			boolean withID
 			){
 		
+		QBClause qbc = new QBClause();
+		Schema s = new Schema();
+		s.name = this.genTmpTableName(qb, stepIdx);
+		s.col = new String[cols.size()];
+
+		s.type = new String[cols.size()];
+		
+		s.containID = withID;
+		
+		
+		qbc.fields = "";
+		
+		boolean first = true;
+		for(int i = 0; i < s.col.length; ++i){
+			if(i > 0) qbc.fields += ", ";
+			
+			String col = cols.get(i);
+			String fc;
+			String alias = col.replace('.', '$');
+			if(Util.findStr(QBParser.getColSrc(col), src) != -1){
+				fc = col + " as " + alias;
+			}
+			else fc = alias;
+			
+			qbc.fields += fc;
+			s.col[i] = alias;
+			s.type[i] = getColumnType(qb, col, null, null);
+		}
+		
+		qbc.schema = s;
+		if(withID)
+			qbc.fields += ", id";
+		
+		//generate from clause
+		//midSrc 1/2 srcs. outer-join
 	}
 	
 	static QBClause genSelExpClause(QB qb, int stepIdx, QBClause prevClause){
