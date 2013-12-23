@@ -445,7 +445,7 @@ public class Planner {
 				fdo = new FetchDataOperator();
 				//fdo.schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i), ob.fetchCol, false);
 				
-				ob.qbClause = Planner.genSelectClause(qb, i, 
+				ob.qbClause = genSelectClause(qb, i, 
 						ofd.src, ofd.srcPhy,
 						null,
 						ofd.joinType,
@@ -476,7 +476,7 @@ public class Planner {
 					
 					ljo.genPrevID = !ljo.leftSrc.schema.containID;
 					fdo.entries = ljo.leftSrc.entries;
-					ob.qbClause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy,
+					ob.qbClause = genSelectClause(qb, i, oj.src, oj.srcPhy,
 							qb.relSubQ[ob.rsqPos],
 							oj.joinType, oj.joinCond, oj.where, oj.fetchCol, new String[]{ljo.leftSrc.schema.name}, true);
 					fdo.schema = ob.qbClause.schema;
@@ -497,7 +497,7 @@ public class Planner {
 					mjo.collectNode = Meta.randomEntries(1)[0];
 					mjo.genPrevID = oj.containID && !mjo.leftSrc.schema.containID;
 					
-					ob.qbClause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy, 
+					ob.qbClause = genSelectClause(qb, i, oj.src, oj.srcPhy, 
 							ob.rsqPos == -1 ? null : qb.relSubQ[ob.rsqPos],
 							oj.joinType,
 							oj.joinCond,
@@ -532,7 +532,7 @@ public class Planner {
 					//rjo.srcs[1].schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i) + "_rhs", rhsCols, false);
 					rjo.srcs[1].entries = Planner.getSrcPhyEntries(qb, oj.srcPhy[0]);;
 					
-					QBClause rhsQBclause = Planner.genSelectClause(qb, i, oj.src, oj.srcPhy,
+					QBClause rhsQBclause = genSelectClause(qb, i, oj.src, oj.srcPhy,
 							ob.rsqPos == -1 ? null : qb.relSubQ[ob.rsqPos],
 							JoinType.INNER, null, rhsWhere, rhsCols, null, false);
 							
@@ -558,7 +558,7 @@ public class Planner {
 					
 					fdo.entries = Meta.randomEntries(oj.joinReducerN);
 					String[] jsrc = new String[]{rjo.srcs[0].schema.name, rjo.srcs[1].schema.name};
-					ob.qbClause = Planner.genSelectClause(qb, i, new String[0], new String[0],
+					ob.qbClause = genSelectClause(qb, i, new String[0], new String[0],
 							ob.rsqPos == -1 ? null : qb.relSubQ[ob.rsqPos],
 							oj.joinType, oj.joinCond, oj.where, oj.fetchCol, jsrc,
 							oj.containID
@@ -808,7 +808,6 @@ public class Planner {
 		
 		s.containID = withID;
 		
-		
 		qbc.fields = "";
 		
 		boolean first = true;
@@ -834,8 +833,42 @@ public class Planner {
 		
 		//generate from clause
 		//midSrc 1/2 srcs. outer-join
+		if(midSrc == null)
+			midSrc = new String[0];
+		if(src == null){
+			src = srcPhy = new String[0];
+		}
+		String[] jsrc = new String[midSrc.length + src.length];
+		String[] jsrcPhy = new String[jsrc.length];
+		
+		for(int i = 0; i < jsrc.length; ++i){
+			if(i < midSrc.length){
+				jsrc[i] = jsrcPhy[i] = midSrc[i];
+			}
+			else{
+				jsrc[i] = src[i - midSrc.length];
+				jsrcPhy[i] = srcPhy[i - midSrc.length];
+			}
+		}
+		
+		if(joinType == JoinType.INNER){
+			qbc.fromClause = "";
+			for(int i = 0; i < jsrc.length; ++i){
+				if(i > 0) qbc.fromClause += ", ";
+				qbc.fromClause += genFromItem(jsrc[i], jsrcPhy[i]);
+			}
+		}
+		else qbc.fromClause = 
+				genFromItem(jsrc[0], jsrcPhy[0])
+			+	(joinType == JoinType.LEFT? " left join " :  " right join ")
+			+	genFromItem(jsrc[1], jsrcPhy[1]);
+		
 	}
-	
+	static String genFromItem(String src, String srcPhy){
+		if(src.equals(srcPhy))
+			return src;
+		return srcPhy + " as " + src;
+	}
 	static QBClause genSelExpClause(QB qb, int stepIdx, QBClause prevClause){
 		
 	}
@@ -887,8 +920,8 @@ public class Planner {
 
 	
 	static String getColumnType(QB qb, String col, String[] extSrc, String[] extSrcPhy){
-		String src = Planner.getColSrc(col);
-		String colName = Planner.getColName(col);
+		String src = QBParser.getColSrc(col);
+		String colName = QBParser.getColName(col);
 		
 		String tab = Planner.src2PhySrc(qb, src, extSrc, extSrcPhy);
 		//!!!
