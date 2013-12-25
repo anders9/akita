@@ -775,13 +775,13 @@ public class Planner {
 		ArrayList<String> nonRelSubQVar;
 		Schema schema;
 		
-		int aggrLevel;// = 0, 1, 2
+		int aggrLevel;// = 0, 1, //2
 		
 		String groupbyClause;
 		String havingClause;
 		
-		String groupbyClause2;
-		String havingClause2;
+		//String groupbyClause2;
+		//String havingClause2;
 		
 		boolean distinct = false;
 		String orderbyClause;
@@ -862,6 +862,26 @@ public class Planner {
 				genFromItem(jsrc[0], jsrcPhy[0])
 			+	(joinType == JoinType.LEFT? " left join " :  " right join ")
 			+	genFromItem(jsrc[1], jsrcPhy[1]);
+		
+		qbc.whereClause = "";
+		if(qb.where != null){
+			for(int i = 0; i < qb.where.size(); ++i){
+				if(i > 0)
+					qbc.whereClause += " and ";
+				qbc.whereClause += qb.where.get(i).toString();
+			}
+		}
+		qbc.aggrLevel = 0;
+		if(qb.needAggr){
+			qbc.aggrLevel = 1;
+			qbc.groupbyClause = "";
+			if(qb.groupby.length != 0){
+				for(int i = 0; i < qb.groupby.length; ++i){
+					if(i > 0)
+						qbc.groupbyClause = qb.groupby[i].toString();
+				}
+			}
+		}
 		
 	}
 	static String genFromItem(String src, String srcPhy){
