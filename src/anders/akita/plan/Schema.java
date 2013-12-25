@@ -1,6 +1,6 @@
 package anders.akita.plan;
 
-public class Schema {
+public class Schema implements Cloneable{
 
 	String name;
 	
@@ -10,4 +10,12 @@ public class Schema {
 	
 	boolean containID = false;
 	
+	public Object clone(){
+		Schema s = new Schema();
+		s.name = name;
+		s.col = col.clone();
+		s.type = type.clone();
+		s.containID = containID;
+		return s;
+	}
 }

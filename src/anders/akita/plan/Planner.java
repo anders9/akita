@@ -751,7 +751,26 @@ public class Planner {
 		return to;
 	}
 	
-	static class QBClause{
+	static String genPredsStr(ArrayList<RootExp> preds, String[] rawStr){
+		
+		if(preds != null && preds.size() > 0){
+			String s = "";
+			for(int i = 0; i < preds.size(); ++i){
+				if(i > 0)
+					s += " and ";
+				s += preds.get(i).toString();
+			}
+			return s;
+		}
+		return null;
+	}
+	
+	static class QBClause implements Cloneable{
+		
+		public Object clone()
+		{
+			try{return super.clone();}catch(CloneNotSupportedException e){return null;}
+		}
 		
 		public String toString(){
 			String dist = distinct ? " distinct" : "";
@@ -800,6 +819,11 @@ public class Planner {
 			){
 		
 		QBClause qbc = new QBClause();
+		
+		if(src == null)
+			src = srcPhy = new String[0];
+		qbc.rawSrcs = src.clone();
+		
 		Schema s = new Schema();
 		s.name = this.genTmpTableName(qb, stepIdx);
 		s.col = new String[cols.size()];
@@ -810,7 +834,6 @@ public class Planner {
 		
 		qbc.fields = "";
 		
-		boolean first = true;
 		for(int i = 0; i < s.col.length; ++i){
 			if(i > 0) qbc.fields += ", ";
 			
@@ -835,9 +858,8 @@ public class Planner {
 		//midSrc 1/2 srcs. outer-join
 		if(midSrc == null)
 			midSrc = new String[0];
-		if(src == null){
-			src = srcPhy = new String[0];
-		}
+
+		
 		String[] jsrc = new String[midSrc.length + src.length];
 		String[] jsrcPhy = new String[jsrc.length];
 		
@@ -863,15 +885,9 @@ public class Planner {
 			+	(joinType == JoinType.LEFT? " left join " :  " right join ")
 			+	genFromItem(jsrc[1], jsrcPhy[1]);
 		
-		qbc.whereClause = "";
-		if(qb.where != null){
-			for(int i = 0; i < qb.where.size(); ++i){
-				if(i > 0)
-					qbc.whereClause += " and ";
-				qbc.whereClause += qb.where.get(i).toString();
-			}
-		}
+		qbc.whereClause = Planner.genPredsStr(qb.where, qbc.rawSrcs);
 		qbc.aggrLevel = 0;
+		/*
 		if(qb.needAggr){
 			qbc.aggrLevel = 1;
 			qbc.groupbyClause = "";
@@ -881,8 +897,17 @@ public class Planner {
 						qbc.groupbyClause = qb.groupby[i].toString();
 				}
 			}
+			qbc.havingClause = "";
+			if(qb.havingPreds != null && qb.havingPreds.size() > 0){
+				for(int i = 0; i < qb.havingPreds.size(); ++i){
+					if(i > 0)
+						qbc.havingClause += " and ";
+					qbc.havingClause += qb.havingPreds.get(i).toString();
+				}				
+			}
 		}
-		
+		*/
+		return qbc;
 	}
 	static String genFromItem(String src, String srcPhy){
 		if(src.equals(srcPhy))
@@ -890,7 +915,16 @@ public class Planner {
 		return srcPhy + " as " + src;
 	}
 	static QBClause genSelExpClause(QB qb, int stepIdx, QBClause prevClause){
+		String s = "";
+		for(int i = 0; i < qb.selList.length; ++i){
+			if(i > 0)
+				s += ", ";
+			s += qb.selList[i].toString();
+		}
+		QBClause qbc = (QBClause)prevClause.clone();
+		qbc.fields = s;
 		
+		return qbc;
 	}
 	
 	static QBClause genAggrClause(QB qb, int stepIdx, QBClause prevClause, 
