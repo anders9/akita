@@ -579,7 +579,7 @@ public class Planner {
 				
 				if(prevOp.entries.length == 1){
 					//push current node into prev-node (fetch data)
-					ob.qbClause = Planner.genAggrClause(qb, i, prevOb.qbClause, 
+					ob.qbClause = genAggrClause(qb, i, prevOb.qbClause, 
 							qb.relSubQ[ob.rsqPos],
 							ora.fetchCol,
 							new String[]{"id"}, ora.havingPreds, containID);
@@ -593,7 +593,7 @@ public class Planner {
 				}
 				else{
 					QBClause[] qbClauses = new QBClause[2];
-					Planner.gen2PhaseAggrClause(qb, i, prevOb.qbClause,
+					gen2PhaseAggrClause(qb, i, prevOb.qbClause,
 							qb.relSubQ[ob.rsqPos],
 							ora.fetchCol,  
 							new String[]{"id"}, ora.havingPreds, containID,
@@ -636,7 +636,7 @@ public class Planner {
 			
 			if(prevOp.entries.length == 1){
 				//push current node into prev-node (fetch data)
-				prevClause = Planner.genAggrClause(qb, obIdx, prevClause, null, null, 
+				prevClause = genAggrClause(qb, obIdx, prevClause, null, null, 
 						groupby, qb.havingPreds, false);
 				
 				//replace previous operator's fetch data SQL, not gen new operator
@@ -646,7 +646,7 @@ public class Planner {
 			}
 			else{
 				QBClause[] qbClauses = new QBClause[2];
-				Planner.gen2PhaseAggrClause(qb, obIdx, prevClause, null, null,  
+				gen2PhaseAggrClause(qb, obIdx, prevClause, null, null,  
 						groupby, qb.havingPreds, false,
 						qbClauses);
 				//modify previous node
@@ -676,7 +676,7 @@ public class Planner {
 			//!!!
 			//replace select expr list into prevClause
 			
-			prevClause = Planner.genSelExpClause(qb, obIdx, prevClause);
+			prevClause = genSelExpClause(qb, obIdx, prevClause);
 			prevOp.fetchSQL = prevClause.toString();
 			prevOp.schema = prevClause.schema;
 			prevOp.nonRelSubQVar = prevClause.nonRelSubQVar;
@@ -901,22 +901,28 @@ public class Planner {
 		return srcPhy + " as " + src;
 	}
 	
-	static QBClause genSelExpClause(QB qb, int stepIdx, QBClause prevClause){
-		String s = "";
+	QBClause genSelExpClause(QB qb, int stepIdx, QBClause prevClause){
+		String fields = "";
 		ZColRef.rawSrc = prevClause.rawSrcs;
 		for(int i = 0; i < qb.selList.length; ++i){
 			if(i > 0)
-				s += ", ";
-			s += qb.selList[i].toString();
+				fields += ", ";
+			fields += ( qb.selList[i].toString() + qb.schema.col[i] );
 		}
 		ZColRef.rawSrc = null;
 		QBClause qbc = (QBClause)prevClause.clone();
-		qbc.fields = s;
+		qbc.fields = fields;
+		
+		Schema s = (Schema)qb.schema.clone();
+		s.name = this.genTmpTableName(qb, stepIdx);
+		s.containID = false;
+		
+		qbc.schema = s;
 		
 		return qbc;
 	}
 	
-	static QBClause genAggrClause(QB qb, int stepIdx, QBClause prevClause, 
+	QBClause genAggrClause(QB qb, int stepIdx, QBClause prevClause, 
 			RelSubQuery rsq, //if Inner-Q, this RSQ used for generate middle expr's type(need check ref's srcPhy)
 			ArrayList<String> selList, String[] groupby, ArrayList<RootExp> having,
 			boolean withID){
@@ -942,8 +948,8 @@ public class Planner {
 		return qbc;
 	}
 	
-	
-	static boolean gen2PhaseAggrClause(QB qb, int stepIdx, QBClause prevClause, 
+	static boolean canDistrAggr = true;
+	boolean gen2PhaseAggrClause(QB qb, int stepIdx, QBClause prevClause, 
 			RelSubQuery rsq, //if Inner-Q, this RSQ used for generate middle expr's type(need check ref's srcPhy)
 			ArrayList<String> selList, String[] groupby, ArrayList<RootExp> having,
 			boolean withID,
@@ -951,6 +957,33 @@ public class Planner {
 			){
 		//!!!
 		//if selList == NULL, then generate QB self's aggr operator
+		
+		final ArrayList<String> cols = new ArrayList<String>();
+		final ArrayList<ZExp> aggrFuns = new ArrayList<ZExp>();//col name: $aggr0,$aggr1,...
+
+		canDistrAggr = true;
+		for(int i = 0; i < qb.selList.length; ++i){
+			RootExp re = qb.selList[i];
+			try{
+				re.traverse(new NodeVisitor(){
+					public void visit(ZExp node, RootExp root)
+							throws ExecException 
+					{
+						if(node instanceof ZColRef){
+							String c = node.toString();
+							if(!cols.contains(c))
+								cols.add(c);
+						}
+						else if(node instanceof ZExpression && ((ZExpression)node).isAggr()){
+							ZExpression e = (ZExpression)node;
+							if(e.type == ZExpression.AGGR_DISTINCT
+								|| !FunctionMgr.aggrCanDistrAggr(e.funcOrAggrName))
+								canDistrAggr = false;
+						}
+					}
+				});
+			}catch(ExecException e){}
+		}
 	}
 	
 	static String[][] genJoinKeyIdx(JoinType joinType, 
