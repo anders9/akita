@@ -1,7 +1,11 @@
 package anders.akita.parser;
 
+import anders.util.Util;
+
 
 public class ZColRef extends ZExp {
+	
+	static public String[] rawSrc;
 	
 	public String table;
 	public String col;
@@ -14,8 +18,15 @@ public class ZColRef extends ZExp {
 
 	public String toString(){
 		if(table == null)return col;
-		return table + "." + col;
+		
+		if(rawSrc == null)
+			return table + "." + col;
+		else if(Util.findStr(table, rawSrc) != -1)
+			return table + "." + col;
+		else
+			return table + "$" + col;
 	}
+	
 	
 	public Iterable<ZExp> subExpSet(){
 		return null;

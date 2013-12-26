@@ -43,5 +43,7 @@ public abstract class ZExp {
 	
 	public abstract boolean replaceSubExp(ZExp oldExp, ZExp newExp);
 	
+	public abstract String toString();
+	
 };
 

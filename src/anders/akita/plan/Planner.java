@@ -752,17 +752,21 @@ public class Planner {
 	}
 	
 	static String genPredsStr(ArrayList<RootExp> preds, String[] rawStr){
-		
-		if(preds != null && preds.size() > 0){
-			String s = "";
-			for(int i = 0; i < preds.size(); ++i){
-				if(i > 0)
-					s += " and ";
-				s += preds.get(i).toString();
+		ZColRef.rawSrc = rawStr;
+		try{
+			if(preds != null && preds.size() > 0){
+				String s = "";
+				for(int i = 0; i < preds.size(); ++i){
+					if(i > 0)
+						s += " and ";
+					s += preds.get(i).toString();
+				}
+				return s;
 			}
-			return s;
-		}
 		return null;
+		}finally{
+			ZColRef.rawSrc = null;
+		}
 	}
 	
 	static class QBClause implements Cloneable{
@@ -887,40 +891,25 @@ public class Planner {
 		
 		qbc.whereClause = Planner.genPredsStr(qb.where, qbc.rawSrcs);
 		qbc.aggrLevel = 0;
-		/*
-		if(qb.needAggr){
-			qbc.aggrLevel = 1;
-			qbc.groupbyClause = "";
-			if(qb.groupby.length != 0){
-				for(int i = 0; i < qb.groupby.length; ++i){
-					if(i > 0)
-						qbc.groupbyClause = qb.groupby[i].toString();
-				}
-			}
-			qbc.havingClause = "";
-			if(qb.havingPreds != null && qb.havingPreds.size() > 0){
-				for(int i = 0; i < qb.havingPreds.size(); ++i){
-					if(i > 0)
-						qbc.havingClause += " and ";
-					qbc.havingClause += qb.havingPreds.get(i).toString();
-				}				
-			}
-		}
-		*/
+		
 		return qbc;
 	}
+	
 	static String genFromItem(String src, String srcPhy){
 		if(src.equals(srcPhy))
 			return src;
 		return srcPhy + " as " + src;
 	}
+	
 	static QBClause genSelExpClause(QB qb, int stepIdx, QBClause prevClause){
 		String s = "";
+		ZColRef.rawSrc = prevClause.rawSrcs;
 		for(int i = 0; i < qb.selList.length; ++i){
 			if(i > 0)
 				s += ", ";
 			s += qb.selList[i].toString();
 		}
+		ZColRef.rawSrc = null;
 		QBClause qbc = (QBClause)prevClause.clone();
 		qbc.fields = s;
 		
@@ -932,6 +921,25 @@ public class Planner {
 			ArrayList<String> selList, String[] groupby, ArrayList<RootExp> having,
 			boolean withID){
 		
+		QBClause qbc = genSelExpClause(qb, stepIdx, prevClause);
+		
+		qbc.aggrLevel = 1;
+		if (qb.groupby.length != 0) {
+			qbc.groupbyClause = "";
+			ZColRef.rawSrc = prevClause.rawSrcs;
+			for (int i = 0; i < qb.groupby.length; ++i) {
+				if (i > 0)
+					qbc.groupbyClause += ", ";
+				qbc.groupbyClause += qb.groupby[i].toString();
+			}
+			ZColRef.rawSrc = null;
+		}
+		qbc.havingClause = "";
+		if (qb.havingPreds != null && qb.havingPreds.size() > 0) {
+			qbc.havingClause = Planner.genPredsStr(qb.havingPreds, qbc.rawSrcs);
+		}
+		
+		return qbc;
 	}
 	
 	
