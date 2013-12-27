@@ -15,4 +15,12 @@ public class QBPlan {
 	//String[] schema;
 	//int[] colLen;
 	Schema schema;
+	
+	public QBPlan getSubQBPlan(String tabName){
+		for(QBPlan qbp: prevQBPlans){
+			if(tabName.equals(qbp.schema.name))
+				return qbp;
+		}
+		return null;
+	}
 }

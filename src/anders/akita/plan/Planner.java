@@ -1,6 +1,5 @@
 package anders.akita.plan;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 import anders.akita.meta.*;
@@ -34,7 +33,7 @@ public class Planner {
 			plan.prevQBPlans.add(qbp);
 		}
 
-		plan.operators = genSubQBPlan(qb);
+		plan.operators = genSubQBPlan(qb, plan);
 
 		return plan;
 	}
@@ -192,7 +191,7 @@ public class Planner {
 		return prefix + String.format("ts%d", step); 
 	}
 	
-	FetchDataOperator[] genSubQBPlan(QB qb){
+	FetchDataOperator[] genSubQBPlan(QB qb, QBPlan qbPlan){
 		
 		ArrayList<OpBase> opList = new ArrayList<OpBase>();
 		
@@ -238,7 +237,7 @@ public class Planner {
 		int distrIdx = -1;
 		while(pos < end){
 			if(/*Meta.getTab(qb.srcPhy[pos]).isDistributed()*/
-					Planner.checkSrcPhyDistribute(qb, qb.srcPhy[pos]))
+					Planner.checkSrcPhyDistribute(qbPlan, qb.srcPhy[pos]))
 				++distr;
 			if(distr == 1)
 				distrIdx = pos;
@@ -273,7 +272,7 @@ public class Planner {
 				++pos;
 				while (pos < end) {
 					if (/*Meta.getTab(qb.srcPhy[pos]).isDistributed()*/
-							Planner.checkSrcPhyDistribute(qb, qb.srcPhy[pos]))
+							Planner.checkSrcPhyDistribute(qbPlan, qb.srcPhy[pos]))
 						break;
 				}
 
@@ -308,7 +307,7 @@ public class Planner {
 				opList.get(opList.size() - 1).genID = true;
 				int k = 0;
 				while(k < rsq.srcPhy.length && /* !Meta.getTab(rsq.srcPhy[k]).isDistributed()*/
-						!Planner.checkSrcPhyDistribute(qb, qb.srcPhy[k])
+						!Planner.checkSrcPhyDistribute(qbPlan, qb.srcPhy[k])
 						)
 					++k;
 				
@@ -333,7 +332,7 @@ public class Planner {
 					++k;
 					while (k < rsq.srcPhy.length) {
 						if (/*Meta.getTab(rsq.srcPhy[k]).isDistributed()*/
-								Planner.checkSrcPhyDistribute(qb, qb.srcPhy[k]))
+								Planner.checkSrcPhyDistribute(qbPlan, qb.srcPhy[k]))
 							break;
 						++k;
 					}
@@ -458,7 +457,7 @@ public class Planner {
 				fdo.nonRelSubQVar = ob.qbClause.nonRelSubQVar;
 				fdo.entries = ofd.distrIdx == -1 ?
 						Meta.randomEntries(1) : 
-						Planner.getSrcPhyEntries(qb, ofd.srcPhy[ofd.distrIdx]);
+						Planner.getSrcPhyEntries(qbPlan, ofd.srcPhy[ofd.distrIdx]);
 				
 				fdo.tmpTabList = new ArrayList<String>();//No temp tab generated this step
 				
@@ -492,7 +491,7 @@ public class Planner {
 					MapJoinOperator mjo = (MapJoinOperator)fdo;
 					
 					mjo.leftSrc = prevOp;
-					fdo.entries = Planner.getSrcPhyEntries(qb, oj.srcPhy[0]);
+					fdo.entries = Planner.getSrcPhyEntries(qbPlan, oj.srcPhy[0]);
 					
 					mjo.collectNode = Meta.randomEntries(1)[0];
 					mjo.genPrevID = oj.containID && !mjo.leftSrc.schema.containID;
@@ -530,7 +529,7 @@ public class Planner {
 						rhsCols = Util.<String>mergeArrayList(rhsCols, getCoverCol(oj.joinCond));
 					rhsCols = filteCoverCol(oj.src, rhsCols);
 					//rjo.srcs[1].schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i) + "_rhs", rhsCols, false);
-					rjo.srcs[1].entries = Planner.getSrcPhyEntries(qb, oj.srcPhy[0]);;
+					rjo.srcs[1].entries = Planner.getSrcPhyEntries(qbPlan, oj.srcPhy[0]);;
 					
 					QBClause rhsQBclause = genSelectClause(qb, i, oj.src, oj.srcPhy,
 							ob.rsqPos == -1 ? null : qb.relSubQ[ob.rsqPos],
@@ -546,7 +545,7 @@ public class Planner {
 					fdo.tmpTabList.add(rjo.srcs[1].schema.name);
 					
 					//rjo.joinKeyIdx
-					String[][] jk = Planner.genJoinKeyIdx(oj.joinType, oj.joinCond, oj.where);
+					String[][] jk = Planner.genJoinKeyIdx(oj.src, oj.joinType, oj.joinCond, oj.where);
 					
 					int[][] jkIdx = new int[jk.length][2];
 					
@@ -708,6 +707,7 @@ public class Planner {
 				}
 			}
 		}
+		return ops.toArray(new FetchDataOperator[0]);
 	}
 	
 	/*
@@ -961,7 +961,7 @@ public class Planner {
 	}
 	
 	static boolean canPreAggr = true;
-	boolean gen2PhaseAggrClause(QB qb, int stepIdx, QBClause prevClause, 
+	void gen2PhaseAggrClause(QB qb, int stepIdx, QBClause prevClause, 
 			RelSubQuery rsq, //if Inner-Q, this RSQ used for generate middle expr's type(need check ref's srcPhy)
 			ArrayList<String> selList, String[] groupby, ArrayList<RootExp> having,
 			boolean withID,
@@ -977,6 +977,9 @@ public class Planner {
 		QBClause qbc2 = new QBClause();
 		qbc2.fromClause = qbc1.schema.name;
 		
+		qbClauses[0] = qbc1;
+		qbClauses[1] = qbc2;
+		/*
 		canPreAggr = true;
 		for(int i = 0; i < qb.selList.length; ++i){
 			RootExp re = qb.selList[i];
@@ -996,7 +999,7 @@ public class Planner {
 			}catch(ExecException e){}			
 		}
 		if(!canPreAggr){
-
+		*/
 			this.fillClauseSelExp(qb, stepIdx, qbc2, null);
 			
 			qbc2.aggrLevel = 1;
@@ -1005,6 +1008,7 @@ public class Planner {
 			if (qb.havingPreds != null && qb.havingPreds.size() > 0) {
 				qbc2.havingClause = Planner.genPredsStr(qb.havingPreds, null);
 			}
+		/*	
 		}
 		else{
 			for(int i = 0; i < qb.selList.length; ++i){
@@ -1031,23 +1035,73 @@ public class Planner {
 						}
 					});
 				}catch(ExecException e){}
-			}			
+			}		
 			//qbc1: add group by list & lv1 list into select items. + group-by-clause
 		}
+		*/
+	}
+	static String[] checkEqPred(RootExp pred, String[] rhsSrc){
+		if(! (pred.exp instanceof ZExpression))
+			return null;
+		ZExpression e = (ZExpression)pred.exp;
+		if(e.getOperator() != Operator.EQ && e.getOperator() != Operator.SAFE_EQ)
+			return null;
+		
+		if( ! (e.getOperand(0) instanceof ZColRef) || ! (e.getOperand(1) instanceof ZColRef))
+			return null;
+		
+		ZColRef[] cr = new ZColRef[]{ (ZColRef)e.getOperand(0), (ZColRef)e.getOperand(1) };
+		String[] t = new String[2];
+		int cnt = 0;
+		for(int i = 0; i < 2; ++i){
+			if(Util.findStr(cr[i].table, rhsSrc) != -1)
+				++cnt;
+			t[i] = cr[i].toString().replace('.', '$');
+		}
+		if(cnt != 1)
+			return null;
+		return t;
 	}
 	
-	static String[][] genJoinKeyIdx(JoinType joinType, 
+	//dim1: eq-cols, dim2 eq-left,right, use tab$colName format
+	static String[][] genJoinKeyIdx(String[] rhsSrc, JoinType joinType, 
 			ArrayList<RootExp> joinCond,
 			ArrayList<RootExp> where){
 		
+		String[] t;
+		ArrayList<String[]> list = new ArrayList<String[]>();
+		if(joinType != JoinType.INNER){
+			if(joinCond != null){
+				for(RootExp re : joinCond){
+					t =  checkEqPred(re, rhsSrc);
+					if(t != null)
+						list.add(t);
+				}
+			}
+		}
+		else{
+			if(joinCond != null){
+				for(RootExp re : where){
+					t =  checkEqPred(re, rhsSrc);
+					if(t != null)
+						list.add(t);
+				}
+			}
+		}
+		return list.toArray(new String[0][]);
 	}
 	
-	static String[] getSrcPhyEntries(QB qb, String srcPhy){
-		
+	static String[] getSrcPhyEntries(QBPlan qbPlan, String srcPhy){
+		QBPlan sqbp = qbPlan.getSubQBPlan(srcPhy);
+		if(sqbp != null)
+			return sqbp.entries;
+		return Meta.getTab(srcPhy).getEntries();
 	}
 	
-	static boolean checkSrcPhyDistribute(QB qb, String srcPhy){
-		
+	static boolean checkSrcPhyDistribute(QBPlan qbPlan, String srcPhy){
+		if(qbPlan.getSubQBPlan(srcPhy) != null)
+			return true;
+		return Meta.getTab(srcPhy).isDistributed();
 	}
 	
 
