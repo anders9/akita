@@ -2,21 +2,20 @@ package anders.akita.parser;
 
 import java.util.ArrayList;
 
-public class RootExp{
+public class RootExp extends ZExp{
 
 	public ZExp exp;
 	
 	public ArrayList<String> nonRelSubQVar;
 	
 	static final NodeVisitor nullNodeVisitor = new NodeVisitor(){
-		public void visit(ZExp node, RootExp root) throws ExecException {
-			
-		}
+		public void visit(ZExp node, RootExp root) throws ExecException { }
 	};
 	
 	public RootExp(ZExp exp){
+		this.parentExp = null;
 		this.exp = exp;
-		try{traverse(null);}catch(ExecException e){}
+		try{traverse(nullNodeVisitor);}catch(ExecException e){}
 	}
 	
 	public Iterable<ZExp> subExpSet() {
@@ -25,6 +24,7 @@ public class RootExp{
 		return list;
 	}
 
+	
 	public boolean replaceSubExp(ZExp oldExp, ZExp newExp) {
 		if(exp == oldExp){
 			exp = newExp;
@@ -32,7 +32,8 @@ public class RootExp{
 		}
 		return false;
 	}
-
+	
+	
 	private void traverse(ZExp node, NodeVisitor v)
 			throws ExecException
 	{
@@ -53,7 +54,7 @@ public class RootExp{
 	public void traverse(NodeVisitor visitor)
 			throws ExecException
 	{
-		exp.parentExp = null;
+		exp.parentExp = this;
 		traverse(exp, visitor);
 	}
 	

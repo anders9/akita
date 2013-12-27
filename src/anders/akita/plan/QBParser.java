@@ -271,7 +271,7 @@ public class QBParser {
 	{
 		if(exp.isAggr()){
 			ZExp e = exp.parentExp;
-			while( e != null){
+			while( ! (e instanceof RootExp) ){
 				if(e instanceof ZExpression && ((ZExpression)e).isAggr())
 					throw new ExecException("Nested Aggregation: " + e.toString());
 				e = e.parentExp;
@@ -279,6 +279,8 @@ public class QBParser {
 			if(exp.funcOrAggrName.equalsIgnoreCase("COUNT") && exp.getOperand(0) == null){
 				exp.setOperand(new ZConstant("1", ZConstant.NUMBER), 0);
 			}
+			if(exp.getOperands().size() != 1)
+				throw new ExecException("Not support multi-parm aggregation: " + exp.toString());
 			//check type...
 			for(ZExp param: exp.getOperands()){
 				if(!genTypeInfo(qb, param, extSrc, extSrcPhy)){
@@ -341,6 +343,7 @@ public class QBParser {
 				}
 			}
 		}
+		cr.valType = QBParser.getColumnType(qb, cr.table, cr.col, extSrc, extSrcPhy);
 	}
 	
 	static String genCol(String src, String col){

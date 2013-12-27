@@ -901,25 +901,46 @@ public class Planner {
 		return srcPhy + " as " + src;
 	}
 	
-	QBClause genSelExpClause(QB qb, int stepIdx, QBClause prevClause){
+	
+	void fillClauseSelExp(QB qb, int stepIdx, QBClause qbc, String[] rawSrcs){
 		String fields = "";
-		ZColRef.rawSrc = prevClause.rawSrcs;
+		ZColRef.rawSrc = rawSrcs;
 		for(int i = 0; i < qb.selList.length; ++i){
 			if(i > 0)
 				fields += ", ";
-			fields += ( qb.selList[i].toString() + qb.schema.col[i] );
+			fields += ( qb.selList[i].toString() + " as " + qb.schema.col[i] );
 		}
 		ZColRef.rawSrc = null;
-		QBClause qbc = (QBClause)prevClause.clone();
 		qbc.fields = fields;
 		
 		Schema s = (Schema)qb.schema.clone();
 		s.name = this.genTmpTableName(qb, stepIdx);
 		s.containID = false;
 		
-		qbc.schema = s;
+		qbc.schema = s;		
+	}
+	
+	QBClause genSelExpClause(QB qb, int stepIdx, QBClause prevClause){
+		
+		QBClause qbc = (QBClause)prevClause.clone();
+		fillClauseSelExp(qb, stepIdx, qbc, prevClause.rawSrcs);
 		
 		return qbc;
+	}
+	
+	static String genGroupbyList(QB qb, String[] rawSrcs){
+		String s = null;
+		if (qb.groupby.length != 0) {
+			s = "";
+			ZColRef.rawSrc = rawSrcs;
+			for (int i = 0; i < qb.groupby.length; ++i) {
+				if (i > 0)
+					s += ", ";
+				s += qb.groupby[i].toString();
+			}
+			ZColRef.rawSrc = null;
+		}
+		return s;
 	}
 	
 	QBClause genAggrClause(QB qb, int stepIdx, QBClause prevClause, 
@@ -930,17 +951,8 @@ public class Planner {
 		QBClause qbc = genSelExpClause(qb, stepIdx, prevClause);
 		
 		qbc.aggrLevel = 1;
-		if (qb.groupby.length != 0) {
-			qbc.groupbyClause = "";
-			ZColRef.rawSrc = prevClause.rawSrcs;
-			for (int i = 0; i < qb.groupby.length; ++i) {
-				if (i > 0)
-					qbc.groupbyClause += ", ";
-				qbc.groupbyClause += qb.groupby[i].toString();
-			}
-			ZColRef.rawSrc = null;
-		}
-		qbc.havingClause = "";
+		qbc.groupbyClause = genGroupbyList(qb, prevClause.rawSrcs);
+
 		if (qb.havingPreds != null && qb.havingPreds.size() > 0) {
 			qbc.havingClause = Planner.genPredsStr(qb.havingPreds, qbc.rawSrcs);
 		}
@@ -948,7 +960,7 @@ public class Planner {
 		return qbc;
 	}
 	
-	static boolean canDistrAggr = true;
+	static boolean canPreAggr = true;
 	boolean gen2PhaseAggrClause(QB qb, int stepIdx, QBClause prevClause, 
 			RelSubQuery rsq, //if Inner-Q, this RSQ used for generate middle expr's type(need check ref's srcPhy)
 			ArrayList<String> selList, String[] groupby, ArrayList<RootExp> having,
@@ -958,10 +970,14 @@ public class Planner {
 		//!!!
 		//if selList == NULL, then generate QB self's aggr operator
 		
-		final ArrayList<String> cols = new ArrayList<String>();
-		final ArrayList<ZExp> aggrFuns = new ArrayList<ZExp>();//col name: $aggr0,$aggr1,...
-
-		canDistrAggr = true;
+		QBClause qbc1 = (QBClause)prevClause.clone();
+		
+		qbc1.schema.name = this.genTmpTableName(qb, stepIdx) + "_agglv1";
+		
+		QBClause qbc2 = new QBClause();
+		qbc2.fromClause = qbc1.schema.name;
+		
+		canPreAggr = true;
 		for(int i = 0; i < qb.selList.length; ++i){
 			RootExp re = qb.selList[i];
 			try{
@@ -969,20 +985,54 @@ public class Planner {
 					public void visit(ZExp node, RootExp root)
 							throws ExecException 
 					{
-						if(node instanceof ZColRef){
-							String c = node.toString();
-							if(!cols.contains(c))
-								cols.add(c);
-						}
-						else if(node instanceof ZExpression && ((ZExpression)node).isAggr()){
+						if(node instanceof ZExpression && ((ZExpression)node).isAggr()){
 							ZExpression e = (ZExpression)node;
 							if(e.type == ZExpression.AGGR_DISTINCT
-								|| !FunctionMgr.aggrCanDistrAggr(e.funcOrAggrName))
-								canDistrAggr = false;
+								|| FunctionMgr.getAggrMerger(e.funcOrAggrName) == null)
+								canPreAggr = false;
 						}
 					}
 				});
-			}catch(ExecException e){}
+			}catch(ExecException e){}			
+		}
+		if(!canPreAggr){
+
+			this.fillClauseSelExp(qb, stepIdx, qbc2, null);
+			
+			qbc2.aggrLevel = 1;
+			qbc2.groupbyClause = genGroupbyList(qb, null);
+
+			if (qb.havingPreds != null && qb.havingPreds.size() > 0) {
+				qbc2.havingClause = Planner.genPredsStr(qb.havingPreds, null);
+			}
+		}
+		else{
+			for(int i = 0; i < qb.selList.length; ++i){
+				final ArrayList<RootExp> lv1 = new ArrayList<RootExp>();//col name: $aggr0,$aggr1,...
+				final ArrayList<String> lv1type = new ArrayList<String>();
+				RootExp re = qb.selList[i];
+				try{
+					re.traverse(new NodeVisitor(){
+						public void visit(ZExp node, RootExp root)throws ExecException{
+							if(node instanceof ZExpression && ((ZExpression)node).isAggr()){
+								ZExpression e = (ZExpression)node;
+								int id = lv1.size();
+								String colName = "$aggrd" + id;
+								ZExp parExp = e.parentExp;
+								
+								String mergefun = FunctionMgr.getAggrMerger(e.funcOrAggrName);
+								ZExpression merger = new ZExpression(mergefun, new ZColRef(null, colName), false);
+								
+								parExp.replaceSubExp(e, merger);
+								
+								lv1.add(new RootExp(e));
+								lv1type.add(e.valType);
+							}
+						}
+					});
+				}catch(ExecException e){}
+			}			
+			//qbc1: add group by list & lv1 list into select items. + group-by-clause
 		}
 	}
 	
