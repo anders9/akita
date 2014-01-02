@@ -238,8 +238,11 @@ public class QBParser {
 			}
 			qb.topK = q.topK;
 		}
-		qb.shuffleCnt = q.shuffleN;
 		
+		qb.shuffleCnt = q.shuffleN;
+		if(qb.orderby != null){
+			qb.shuffleCnt = 1;
+		}
 		//!!!!!! add mapjoin, reducejoin, aggrReducer, midtabstoragetype...
 		
 		//2. check aggr

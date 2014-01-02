@@ -689,27 +689,62 @@ public class Planner {
 		
 		if(prevOp.entries.length == 1){
 			//no need shuffle, add possible distinct flag & order-by top k into prevClause
+			prevClause.distinct = qb.distinct;
+			prevClause.orderbyClause = Planner.genOrderbyList(qb);
+			prevOp.fetchSQL = prevClause.toString();
 		}
 		else{
-			if(qb.orderby != null){
-				//no shuffle
-				//phase 1. add [distinct] & order-by top k into prevClause
-				//phase 2. collect data into one node and add [distinct] & order-by top k again
+			
+			ShuffleOperator so = new ShuffleOperator();
+			so.src = prevOp;
+			so.tmpTabList = new ArrayList<String>();
+			so.tmpTabList.add(so.src.schema.name);
+			so.entries = Meta.randomEntries(qb.shuffleCnt);
+			so.schema = (Schema)so.src.schema.clone();
+			so.schema.name = this.genTmpTableName(qb, obIdx);
+
+			// shuffle to 1 node
+			// phase 1. add [distinct] & order-by top k into prevClause
+			prevClause.distinct = qb.distinct;
+			prevClause.orderbyClause = Planner.genOrderbyList(qb);
+			prevOp.fetchSQL = prevClause.toString();
+			String[] col = prevOp.schema.col;
+			
+			String cl2 = "select ";
+			if(qb.distinct)
+				cl2 += "distinct ";
+			for(int i = 0; i < col.length; ++i){
+				if(i > 0)
+					cl2 += ", ";
+				cl2 += col[i];
 			}
-			else{
-				//no order by
-				if(qb.distinct){
-					//phase 1. add distinct into prevClause
-					//phase 2. shuffle with all column, then add distinct again
-				}
-				else{
-					//direct shuffle, or do nothing
-				}
+			cl2 += (" from " + prevOp.schema.name);
+
+			// phase 2. collect data into one node and add [distinct] & order-by
+			// top k again
+			if (prevClause.orderbyClause != null) {
+				cl2 += (" order by " + prevClause.orderbyClause);
 			}
+			so.fetchSQL = cl2;
+			
+			prevOp = so;
+			ops.add(so);
 		}
 		return ops.toArray(new FetchDataOperator[0]);
 	}
-	
+	/*
+	static String genSh2SelClause(String tab, String[] col, boolean distinct){
+		String s = "select ";
+		if(distinct)
+			s += "distinct ";
+		for(int i = 0; i < col.length; ++i){
+			if(i > 0)
+				s += ", ";
+			s += col[i];
+		}
+		s += (" from " + tab);
+		return s;
+	}*/
 	/*
 	static Schema genTabSchema(QB qb, String name, ArrayList<String> cols, boolean withID){
 		Schema s = new Schema();
@@ -940,6 +975,26 @@ public class Planner {
 			}
 			ZColRef.rawSrc = null;
 		}
+		return s;
+	}
+	
+	static String genOrderbyList(QB qb){
+		String s = null;
+		if (qb.orderby != null) {
+			s = "";
+			
+			for (int i = 0; i < qb.orderby.length; ++i) {
+				if (i > 0)
+					s += ", ";
+				s += qb.orderby[i];
+				if(qb.orderbyAsc[i])
+					s += " asc";
+				else
+					s += " desc";
+			}
+			s += ( " limit " + qb.topK );
+		}
+		
 		return s;
 	}
 	
