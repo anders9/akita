@@ -8,10 +8,15 @@ public class ZCreateTable implements ZStatement{
 	
 	public String storageEngine;
 	
-	public String distributed;
+	public boolean distributed = true;
 
 	public ArrayList<String> cols;
 	
 	public ArrayList<String> types;	
+	
+	public ZCreateTable(){
+		cols = new ArrayList<String>();
+		types = new ArrayList<String>();
+	}
 	
 }

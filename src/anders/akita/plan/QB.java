@@ -45,7 +45,7 @@ public class QB {
 		QB cqb = this;
 		String prefix = "";
 		while(cqb != null){
-			prefix = cqb + prefix;
+			prefix = cqb.name + prefix;
 			cqb = cqb.parent;
 		}
 		return "$$" + qid + cqb;

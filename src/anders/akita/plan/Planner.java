@@ -35,6 +35,10 @@ public class Planner {
 
 		plan.operators = genSubQBPlan(qb, plan);
 
+		FetchDataOperator lastOp = plan.operators[plan.operators.length - 1];
+		plan.entries = lastOp.entries.clone();
+		plan.schema = qb.schema;
+		
 		return plan;
 	}
 	

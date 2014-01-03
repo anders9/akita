@@ -21,7 +21,9 @@ public class QBParser {
 	public QB parse()
 		throws ExecException
 	{
-		return parseIter(rootQuery, "$", null);
+		QB qb = parseIter(rootQuery, "$root", null);
+		qb.schema.name = qb.genNamePrefix(qid) + "_result";
+		return qb;
 	}
 	
 	private QB parseIter(final ZQuery q, String name, QB parent)
@@ -285,6 +287,7 @@ public class QBParser {
 			if(exp.getOperands().size() != 1)
 				throw new ExecException("Not support multi-parm aggregation: " + exp.toString());
 			//check type...
+			/*
 			for(ZExp param: exp.getOperands()){
 				if(!genTypeInfo(qb, param, extSrc, extSrcPhy)){
 					String intype = FunctionMgr.aggrParamType(exp.funcOrAggrName);
@@ -301,6 +304,7 @@ public class QBParser {
 					}
 				}
 			}
+			*/
 			
 			return true;
 		}
