@@ -70,6 +70,7 @@ public class Planner {
 		//String collectEntry;
 		ArrayList<RootExp> where;
 	}
+	
 	static class OpRelAggr extends OpBase{
 		int aggrReducerN;
 		//String[] reducerEntry;

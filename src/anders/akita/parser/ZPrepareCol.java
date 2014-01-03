@@ -15,4 +15,9 @@ public class ZPrepareCol extends ZExp{
 	public boolean replaceSubExp(ZExp oldExp, ZExp newExp) {
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public String toString() {
+		return "?";
+	}
 }

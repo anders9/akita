@@ -357,7 +357,15 @@ ZStatement SQLStatement():
 }
 {
     s = QueryStatement() { return s; }
+| 	s = CreateStatement() { return s; }
 |   ( "EXIT" | "QUIT" ) ";" { return null; }
+}
+
+
+ZCreateTable CreateStatement():
+{
+  ZCreateTable ct = new ZCreateTable();}
+{	";" { return ct; }
 }
 
 String identifier():

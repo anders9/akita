@@ -11,7 +11,7 @@ public class QB {
 	
 	//ArrayList<QB> prevQBs;
 	HashMap<String, QB> prevQBs;//contain nested from clause & non-relative inner-query
-	HashMap<String, ArrayList<String>> nonRelSubQVarMap;
+	//HashMap<String, ArrayList<String>> nonRelSubQVarMap;
 	//SubQB[] subQBs;
 	
 	String[] src;
