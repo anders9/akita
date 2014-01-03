@@ -285,6 +285,7 @@ public class QBParser {
 			if(exp.getOperands().size() != 1)
 				throw new ExecException("Not support multi-parm aggregation: " + exp.toString());
 			//check type...
+			/*
 			for(ZExp param: exp.getOperands()){
 				if(!genTypeInfo(qb, param, extSrc, extSrcPhy)){
 					String intype = FunctionMgr.aggrParamType(exp.funcOrAggrName);
@@ -301,6 +302,7 @@ public class QBParser {
 					}
 				}
 			}
+			*/
 			
 			return true;
 		}
