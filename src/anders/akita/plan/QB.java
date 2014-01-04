@@ -20,7 +20,7 @@ public class QB {
 	ArrayList<RootExp> joinCond;
 	JoinPolicy[] joinPolicy;
 	int[] joinReducerN;		
-	RelSubQuery[] relSubQ;
+	//RelSubQuery[] relSubQ;
 	
 	ArrayList<RootExp> where;
 	
@@ -48,6 +48,6 @@ public class QB {
 			prefix = cqb.name + prefix;
 			cqb = cqb.parent;
 		}
-		return "$$" + qid + cqb;
+		return "$$" + qid + prefix;
 	}
 }

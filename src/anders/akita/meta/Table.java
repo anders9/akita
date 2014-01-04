@@ -7,7 +7,7 @@ public final class Table {
 	String name;
 	
 	String[] colName;
-	
+		
 	Column[] col;
 	
 	String[] entries;

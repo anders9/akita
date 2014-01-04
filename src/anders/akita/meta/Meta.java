@@ -60,6 +60,8 @@ public final class Meta {
 		for(int i = 0; i < t.col.length; ++i){
 			t.col[i] = new Column(ct.cols.get(i), ct.types.get(i));
 		}
+		t.colName = (String[]) ct.cols.toArray(new String[0]);
+		tables.put(t.name, t);
 	}
 	
 }

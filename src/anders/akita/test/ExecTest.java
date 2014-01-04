@@ -66,7 +66,7 @@ public class ExecTest {
 						try{
 							Executor.INSTANCE.exec((ZQuery)stmt);
 						}catch(ExecException e){
-							System.out.print(e.toString());
+							e.printStackTrace();
 						}
 					}
 				}

@@ -58,8 +58,14 @@ public class QBParser {
 				qb.prevQBs.put(uniqName, subQB);
 			}
 			else{
+				String tab = item.getFromItem().table;
+				if(Meta.getTab(tab) == null)
+					throw new ExecException("Not exist table: " + tab);
+				if(item.alias == null)
+					item.alias = tab;
 				qb.src[i] = item.alias;
-				qb.srcPhy[i] = item.getFromItem().table;
+				qb.srcPhy[i] = tab;
+				
 			}
 		}
 		
