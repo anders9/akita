@@ -2,13 +2,13 @@ package anders.akita.plan;
 
 public class MapJoinOperator extends FetchDataOperator{
 
-	FetchDataOperator leftSrc;
+	public FetchDataOperator leftSrc;
 	
 	//String[] rhsEntries; 
 	
-	String collectNode;
+	public String collectNode;
 	
-	boolean genPrevID; //whether this step need generate ID when fetch previous step output tab
+	public boolean genPrevID; //whether this step need generate ID when fetch previous step output tab
 	
 	//String midTab;
 	

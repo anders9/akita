@@ -120,7 +120,7 @@ public class QBParser {
 		
 		
 		qb.schema = new Schema();
-		qb.schema.name = null; //allocate by upper level
+		qb.schema.name = null; //!!allocate by upper level
 		
 		qb.schema.col = new String[q.getSelect().size()];
 		qb.schema.type = new String[q.getSelect().size()];

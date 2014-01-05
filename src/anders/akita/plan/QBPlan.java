@@ -4,17 +4,17 @@ import java.util.*;
 
 public class QBPlan {
 	
-	ArrayList<QBPlan> prevQBPlans;
+	public ArrayList<QBPlan> prevQBPlans;
 	
-	FetchDataOperator[] operators;
+	public FetchDataOperator[] operators;
 	
 	//String tmpTabName;
 	
-	String[] entries;
+	public String[] entries;
 	
 	//String[] schema;
 	//int[] colLen;
-	Schema schema;
+	public Schema schema;
 	
 	public QBPlan getSubQBPlan(String tabName){
 		for(QBPlan qbp: prevQBPlans){

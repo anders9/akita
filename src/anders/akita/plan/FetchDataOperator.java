@@ -4,15 +4,15 @@ import java.util.*;
 
 public class FetchDataOperator {
 
-	String[] entries;
+	public String[] entries;
 	
-	Schema schema;
+	public Schema schema;
 	
-	String fetchSQL; // if null, use: select * from schema.name;
+	public String fetchSQL; // if null, use: select * from schema.name;
 	
-	ArrayList<String> nonRelSubQVar;
+	public ArrayList<String> nonRelSubQVar;
 	
 	//boolean containID; // move into schema
 	
-	ArrayList<String> tmpTabList;//temp tab generated in this step, on each Entry-Node listed in $entries
+	public ArrayList<String> tmpTabList;//temp tab generated in this step, on each Entry-Node listed in $entries
 }

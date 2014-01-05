@@ -2,9 +2,9 @@ package anders.akita.plan;
 
 public class ReduceJoinOperator extends FetchDataOperator {
 
-	FetchDataOperator[] srcs;
+	public FetchDataOperator[] srcs;
 	
-	int[][] joinKeyIdx;
+	public int[][] joinKeyIdx;
 	
-	boolean genPrevID; //whether this step need generate ID when fetch previous step output tab
+	public boolean genPrevID; //whether this step need generate ID when fetch previous step output tab
 }

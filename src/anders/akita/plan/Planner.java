@@ -37,7 +37,7 @@ public class Planner {
 
 		FetchDataOperator lastOp = plan.operators[plan.operators.length - 1];
 		plan.entries = lastOp.entries.clone();
-		plan.schema = qb.schema;
+		plan.schema = (Schema)qb.schema.clone();
 		
 		return plan;
 	}
@@ -130,7 +130,8 @@ public class Planner {
 	}
 	static ArrayList<RootExp>[] genPushDownPredsArray(String[] src, ArrayList<RootExp> preds){
 		ArrayList<RootExp>[] pdList = new ArrayList[src.length];
-		
+		if(preds == null)
+			preds = new ArrayList<RootExp>();
 		for(int i = 0; i < src.length; ++i){
 			pdList[i] = new ArrayList<RootExp>();
 		}
@@ -749,6 +750,7 @@ public class Planner {
 				ops.add(so);
 			}
 		}
+		ops.remove(0);//remove first fetch-data operator
 		return ops.toArray(new FetchDataOperator[0]);
 	}
 	/*

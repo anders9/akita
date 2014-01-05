@@ -2,8 +2,8 @@ package anders.akita.plan;
 
 public class AggrOperator extends FetchDataOperator {
 	
-	FetchDataOperator src;
+	public FetchDataOperator src;
 	
-	int[] shuffleKeyIdx;// if NULL, no shuffle process
+	public int[] shuffleKeyIdx;// if NULL, no shuffle process
 
 }

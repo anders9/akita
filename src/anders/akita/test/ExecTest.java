@@ -11,62 +11,64 @@ import anders.akita.parser.*;
 
 public class ExecTest {
 
-	final static private Logger logger = Logger.getLogger(ExecTest.class);
+	//final static private Logger logger = Logger.getLogger(ExecTest.class);
 	
 	interface Handler{
 		public void exec(ZStatement stmt);
 	}
-	private static void readStmt(String srcfile, Handler handler)
+	private static void readStmt(InputStream in, Handler handler)
 		throws IOException
 	{	
-			Scanner sc = new Scanner(new FileInputStream(srcfile));
-			PrintStream os = new PrintStream(System.out);
+			Scanner sc = new Scanner(in);
+			//PrintStream os = new PrintStream(System.out);
 			
 			while (sc.hasNextLine()) {
 				ZqlJJParser parser = null;
 				try {
+					
 					String line = sc.nextLine().trim();
 
 					if(line.equals("") || line.startsWith("//") )
 						continue;
 					
-					os.println(line);
+					System.out.println(line);
 					
 					parser = new ZqlJJParser(new StringBufferInputStream(line));
 					ZStatement stmt = parser.SQLStatement();
-					os.println(stmt.toString());
+					System.out.println(stmt.toString());
 					handler.exec(stmt);
 					
-					os.println();
+					System.out.println();
 				} catch (ParseException pe) {
-					os.println(pe.getMessage());
-					parser.ReInit(System.in);
+					System.out.println(pe.getMessage());
+					//parser.ReInit(System.in);
 				} 
 				catch (anders.akita.parser.TokenMgrError te) {
-					os.println(te.getMessage());
-					parser.ReInit(System.in);
+					System.out.println(te.getMessage());
+					//parser.ReInit(System.in);
 				} 
+				System.out.print("SQL << ");
 			}
 			sc.close();
-			os.close();
 	}
 	
 	public static void main(String[] args) {
 		try{
-			readStmt("indata/schema.txt", new Handler(){
+			//System.out.print("SQL << ");
+			readStmt(new FileInputStream("indata/schema.txt"), new Handler(){
 				public void exec(ZStatement stmt) {
 					if(stmt instanceof ZCreateTable){
 						Meta.createTable((ZCreateTable)stmt);
 					}
 				}
 			});
-			readStmt("indata/query.txt", new Handler(){
+			readStmt(System.in, new Handler(){
 				public void exec(ZStatement stmt) {
 					if(stmt instanceof ZQuery){
 						try{
-							Executor.INSTANCE.exec((ZQuery)stmt);
+							Executor.INSTANCE.exec((ZQuery)stmt, System.out);
 						}catch(ExecException e){
-							e.printStackTrace();
+							System.out.println(e.toString());
 						}
 					}
 				}

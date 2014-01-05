@@ -2,13 +2,13 @@ package anders.akita.plan;
 
 public class Schema implements Cloneable{
 
-	String name;
+	public String name;
 	
-	String[] col;
+	public String[] col;
 	
-	String[] type;
+	public String[] type;
 	
-	boolean containID = false;
+	public boolean containID = false;
 	
 	public Object clone(){
 		Schema s = new Schema();
