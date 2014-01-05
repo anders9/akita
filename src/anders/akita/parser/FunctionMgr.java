@@ -62,7 +62,9 @@ public class FunctionMgr {
 	static boolean checkFuncName(String name) {
 		return name.matches("[a-zA-Z_][a-zA-Z_0-9]*");
 	}
-
+	public static void init(){
+		
+	}
 	static {
 
 		// load mysql function

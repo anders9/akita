@@ -42,8 +42,6 @@ public class QBParser {
 		qb.srcPhy = new String[fc.items.size()];
 		qb.prevQBs = new HashMap<String, QB>();
 		
-		HashMap<String, String> subQBNameMap = new HashMap<String, String>();
-		
 		for(int i = 0; i < fc.getItemN(); ++i){
 			ZFromItemEx item = fc.getItem(i);
 			if(item.isSubQuery()){
@@ -53,9 +51,10 @@ public class QBParser {
 				//!!! generate unique name for derived table !!!
 				String uniqName = qb.genNamePrefix(qid) + "_dr_" + item.alias;
 				subQB.schema.name = uniqName;
-				subQBNameMap.put(item.alias, uniqName);
+				qb.subQBNameMap.put(item.alias, uniqName);
 				
 				qb.prevQBs.put(uniqName, subQB);
+				qb.src[i] = qb.srcPhy[i] = uniqName;
 			}
 			else{
 				String tab = item.getFromItem().table;
@@ -207,13 +206,9 @@ public class QBParser {
 						if(node instanceof ZColRef){
 							QBParser.checkValidCol(qb, (ZColRef)node, null, null);
 						}
-						else if(node instanceof ZExpression){
-							if(((ZExpression)node).isAggr())
-								throw new ExecException("Not allow aggregation in having-clause: " + node.toString());
-						}
 						else if(node instanceof ZQuery){
 							//currently.
-							throw new ExecException("Not allow sub-query in where-clause: " + node.toString());
+							throw new ExecException("Not allow sub-query in having-clause: " + node.toString());
 						}
 					}
 				});
@@ -322,7 +317,16 @@ public class QBParser {
 	static void checkValidCol(final QB qb, ZColRef cr, String[] extSrc, String[] extSrcPhy)
 		throws ExecException
 	{
+		if(extSrc == null){
+			extSrc = extSrcPhy = new String[0];
+		}
 		if(cr.table != null){
+			
+			if(qb.subQBNameMap.containsKey(cr.table))
+				cr.table = qb.subQBNameMap.get(cr.table);
+			
+			if(Util.findStr(cr.table, qb.src) == -1)
+				throw new ExecException("Reference table not in from clause: " + cr.toString());
 			String[] cols = getColumns(qb, cr.table, extSrc, extSrcPhy);
 			if(Util.findStr(cr.col, cols) != -1)
 				return;

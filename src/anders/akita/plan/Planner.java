@@ -111,7 +111,7 @@ public class Planner {
 	}
 	static boolean checkCanPushDown(String[] srcs, ArrayList<String> covers){
 		for(String c: covers){
-			int l = Util.findStr(c, srcs);
+			int l = Util.findStr(QBParser.getColSrc(c), srcs);
 			if(l == -1)
 				return false;
 		}
@@ -189,7 +189,15 @@ public class Planner {
 		}
 		return rlist;
 	}
-	
+	static ArrayList<String> filteCoverColKeep(String[] src, ArrayList<String> list){
+		ArrayList<String> rlist = new ArrayList<String>();
+		for(String col: list){
+			String s = QBParser.getColSrc(col);
+			if(Util.findStr(s, src) != -1)
+				rlist.add(col);
+		}
+		return rlist;
+	}
 	
 	
 	String genTmpTableName(QB qb, int step){
@@ -407,7 +415,7 @@ public class Planner {
 		if(qb.groupby != null){
 			ArrayList<String> t = new ArrayList<String>();
 			for(ZColRef gb : qb.groupby)
-				t.add(t.toString());
+				t.add(gb.toString());
 			fcols = Util.<String>mergeArrayList(fcols, t);
 			if(qb.havingPreds != null){
 				t = getCoverCol(qb.havingPreds);
@@ -537,7 +545,7 @@ public class Planner {
 					rhsCols = Util.<String>mergeArrayList(rhsCols, getCoverCol(oj.where));
 					if(oj.joinCond != null)
 						rhsCols = Util.<String>mergeArrayList(rhsCols, getCoverCol(oj.joinCond));
-					rhsCols = filteCoverCol(oj.src, rhsCols);
+					rhsCols = filteCoverColKeep(oj.src, rhsCols);
 					//rjo.srcs[1].schema = genTabSchema(qb, this.genTmpTableName(qb.schema.name, i) + "_rhs", rhsCols, false);
 					rjo.srcs[1].entries = Planner.getSrcPhyEntries(qbPlan, oj.srcPhy[0]);;
 					
@@ -640,14 +648,11 @@ public class Planner {
 		
 		if(qb.groupby != null){
 			//append Aggr clause if exist, if last operator is AggrOp, then generate two-level aggr clause
-			String[] groupby = new String[qb.groupby.length];
-			for(int i = 0; i < groupby.length; ++i)
-				groupby[i] = qb.groupby[i].toString();
 			
 			if(prevOp.entries.length == 1){
 				//push current node into prev-node (fetch data)
 				prevClause = genAggrClause(qb, obIdx, prevClause, null, null, 
-						groupby, qb.havingPreds, false);
+						null, null, false);
 				
 				//replace previous operator's fetch data SQL, not gen new operator
 				prevOp.fetchSQL = prevClause.toString();
@@ -657,7 +662,7 @@ public class Planner {
 			else{
 				QBClause[] qbClauses = new QBClause[2];
 				gen2PhaseAggrClause(qb, obIdx, prevClause, null, null,  
-						groupby, qb.havingPreds, false,
+						null, null, false,
 						qbClauses);
 				//modify previous node
 				//prevClause = qbClauses[0];
@@ -670,6 +675,11 @@ public class Planner {
 				ao.src = prevOp;
 				ao.entries = Meta.randomEntries(qb.aggrReducerN);
 				
+				ao.shuffleKeyIdx = new int[qb.groupby.length];
+				for(int i = 0; i < ao.shuffleKeyIdx.length; ++i){
+					ao.shuffleKeyIdx[i] = 
+						Util.findStr(qb.groupby[i].toString().replace('.', '$'), prevOp.schema.col);
+				}
 				prevClause = qbClauses[1];
 				ao.fetchSQL = qbClauses[1].toString();
 				ao.schema = qbClauses[1].schema;
@@ -746,11 +756,14 @@ public class Planner {
 				if( qb.distinct && qb.shuffleCnt != 1 ){
 					so.distinctShuffle = true;
 				}
+				if( !qb.distinct && qb.orderby == null ){
+					so.schema.name = so.src.schema.name = qb.schema.name;
+				}
 				prevOp = so;
 				ops.add(so);
 			}
 		}
-		ops.remove(0);//remove first fetch-data operator
+		//ops.remove(0);//remove first fetch-data operator
 		return ops.toArray(new FetchDataOperator[0]);
 	}
 	/*
@@ -834,7 +847,9 @@ public class Planner {
 		
 		public String toString(){
 			String dist = distinct ? " distinct" : "";
-			String t = String.format("select%s %s from %s where %s", dist, fields, fromClause, whereClause);
+			String t = String.format("select%s %s from %s", dist, fields, fromClause);
+			if(whereClause != null)
+				t += (" where " + whereClause);
 			if(groupbyClause != null)
 				t += (" group by " + groupbyClause);
 			if(havingClause != null)
@@ -933,18 +948,23 @@ public class Planner {
 			}
 		}
 		
-		if(joinType == JoinType.INNER){
+		if(joinType == JoinType.INNER || jsrc.length == 1){
 			qbc.fromClause = "";
 			for(int i = 0; i < jsrc.length; ++i){
 				if(i > 0) qbc.fromClause += ", ";
 				qbc.fromClause += genFromItem(jsrc[i], jsrcPhy[i]);
 			}
 		}
-		else qbc.fromClause = 
+		else{
+			qbc.fromClause = 
 				genFromItem(jsrc[0], jsrcPhy[0])
 			+	(joinType == JoinType.LEFT? " left join " :  " right join ")
 			+	genFromItem(jsrc[1], jsrcPhy[1]);
-		
+			if(joinCond != null && joinCond.size() > 0){
+				qbc.fromClause += " on ";
+				qbc.fromClause += Planner.genPredsStr(joinCond, qbc.rawSrcs);
+			}
+		}
 		qbc.whereClause = Planner.genPredsStr(where, qbc.rawSrcs);
 		qbc.aggrLevel = 0;
 		
@@ -1076,13 +1096,13 @@ public class Planner {
 		}
 		if(!canPreAggr){
 		*/
-			this.fillClauseSelExp(qb, stepIdx, qbc2, null);
+			this.fillClauseSelExp(qb, stepIdx, qbc2, new String[0]);
 			
 			qbc2.aggrLevel = 1;
-			qbc2.groupbyClause = genGroupbyList(qb, null);
+			qbc2.groupbyClause = genGroupbyList(qb, new String[0]);
 
 			if (qb.havingPreds != null && qb.havingPreds.size() > 0) {
-				qbc2.havingClause = Planner.genPredsStr(qb.havingPreds, null);
+				qbc2.havingClause = Planner.genPredsStr(qb.havingPreds, new String[0]);
 			}
 		/*	
 		}
@@ -1156,7 +1176,7 @@ public class Planner {
 			}
 		}
 		else{
-			if(joinCond != null){
+			if(where != null){
 				for(RootExp re : where){
 					t =  checkEqPred(re, rhsSrc);
 					if(t != null)

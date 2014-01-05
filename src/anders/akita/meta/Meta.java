@@ -61,7 +61,8 @@ public final class Meta {
 			t.col[i] = new Column(ct.cols.get(i), ct.types.get(i));
 		}
 		t.colName = (String[]) ct.cols.toArray(new String[0]);
-		t.entries = entries.clone();
+		if(t.isDistr)
+			t.entries = entries.clone();
 		tables.put(t.name, t);
 	}
 	

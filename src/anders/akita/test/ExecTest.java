@@ -54,6 +54,8 @@ public class ExecTest {
 	
 	public static void main(String[] args) {
 		try{
+			FunctionMgr.init();
+			
 			//System.out.print("SQL << ");
 			readStmt(new FileInputStream("indata/schema.txt"), new Handler(){
 				public void exec(ZStatement stmt) {

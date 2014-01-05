@@ -51,10 +51,10 @@ public class Executor {
 			printPlan(subp, out, false);
 		}
 		
-		out.println("# plan for table: " + qbp.schema.name + (isRoot?"(root)":""));
+		out.println("\n# plan for table: " + qbp.schema.name + (isRoot?"(root)":""));
 		out.println();
 		
-		for(int i = 0; i < qbp.operators.length; ++i){
+		for(int i = 1; i < qbp.operators.length; ++i){
 			FetchDataOperator fdo = qbp.operators[i];
 			out.println("step " + i + " :");
 			if(fdo instanceof MapJoinOperator){
@@ -111,11 +111,13 @@ public class Executor {
 			}
 		}
 		FetchDataOperator lastOp = qbp.operators[qbp.operators.length - 1];
-		out.println("step " + qbp.operators.length + " :");
-		String s1 = String.format(
-				"Execute query \"%s\" on %s then store into table %s on each node",
-				lastOp.fetchSQL, strArr2Str(lastOp.entries), qbp.schema.name
-				);
-		out.println(s1);
+		if(!lastOp.schema.name.equals(qbp.schema.name)){
+			out.println("step " + qbp.operators.length + " :");
+			String s1 = String.format(
+					"Execute query \"%s\" on %s then store into table %s on each node",
+					lastOp.fetchSQL, strArr2Str(lastOp.entries), qbp.schema.name
+					);
+			out.println(s1);
+		}
 	}
 }
