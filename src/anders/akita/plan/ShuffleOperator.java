@@ -4,4 +4,6 @@ public class ShuffleOperator extends FetchDataOperator {
 
 	FetchDataOperator src;
 	
+	boolean distinctShuffle = false;
+	
 }

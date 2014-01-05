@@ -704,41 +704,50 @@ public class Planner {
 			prevOp.fetchSQL = prevClause.toString();
 		}
 		else{
-			
-			ShuffleOperator so = new ShuffleOperator();
-			so.src = prevOp;
-			so.tmpTabList = new ArrayList<String>();
-			so.tmpTabList.add(so.src.schema.name);
-			so.entries = Meta.randomEntries(qb.shuffleCnt);
-			so.schema = (Schema)so.src.schema.clone();
-			so.schema.name = this.genTmpTableName(qb, obIdx);
-
-			// shuffle to 1 node
-			// phase 1. add [distinct] & order-by top k into prevClause
-			prevClause.distinct = qb.distinct;
-			prevClause.orderbyClause = Planner.genOrderbyList(qb);
-			prevOp.fetchSQL = prevClause.toString();
-			String[] col = prevOp.schema.col;
-			
-			String cl2 = "select ";
-			if(qb.distinct)
-				cl2 += "distinct ";
-			for(int i = 0; i < col.length; ++i){
-				if(i > 0)
-					cl2 += ", ";
-				cl2 += col[i];
+			if(qb.shuffleCnt != -1 || qb.distinct || qb.orderby != null){
+				
+				if(qb.orderby != null)
+					qb.shuffleCnt = 1;
+				if(qb.shuffleCnt == -1)
+					qb.shuffleCnt = 1;
+				
+				ShuffleOperator so = new ShuffleOperator();
+				so.src = prevOp;
+				so.tmpTabList = new ArrayList<String>();
+				so.tmpTabList.add(so.src.schema.name);
+				so.entries = Meta.randomEntries(qb.shuffleCnt);
+				so.schema = (Schema)so.src.schema.clone();
+				so.schema.name = this.genTmpTableName(qb, obIdx);
+	
+				// shuffle to N node
+				// phase 1. add [distinct] & order-by top k into prevClause
+				prevClause.distinct = qb.distinct;
+				prevClause.orderbyClause = Planner.genOrderbyList(qb);
+				prevOp.fetchSQL = prevClause.toString();
+				String[] col = prevOp.schema.col;
+				
+				String cl2 = "select ";
+				if(qb.distinct)
+					cl2 += "distinct ";
+				for(int i = 0; i < col.length; ++i){
+					if(i > 0)
+						cl2 += ", ";
+					cl2 += col[i];
+				}
+				cl2 += (" from " + prevOp.schema.name);
+	
+				// phase 2. collect data into one node and add [distinct] & order-by
+				// top k again
+				if (prevClause.orderbyClause != null) {
+					cl2 += (" order by " + prevClause.orderbyClause);
+				}
+				so.fetchSQL = cl2;
+				if( qb.distinct && qb.shuffleCnt != 1 ){
+					so.distinctShuffle = true;
+				}
+				prevOp = so;
+				ops.add(so);
 			}
-			cl2 += (" from " + prevOp.schema.name);
-
-			// phase 2. collect data into one node and add [distinct] & order-by
-			// top k again
-			if (prevClause.orderbyClause != null) {
-				cl2 += (" order by " + prevClause.orderbyClause);
-			}
-			so.fetchSQL = cl2;
-			
-			prevOp = so;
-			ops.add(so);
 		}
 		return ops.toArray(new FetchDataOperator[0]);
 	}
